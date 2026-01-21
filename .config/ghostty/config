@@ -15,8 +15,14 @@ window-padding-y = 12
 window-decoration = true
 window-title-font-family = "Sarasa Mono K"
 
-# Background
-background-opacity = 1.0
+# Background (modern glassmorphic style)
+background-opacity = 0.92
+background-blur-radius = 20
+
+# macOS specific
+macos-titlebar-style = hidden
+macos-option-as-alt = true
+window-save-state = always
 
 # Cursor
 cursor-style = block
