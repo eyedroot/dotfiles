@@ -11,6 +11,7 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.p10k.zsh` - Powerlevel10k prompt configuration
 - `~/.dotfiles-install.sh` - Installation script
 - `~/.Brewfile` - Homebrew packages (formulae & casks)
+- `~/.claude/settings.json.dotfiles` - Claude Code settings (model, plugins, status line)
 - `~/CLAUDE.md` - Claude Code instructions
 
 ## Installation

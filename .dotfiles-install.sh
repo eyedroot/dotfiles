@@ -164,6 +164,18 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     fi
 fi
 
+# Apply Claude Code settings (if not exists)
+if [ -f "$HOME/.claude/settings.json.dotfiles" ]; then
+    if [ ! -f "$HOME/.claude/settings.json" ]; then
+        echo "    Applying Claude Code settings..."
+        mkdir -p "$HOME/.claude"
+        cp "$HOME/.claude/settings.json.dotfiles" "$HOME/.claude/settings.json"
+    else
+        echo "    Claude Code settings already exists. Skipping."
+        echo "        To apply dotfiles settings: cp ~/.claude/settings.json.dotfiles ~/.claude/settings.json"
+    fi
+fi
+
 # 5. Create secrets template if not exists
 if [ ! -f "$HOME/.zshrc.secrets" ]; then
     echo "[5/8] Creating .zshrc.secrets template..."
