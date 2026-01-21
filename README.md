@@ -9,6 +9,7 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.vimrc` - Vim configuration
 - `~/.zshrc.shared` - Shared zsh aliases and settings
 - `~/.dotfiles-install.sh` - Installation script
+- `~/.Brewfile` - Homebrew packages (formulae & casks)
 - `~/CLAUDE.md` - Claude Code instructions
 
 ## Installation
@@ -28,6 +29,7 @@ The install script will automatically:
 - Install oh-my-zsh plugins (zsh-autosuggestions)
 - Check Karabiner-Elements installation (macOS)
 - Set zsh as default shell
+- Optionally install Homebrew packages from Brewfile
 
 ### Supported Systems
 
