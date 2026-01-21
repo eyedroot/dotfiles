@@ -140,6 +140,15 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
     else
         echo "    zsh-autosuggestions already installed."
     fi
+
+    # powerlevel10k theme
+    if [ ! -d "$ZSH_CUSTOM/themes/powerlevel10k" ]; then
+        echo "    Installing powerlevel10k theme..."
+        git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
+            "$ZSH_CUSTOM/themes/powerlevel10k"
+    else
+        echo "    powerlevel10k already installed."
+    fi
 else
     echo "    oh-my-zsh not found. Skipping plugin installation."
 fi

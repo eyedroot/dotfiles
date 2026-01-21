@@ -8,6 +8,7 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.config/karabiner/karabiner.json` - Karabiner-Elements key mappings (macOS)
 - `~/.vimrc` - Vim configuration
 - `~/.zshrc.shared` - Shared zsh aliases and settings
+- `~/.p10k.zsh` - Powerlevel10k prompt configuration
 - `~/.dotfiles-install.sh` - Installation script
 - `~/.Brewfile` - Homebrew packages (formulae & casks)
 - `~/CLAUDE.md` - Claude Code instructions
@@ -26,7 +27,7 @@ The install script will automatically:
 - Install Homebrew on macOS if needed
 - Backup existing config files
 - Clone and checkout dotfiles
-- Install oh-my-zsh plugins (zsh-autosuggestions)
+- Install oh-my-zsh plugins (zsh-autosuggestions, powerlevel10k)
 - Check Karabiner-Elements installation (macOS)
 - Set zsh as default shell
 - Optionally install Homebrew packages from Brewfile
