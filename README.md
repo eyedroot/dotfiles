@@ -5,6 +5,7 @@ Personal dotfiles managed with a bare Git repository.
 ## Contents
 
 - `~/.config/ghostty/config` - Ghostty terminal configuration
+- `~/.config/karabiner/karabiner.json` - Karabiner-Elements key mappings (macOS)
 - `~/.vimrc` - Vim configuration
 - `~/.zshrc.shared` - Shared zsh aliases and settings
 - `~/.dotfiles-install.sh` - Installation script
@@ -24,6 +25,8 @@ The install script will automatically:
 - Install Homebrew on macOS if needed
 - Backup existing config files
 - Clone and checkout dotfiles
+- Install oh-my-zsh plugins (zsh-autosuggestions)
+- Check Karabiner-Elements installation (macOS)
 - Set zsh as default shell
 
 ### Supported Systems
