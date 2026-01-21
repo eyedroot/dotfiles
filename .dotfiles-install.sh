@@ -144,6 +144,17 @@ else
     echo "    oh-my-zsh not found. Skipping plugin installation."
 fi
 
+# Check Karabiner-Elements (macOS only)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    if brew list --cask karabiner-elements &> /dev/null; then
+        echo "    Karabiner-Elements detected. Config will be applied."
+    else
+        echo "    [!] Karabiner-Elements not installed."
+        echo "        Config file installed but won't take effect until you run:"
+        echo "        brew install --cask karabiner-elements"
+    fi
+fi
+
 # 5. Create secrets template if not exists
 if [ ! -f "$HOME/.zshrc.secrets" ]; then
     echo "[5/7] Creating .zshrc.secrets template..."
