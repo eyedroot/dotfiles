@@ -63,7 +63,7 @@ echo '[ -f "$HOME/.zshrc.secrets" ] && source "$HOME/.zshrc.secrets"' >> ~/.zshr
 
 ## Post-Installation
 
-1. Edit `~/.zshrc.secrets` for machine-specific settings:
+1. **Edit `~/.zshrc.secrets`** for machine-specific settings:
    ```bash
    # API Keys
    export OPENAI_API_KEY="your-key-here"
@@ -72,9 +72,25 @@ echo '[ -f "$HOME/.zshrc.secrets" ] && source "$HOME/.zshrc.secrets"' >> ~/.zshr
    alias myalias='command'
    ```
 
-2. Apply changes:
+2. **Apply changes:**
    ```bash
    source ~/.zshrc
+   ```
+
+3. **Reconfigure Powerlevel10k** (optional):
+   ```bash
+   p10k configure
+   ```
+
+4. **Apply Claude Code settings** (if skipped during install):
+   ```bash
+   cp ~/.claude/settings.json.dotfiles ~/.claude/settings.json
+   ```
+
+5. **Install optional apps** (macOS):
+   ```bash
+   brew install --cask karabiner-elements  # Keyboard customization
+   brew bundle --file=~/.Brewfile          # All packages
    ```
 
 ## Usage
