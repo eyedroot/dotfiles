@@ -70,7 +70,7 @@ install_homebrew() {
 }
 
 # 0. Check and install dependencies
-echo "[0/6] Checking dependencies..."
+echo "[0/7] Checking dependencies..."
 
 DEPENDENCIES=(git zsh vim)
 MISSING=()
@@ -99,9 +99,9 @@ fi
 
 # 1. Clone bare repository
 if [ -d "$DOTFILES_DIR" ]; then
-    echo "[1/6] $DOTFILES_DIR already exists. Skipping clone."
+    echo "[1/7] $DOTFILES_DIR already exists. Skipping clone."
 else
-    echo "[1/6] Cloning dotfiles repository..."
+    echo "[1/7] Cloning dotfiles repository..."
     git clone --bare "$DOTFILES_REPO" "$DOTFILES_DIR"
 fi
 
@@ -111,7 +111,7 @@ dotfiles() {
 }
 
 # 2. Backup existing files
-echo "[2/6] Backing up existing files..."
+echo "[2/7] Backing up existing files..."
 mkdir -p "$BACKUP_DIR"
 
 dotfiles checkout 2>&1 | grep -E "^\s+" | awk '{print $1}' | while read -r file; do
@@ -123,13 +123,30 @@ dotfiles checkout 2>&1 | grep -E "^\s+" | awk '{print $1}' | while read -r file;
 done
 
 # 3. Checkout files
-echo "[3/6] Checking out dotfiles..."
+echo "[3/7] Checking out dotfiles..."
 dotfiles checkout
 dotfiles config status.showUntrackedFiles no
 
-# 4. Create secrets template if not exists
+# 4. Install oh-my-zsh plugins
+echo "[4/7] Installing oh-my-zsh plugins..."
+if [ -d "$HOME/.oh-my-zsh" ]; then
+    ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+
+    # zsh-autosuggestions
+    if [ ! -d "$ZSH_CUSTOM/plugins/zsh-autosuggestions" ]; then
+        echo "    Installing zsh-autosuggestions..."
+        git clone https://github.com/zsh-users/zsh-autosuggestions \
+            "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
+    else
+        echo "    zsh-autosuggestions already installed."
+    fi
+else
+    echo "    oh-my-zsh not found. Skipping plugin installation."
+fi
+
+# 5. Create secrets template if not exists
 if [ ! -f "$HOME/.zshrc.secrets" ]; then
-    echo "[4/6] Creating .zshrc.secrets template..."
+    echo "[5/7] Creating .zshrc.secrets template..."
     cat > "$HOME/.zshrc.secrets" << 'EOF'
 # Local secrets - DO NOT COMMIT TO GIT
 # Add this line to your .zshrc:
@@ -145,11 +162,11 @@ if [ ! -f "$HOME/.zshrc.secrets" ]; then
 # alias claude-mem='bun "/path/to/script"'
 EOF
 else
-    echo "[4/6] .zshrc.secrets already exists. Skipping."
+    echo "[5/7] .zshrc.secrets already exists. Skipping."
 fi
 
-# 5. Add source lines to .zshrc if not present
-echo "[5/6] Updating .zshrc..."
+# 6. Add source lines to .zshrc if not present
+echo "[6/7] Updating .zshrc..."
 if ! grep -q "zshrc.shared" "$HOME/.zshrc" 2>/dev/null; then
     cat >> "$HOME/.zshrc" << 'EOF'
 
@@ -164,8 +181,8 @@ else
     echo "    .zshrc already configured. Skipping."
 fi
 
-# 6. Set zsh as default shell if not already
-echo "[6/6] Checking default shell..."
+# 7. Set zsh as default shell if not already
+echo "[7/7] Checking default shell..."
 if [[ "$SHELL" != *"zsh"* ]]; then
     echo "    Setting zsh as default shell..."
     chsh -s "$(which zsh)"
