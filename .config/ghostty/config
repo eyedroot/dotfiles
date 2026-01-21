@@ -3,17 +3,34 @@
 # Font settings
 font-family = "Sarasa Mono K"
 font-size = 14
+font-thicken = true
+adjust-cell-height = 10%
 
-# Theme
-theme = "iTerm2 Light Background"
+# Theme - GitHub Light (professional light theme)
+theme = GitHub Light Default
 
 # Window settings
-window-padding-x = 10
-window-padding-y = 10
+window-padding-x = 16
+window-padding-y = 12
+window-decoration = true
+window-title-font-family = "Sarasa Mono K"
+
+# Background
+background-opacity = 1.0
 
 # Cursor
 cursor-style = block
-cursor-style-blink = true
+cursor-style-blink = false
 
 # Shell integration
 shell-integration = zsh
+
+# Scrollback
+scrollback-limit = 10000
+
+# Mouse
+mouse-hide-while-typing = true
+
+# Copy/Paste
+copy-on-select = clipboard
+confirm-close-surface = false
