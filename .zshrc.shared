@@ -1,0 +1,6 @@
+# Shared zsh configuration - safe to commit to git
+# Add this line to your .zshrc:
+# [ -f "$HOME/.zshrc.shared" ] && source "$HOME/.zshrc.shared"
+
+# Aliases
+alias claude-mem='bun "/Users/eyedroot/.claude/plugins/marketplaces/thedotmack/plugin/scripts/worker-service.cjs"'

@@ -1,0 +1,19 @@
+# Ghostty Terminal Configuration
+
+# Font settings
+font-family = "Sarasa Mono K"
+font-size = 14
+
+# Theme
+theme = "iTerm2 Light Background"
+
+# Window settings
+window-padding-x = 10
+window-padding-y = 10
+
+# Cursor
+cursor-style = block
+cursor-style-blink = true
+
+# Shell integration
+shell-integration = zsh
