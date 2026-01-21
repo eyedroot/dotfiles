@@ -10,11 +10,98 @@ BACKUP_DIR="$HOME/.dotfiles-backup"
 
 echo "=== Dotfiles Installation ==="
 
+# Detect OS and package manager
+detect_package_manager() {
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        if command -v brew &> /dev/null; then
+            echo "brew"
+        else
+            echo "none"
+        fi
+    elif command -v apt-get &> /dev/null; then
+        echo "apt"
+    elif command -v dnf &> /dev/null; then
+        echo "dnf"
+    elif command -v yum &> /dev/null; then
+        echo "yum"
+    elif command -v pacman &> /dev/null; then
+        echo "pacman"
+    else
+        echo "none"
+    fi
+}
+
+# Install package based on package manager
+install_package() {
+    local pkg=$1
+    local pm=$(detect_package_manager)
+
+    echo "    Installing $pkg..."
+    case $pm in
+        brew)
+            brew install "$pkg"
+            ;;
+        apt)
+            sudo apt-get update && sudo apt-get install -y "$pkg"
+            ;;
+        dnf)
+            sudo dnf install -y "$pkg"
+            ;;
+        yum)
+            sudo yum install -y "$pkg"
+            ;;
+        pacman)
+            sudo pacman -S --noconfirm "$pkg"
+            ;;
+        none)
+            echo "    [!] No package manager found. Please install $pkg manually."
+            exit 1
+            ;;
+    esac
+}
+
+# Install Homebrew on macOS if not present
+install_homebrew() {
+    if [[ "$OSTYPE" == "darwin"* ]] && ! command -v brew &> /dev/null; then
+        echo "    Installing Homebrew..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        eval "$(/opt/homebrew/bin/brew shellenv)" 2>/dev/null || eval "$(/usr/local/bin/brew shellenv)"
+    fi
+}
+
+# 0. Check and install dependencies
+echo "[0/6] Checking dependencies..."
+
+DEPENDENCIES=(git zsh vim)
+MISSING=()
+
+for dep in "${DEPENDENCIES[@]}"; do
+    if ! command -v "$dep" &> /dev/null; then
+        MISSING+=("$dep")
+    fi
+done
+
+if [ ${#MISSING[@]} -gt 0 ]; then
+    echo "    Missing: ${MISSING[*]}"
+
+    # Install Homebrew first on macOS
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        install_homebrew
+    fi
+
+    for dep in "${MISSING[@]}"; do
+        install_package "$dep"
+    done
+    echo "    Dependencies installed."
+else
+    echo "    All dependencies found."
+fi
+
 # 1. Clone bare repository
 if [ -d "$DOTFILES_DIR" ]; then
-    echo "[!] $DOTFILES_DIR already exists. Skipping clone."
+    echo "[1/6] $DOTFILES_DIR already exists. Skipping clone."
 else
-    echo "[1/5] Cloning dotfiles repository..."
+    echo "[1/6] Cloning dotfiles repository..."
     git clone --bare "$DOTFILES_REPO" "$DOTFILES_DIR"
 fi
 
@@ -24,7 +111,7 @@ dotfiles() {
 }
 
 # 2. Backup existing files
-echo "[2/5] Backing up existing files..."
+echo "[2/6] Backing up existing files..."
 mkdir -p "$BACKUP_DIR"
 
 dotfiles checkout 2>&1 | grep -E "^\s+" | awk '{print $1}' | while read -r file; do
@@ -36,13 +123,13 @@ dotfiles checkout 2>&1 | grep -E "^\s+" | awk '{print $1}' | while read -r file;
 done
 
 # 3. Checkout files
-echo "[3/5] Checking out dotfiles..."
+echo "[3/6] Checking out dotfiles..."
 dotfiles checkout
 dotfiles config status.showUntrackedFiles no
 
 # 4. Create secrets template if not exists
 if [ ! -f "$HOME/.zshrc.secrets" ]; then
-    echo "[4/5] Creating .zshrc.secrets template..."
+    echo "[4/6] Creating .zshrc.secrets template..."
     cat > "$HOME/.zshrc.secrets" << 'EOF'
 # Local secrets - DO NOT COMMIT TO GIT
 # Add this line to your .zshrc:
@@ -58,11 +145,11 @@ if [ ! -f "$HOME/.zshrc.secrets" ]; then
 # alias claude-mem='bun "/path/to/script"'
 EOF
 else
-    echo "[4/5] .zshrc.secrets already exists. Skipping."
+    echo "[4/6] .zshrc.secrets already exists. Skipping."
 fi
 
 # 5. Add source lines to .zshrc if not present
-echo "[5/5] Updating .zshrc..."
+echo "[5/6] Updating .zshrc..."
 if ! grep -q "zshrc.shared" "$HOME/.zshrc" 2>/dev/null; then
     cat >> "$HOME/.zshrc" << 'EOF'
 
@@ -75,6 +162,16 @@ EOF
     echo "    Added source lines to .zshrc"
 else
     echo "    .zshrc already configured. Skipping."
+fi
+
+# 6. Set zsh as default shell if not already
+echo "[6/6] Checking default shell..."
+if [[ "$SHELL" != *"zsh"* ]]; then
+    echo "    Setting zsh as default shell..."
+    chsh -s "$(which zsh)"
+    echo "    Default shell changed to zsh. Please restart your terminal."
+else
+    echo "    zsh is already the default shell."
 fi
 
 echo ""
