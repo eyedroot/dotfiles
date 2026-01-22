@@ -2,5 +2,8 @@
 # Add this line to your .zshrc:
 # [ -f "$HOME/.zshrc.shared" ] && source "$HOME/.zshrc.shared"
 
+# Claude Code native binary path
+export PATH="$HOME/.local/bin:$PATH"
+
 # Aliases
 alias dotfiles='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
