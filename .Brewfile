@@ -6,6 +6,7 @@ tap "homebrew/bundle"
 tap "oven-sh/bun"
 
 # ===== Formulae =====
+brew "btop"
 brew "oven-sh/bun/bun"
 brew "claude-code"
 brew "colima"
