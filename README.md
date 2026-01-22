@@ -12,6 +12,7 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.dotfiles-install.sh` - Installation script
 - `~/.Brewfile` - Homebrew packages (formulae & casks)
 - `~/.claude/settings.json.dotfiles` - Claude Code settings (model, plugins, status line)
+- `~/.config/intelephense/settings.json` - Intelephense PHP LSP settings
 - `~/CLAUDE.md` - Claude Code instructions
 
 ## Installation

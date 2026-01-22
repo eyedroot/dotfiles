@@ -7,6 +7,7 @@ This repository manages personal dotfiles using a bare Git repository.
 ```
 ~/.dotfiles/                           # Bare git repository
 ~/.config/ghostty/config               # Ghostty terminal config
+~/.config/intelephense/settings.json   # Intelephense PHP LSP config
 ~/.config/karabiner/karabiner.json     # Karabiner key mappings (macOS)
 ~/.vimrc                               # Vim configuration
 ~/.zshrc.shared                        # Shared zsh aliases (tracked)
@@ -47,7 +48,7 @@ git --git-dir=$HOME/.dotfiles --work-tree=$HOME <command>
 
 | Type | Location | Git Tracked | Examples |
 |------|----------|-------------|----------|
-| App configs | `~/.config/*`, `~/.vimrc` | Yes | ghostty, karabiner, vim |
+| App configs | `~/.config/*`, `~/.vimrc` | Yes | ghostty, karabiner, vim, intelephense |
 | Shell configs | `~/.zshrc.shared`, `~/.p10k.zsh` | Yes | aliases, prompt |
 | Package lists | `~/.Brewfile` | Yes | brew formulae & casks |
 | Claude Code | `~/.claude/settings.json.dotfiles` | Yes | model, plugins, statusLine |
