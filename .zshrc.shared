@@ -8,6 +8,12 @@ export PATH="$HOME/.local/bin:$PATH"
 # Aliases
 alias dotfiles='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
 
+# Zoxide - smarter cd command
+# Usage: z <path>, zi (interactive selection with fzf)
+if command -v zoxide &> /dev/null; then
+  eval "$(zoxide init zsh)"
+fi
+
 # Fastfetch - show system info on terminal start
 if command -v fastfetch &> /dev/null; then
   fastfetch

@@ -2,26 +2,25 @@
 
 # Font settings
 font-family = "Sarasa Mono K"
-font-size = 15
+font-size = 14.5
 font-thicken = true
 adjust-cell-height = 10%
 
-# Theme - GitHub Light (professional light theme)
-# theme = GitHub Light Default
-# theme = 0x96f
+# Theme
 theme = Bluloco Light
-# theme = Ayu Mirage
+# theme = Catppuccin Frappe
+# theme = 0x96f
 
 # Window settings
-window-padding-x = 24
-window-padding-y = 24
+window-padding-x = 16
+window-padding-y = 16
 window-decoration = true
 window-title-font-family = "Sarasa Mono K"
 
 # Background (modern glassmorphic style)
 background-opacity = 1
 background-blur-radius = 20
-unfocused-split-opacity = 1
+unfocused-split-opacity = 0
 
 # macOS specific
 macos-titlebar-style = tabs
@@ -30,7 +29,7 @@ window-save-state = always
 
 # Cursor
 cursor-style = block
-cursor-style-blink = false
+cursor-style-blink = true
 
 # Shell integration
 shell-integration = zsh
