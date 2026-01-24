@@ -40,6 +40,7 @@
   # Prompt colors.
   local grey='242'
   local red='1'
+  local green='2'
   local yellow='3'
   local blue='4'
   local magenta='5'
@@ -58,10 +59,10 @@
 
   # Right prompt segments.
   typeset -g POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(
-    # command_execution_time  # previous command duration
-    # virtualenv              # python virtual environment
-    # context                 # user@host
-    # time                    # current time
+    cpu                       # CPU usage
+    ram                       # RAM usage
+    battery                   # battery level
+    time                      # current time
   )
 
   # Basic style options that define the overall prompt look.
@@ -153,6 +154,29 @@
   # commands will contain the start times of their commands rather than the end times of
   # their preceding commands.
   typeset -g POWERLEVEL9K_TIME_UPDATE_ON_COMMAND=false
+  # Show clock icon
+  typeset -g POWERLEVEL9K_TIME_VISUAL_IDENTIFIER_EXPANSION='🕐'
+
+  # CPU usage settings
+  typeset -g POWERLEVEL9K_CPU_FOREGROUND=$cyan
+  # Show CPU usage when it's >= 5%
+  typeset -g POWERLEVEL9K_CPU_IDLE_THRESHOLD=95
+  typeset -g POWERLEVEL9K_CPU_VISUAL_IDENTIFIER_EXPANSION='💻'
+
+  # RAM usage settings
+  typeset -g POWERLEVEL9K_RAM_FOREGROUND=$yellow
+  typeset -g POWERLEVEL9K_RAM_VISUAL_IDENTIFIER_EXPANSION='🧠'
+
+  # Battery settings
+  typeset -g POWERLEVEL9K_BATTERY_LOW_THRESHOLD=20
+  typeset -g POWERLEVEL9K_BATTERY_LOW_FOREGROUND=$red
+  typeset -g POWERLEVEL9K_BATTERY_{CHARGING,CHARGED}_FOREGROUND=$green
+  typeset -g POWERLEVEL9K_BATTERY_DISCONNECTED_FOREGROUND=$grey
+  typeset -g POWERLEVEL9K_BATTERY_STAGES='▁▂▃▄▅▆▇█'
+  typeset -g POWERLEVEL9K_BATTERY_VISUAL_IDENTIFIER_EXPANSION='🔋'
+  # Show battery only when not fully charged
+  typeset -g POWERLEVEL9K_BATTERY_CHARGED_VISUAL_IDENTIFIER_EXPANSION='⚡'
+  typeset -g POWERLEVEL9K_BATTERY_CHARGING_VISUAL_IDENTIFIER_EXPANSION='⚡'
 
   # Transient prompt works similarly to the builtin transient_rprompt option. It trims down prompt
   # when accepting a command line. Supported values:

@@ -7,3 +7,8 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # Aliases
 alias dotfiles='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+
+# Fastfetch - show system info on terminal start
+if command -v fastfetch &> /dev/null; then
+  fastfetch
+fi
