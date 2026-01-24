@@ -10,10 +10,11 @@ adjust-cell-height = 10%
 # theme = GitHub Light Default
 # theme = 0x96f
 theme = Bluloco Light
+# theme = Ayu Mirage
 
 # Window settings
-window-padding-x = 16
-window-padding-y = 12
+window-padding-x = 24
+window-padding-y = 24
 window-decoration = true
 window-title-font-family = "Sarasa Mono K"
 
@@ -43,3 +44,9 @@ mouse-hide-while-typing = true
 # Copy/Paste
 copy-on-select = clipboard
 confirm-close-surface = false
+
+# Split pane focus navigation
+keybind = alt+left=goto_split:left
+keybind = alt+right=goto_split:right
+keybind = alt+up=goto_split:top
+keybind = alt+down=goto_split:bottom
