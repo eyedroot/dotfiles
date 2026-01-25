@@ -7,8 +7,8 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.config/ghostty/config` - Ghostty terminal configuration
 - `~/.config/karabiner/karabiner.json` - Karabiner-Elements key mappings (macOS)
 - `~/.vimrc` - Vim configuration
-- `~/.zshrc.shared` - Shared zsh aliases and settings
-- `~/.p10k.zsh` - Powerlevel10k prompt configuration
+- `~/.zshrc.shared` - Shared zsh aliases and settings (includes Starship init)
+- `~/.config/starship.toml` - Starship prompt configuration (optional)
 - `~/.dotfiles-install.sh` - Installation script
 - `~/.Brewfile` - Homebrew packages (formulae & casks)
 - `~/.claude/settings.json.dotfiles` - Claude Code settings (model, plugins, status line)
@@ -29,7 +29,7 @@ The install script will automatically:
 - Install Homebrew on macOS if needed
 - Backup existing config files
 - Clone and checkout dotfiles
-- Install oh-my-zsh plugins (zsh-autosuggestions, powerlevel10k)
+- Install oh-my-zsh plugins (zsh-autosuggestions) and Starship prompt
 - Check Karabiner-Elements installation (macOS)
 - Set zsh as default shell
 - Optionally install Homebrew packages from Brewfile
@@ -78,9 +78,9 @@ echo '[ -f "$HOME/.zshrc.secrets" ] && source "$HOME/.zshrc.secrets"' >> ~/.zshr
    source ~/.zshrc
    ```
 
-3. **Reconfigure Powerlevel10k** (optional):
+3. **Configure Starship** (optional):
    ```bash
-   p10k configure
+   mkdir -p ~/.config && starship preset pure-preset -o ~/.config/starship.toml
    ```
 
 4. **Apply Claude Code settings** (if skipped during install):

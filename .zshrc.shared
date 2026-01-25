@@ -18,3 +18,8 @@ fi
 if command -v fastfetch &> /dev/null; then
   fastfetch
 fi
+
+# Starship prompt
+if command -v starship &> /dev/null; then
+  eval "$(starship init zsh)"
+fi

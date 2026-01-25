@@ -10,9 +10,9 @@ This repository manages personal dotfiles using a bare Git repository.
 ~/.config/intelephense/settings.json   # Intelephense PHP LSP config
 ~/.config/karabiner/karabiner.json     # Karabiner key mappings (macOS)
 ~/.vimrc                               # Vim configuration
-~/.zshrc.shared                        # Shared zsh aliases (tracked)
+~/.zshrc.shared                        # Shared zsh aliases + Starship init
 ~/.zshrc.secrets                       # Local secrets (NOT tracked)
-~/.p10k.zsh                            # Powerlevel10k prompt config
+~/.config/starship.toml                # Starship prompt config (optional)
 ~/.Brewfile                            # Homebrew packages list
 ~/.claude/settings.json.dotfiles       # Claude Code settings (no permissions)
 ~/.dotfiles-install.sh                 # Installation script (8 steps)
@@ -49,7 +49,7 @@ git --git-dir=$HOME/.dotfiles --work-tree=$HOME <command>
 | Type | Location | Git Tracked | Examples |
 |------|----------|-------------|----------|
 | App configs | `~/.config/*`, `~/.vimrc` | Yes | ghostty, karabiner, vim, intelephense |
-| Shell configs | `~/.zshrc.shared`, `~/.p10k.zsh` | Yes | aliases, prompt |
+| Shell configs | `~/.zshrc.shared` | Yes | aliases, Starship init |
 | Package lists | `~/.Brewfile` | Yes | brew formulae & casks |
 | Claude Code | `~/.claude/settings.json.dotfiles` | Yes | model, plugins, statusLine |
 | Machine-specific | `~/.zshrc.secrets` | No | API keys, local paths |
@@ -87,7 +87,7 @@ Current steps (8 total):
 1. Clone bare repository
 2. Backup existing files
 3. Checkout dotfiles
-4. Install oh-my-zsh plugins (zsh-autosuggestions, powerlevel10k) + check Karabiner + apply Claude Code settings
+4. Install oh-my-zsh plugins (zsh-autosuggestions) + Starship + check Karabiner + apply Claude Code settings
 5. Create .zshrc.secrets template
 6. Update .zshrc with source lines
 7. Set zsh as default shell

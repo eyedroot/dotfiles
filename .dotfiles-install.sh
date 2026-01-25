@@ -127,8 +127,8 @@ echo "[3/8] Checking out dotfiles..."
 dotfiles checkout
 dotfiles config status.showUntrackedFiles no
 
-# 4. Install oh-my-zsh plugins
-echo "[4/8] Installing oh-my-zsh plugins..."
+# 4. Install oh-my-zsh plugins and Starship prompt
+echo "[4/8] Installing oh-my-zsh plugins and Starship..."
 if [ -d "$HOME/.oh-my-zsh" ]; then
     ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
 
@@ -141,16 +141,24 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
         echo "    zsh-autosuggestions already installed."
     fi
 
-    # powerlevel10k theme
-    if [ ! -d "$ZSH_CUSTOM/themes/powerlevel10k" ]; then
-        echo "    Installing powerlevel10k theme..."
-        git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
-            "$ZSH_CUSTOM/themes/powerlevel10k"
-    else
-        echo "    powerlevel10k already installed."
+    # Disable oh-my-zsh theme (Starship will be used instead)
+    if grep -q '^ZSH_THEME=' "$HOME/.zshrc" 2>/dev/null; then
+        if ! grep -q '^ZSH_THEME=""' "$HOME/.zshrc"; then
+            echo "    Disabling oh-my-zsh theme for Starship..."
+            sed -i.bak 's/^ZSH_THEME=.*/ZSH_THEME=""/' "$HOME/.zshrc"
+            rm -f "$HOME/.zshrc.bak"
+        fi
     fi
 else
     echo "    oh-my-zsh not found. Skipping plugin installation."
+fi
+
+# Install Starship prompt
+if command -v starship &> /dev/null; then
+    echo "    Starship already installed."
+else
+    echo "    Installing Starship..."
+    install_package "starship"
 fi
 
 # Check Karabiner-Elements (macOS only)
