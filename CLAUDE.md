@@ -9,13 +9,14 @@ This repository manages personal dotfiles using a bare Git repository.
 ~/.config/ghostty/config               # Ghostty terminal config
 ~/.config/intelephense/settings.json   # Intelephense PHP LSP config
 ~/.config/karabiner/karabiner.json     # Karabiner key mappings (macOS)
+~/.config/macos/defaults.sh            # macOS system defaults script
 ~/.vimrc                               # Vim configuration
 ~/.zshrc.shared                        # Shared zsh aliases + Starship init
 ~/.zshrc.secrets                       # Local secrets (NOT tracked)
 ~/.config/starship.toml                # Starship prompt config (optional)
 ~/.Brewfile                            # Homebrew packages list
 ~/.claude/settings.json.dotfiles       # Claude Code settings (no permissions)
-~/.dotfiles-install.sh                 # Installation script (8 steps)
+~/.dotfiles-install.sh                 # Installation script (9 steps)
 ~/CLAUDE.md                            # Claude Code instructions
 ~/README.md                            # Repository documentation
 ```
@@ -82,7 +83,7 @@ Types: `Add`, `Update`, `Fix`, `Remove`
 
 ## Installation Script Maintenance
 
-Current steps (8 total):
+Current steps (9 total):
 0. Check dependencies (git, zsh, vim)
 1. Clone bare repository
 2. Backup existing files
@@ -92,13 +93,14 @@ Current steps (8 total):
 6. Update .zshrc with source lines
 7. Set zsh as default shell
 8. Optional: Install Homebrew packages from Brewfile
+9. Optional: Apply macOS system defaults (Dock, Finder, keyboard, etc.)
 
 When modifying `.dotfiles-install.sh`:
 
 1. Maintain support for multiple package managers (brew, apt, dnf, yum, pacman)
 2. Keep the dependency list updated: `DEPENDENCIES=(git zsh vim)`
 3. Ensure idempotency (safe to run multiple times)
-4. Update step numbers if adding/removing steps (currently 0-8)
+4. Update step numbers if adding/removing steps (currently 0-9)
 
 ## Checklist After Changes
 

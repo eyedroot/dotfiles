@@ -13,6 +13,7 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.Brewfile` - Homebrew packages (formulae & casks)
 - `~/.claude/settings.json.dotfiles` - Claude Code settings (model, plugins, status line)
 - `~/.config/intelephense/settings.json` - Intelephense PHP LSP settings
+- `~/.config/macos/defaults.sh` - macOS system defaults (Dock, Finder, keyboard, etc.)
 - `~/CLAUDE.md` - Claude Code instructions
 
 ## Installation
@@ -33,6 +34,7 @@ The install script will automatically:
 - Check Karabiner-Elements installation (macOS)
 - Set zsh as default shell
 - Optionally install Homebrew packages from Brewfile
+- Optionally apply macOS system defaults (Dock, Finder, keyboard, etc.)
 
 ### Supported Systems
 

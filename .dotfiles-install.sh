@@ -70,7 +70,7 @@ install_homebrew() {
 }
 
 # 0. Check and install dependencies
-echo "[0/8] Checking dependencies..."
+echo "[0/9] Checking dependencies..."
 
 DEPENDENCIES=(git zsh vim)
 MISSING=()
@@ -99,9 +99,9 @@ fi
 
 # 1. Clone bare repository
 if [ -d "$DOTFILES_DIR" ]; then
-    echo "[1/8] $DOTFILES_DIR already exists. Skipping clone."
+    echo "[1/9] $DOTFILES_DIR already exists. Skipping clone."
 else
-    echo "[1/8] Cloning dotfiles repository..."
+    echo "[1/9] Cloning dotfiles repository..."
     git clone --bare "$DOTFILES_REPO" "$DOTFILES_DIR"
 fi
 
@@ -111,7 +111,7 @@ dotfiles() {
 }
 
 # 2. Backup existing files
-echo "[2/8] Backing up existing files..."
+echo "[2/9] Backing up existing files..."
 mkdir -p "$BACKUP_DIR"
 
 dotfiles checkout 2>&1 | grep -E "^\s+" | awk '{print $1}' | while read -r file; do
@@ -123,12 +123,12 @@ dotfiles checkout 2>&1 | grep -E "^\s+" | awk '{print $1}' | while read -r file;
 done
 
 # 3. Checkout files
-echo "[3/8] Checking out dotfiles..."
+echo "[3/9] Checking out dotfiles..."
 dotfiles checkout
 dotfiles config status.showUntrackedFiles no
 
 # 4. Install oh-my-zsh plugins and Starship prompt
-echo "[4/8] Installing oh-my-zsh plugins and Starship..."
+echo "[4/9] Installing oh-my-zsh plugins and Starship..."
 if [ -d "$HOME/.oh-my-zsh" ]; then
     ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
 
@@ -186,7 +186,7 @@ fi
 
 # 5. Create secrets template if not exists
 if [ ! -f "$HOME/.zshrc.secrets" ]; then
-    echo "[5/8] Creating .zshrc.secrets template..."
+    echo "[5/9] Creating .zshrc.secrets template..."
     cat > "$HOME/.zshrc.secrets" << 'EOF'
 # Local secrets - DO NOT COMMIT TO GIT
 # Add this line to your .zshrc:
@@ -202,11 +202,11 @@ if [ ! -f "$HOME/.zshrc.secrets" ]; then
 # alias claude-mem='bun "/path/to/script"'
 EOF
 else
-    echo "[5/8] .zshrc.secrets already exists. Skipping."
+    echo "[5/9] .zshrc.secrets already exists. Skipping."
 fi
 
 # 6. Add source lines to .zshrc if not present
-echo "[6/8] Updating .zshrc..."
+echo "[6/9] Updating .zshrc..."
 if ! grep -q "zshrc.shared" "$HOME/.zshrc" 2>/dev/null; then
     cat >> "$HOME/.zshrc" << 'EOF'
 
@@ -222,7 +222,7 @@ else
 fi
 
 # 7. Set zsh as default shell if not already
-echo "[7/8] Checking default shell..."
+echo "[7/9] Checking default shell..."
 if [[ "$SHELL" != *"zsh"* ]]; then
     echo "    Setting zsh as default shell..."
     chsh -s "$(which zsh)"
@@ -234,7 +234,7 @@ fi
 # 8. Install Homebrew packages (macOS only, optional)
 if [[ "$OSTYPE" == "darwin"* ]] && [ -f "$HOME/.Brewfile" ]; then
     echo ""
-    echo "[8/8] Homebrew packages..."
+    echo "[8/9] Homebrew packages..."
 
     # Count packages not installed
     MISSING_COUNT=$(brew bundle check --file="$HOME/.Brewfile" 2>&1 | grep -c "needs to be installed" || echo "0")
@@ -256,7 +256,27 @@ if [[ "$OSTYPE" == "darwin"* ]] && [ -f "$HOME/.Brewfile" ]; then
         echo "    All Homebrew packages already installed."
     fi
 else
-    echo "[8/8] Skipping Homebrew packages (not macOS or Brewfile not found)."
+    echo "[8/9] Skipping Homebrew packages (not macOS or Brewfile not found)."
+fi
+
+# 9. Apply macOS defaults (macOS only, optional)
+if [[ "$OSTYPE" == "darwin"* ]] && [ -f "$HOME/.config/macos/defaults.sh" ]; then
+    echo ""
+    echo "[9/9] macOS system defaults..."
+    echo "    This will apply custom macOS settings (Dock, Finder, keyboard, etc.)"
+    echo ""
+    read -p "    Apply macOS defaults? (y/n): " -n 1 -r
+    echo ""
+
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "    Applying macOS defaults..."
+        bash "$HOME/.config/macos/defaults.sh"
+        echo "    macOS defaults applied."
+    else
+        echo "    Skipped. Run 'bash ~/.config/macos/defaults.sh' later to apply."
+    fi
+else
+    echo "[9/9] Skipping macOS defaults (not macOS or defaults.sh not found)."
 fi
 
 echo ""
