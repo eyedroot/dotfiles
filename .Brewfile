@@ -27,6 +27,7 @@ brew "pnpm"
 brew "uv"
 brew "wget"
 brew "yarn"
+brew "yt-dlp"
 
 # ===== Casks (GUI Applications) =====
 cask "1password-cli"
