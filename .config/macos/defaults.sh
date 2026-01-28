@@ -81,11 +81,11 @@ defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true
 # =============================================================================
 echo "  [3/7] Configuring Keyboard & Input..."
 
-# 키 반복 속도 (낮을수록 빠름)
-defaults write NSGlobalDomain KeyRepeat -int 1
+# 키 반복 속도 (낮을수록 빠름, 기본값 6, 최소 1)
+defaults write NSGlobalDomain KeyRepeat -int 3
 
-# 키 반복 시작 딜레이 (낮을수록 빠름)
-defaults write NSGlobalDomain InitialKeyRepeat -int 10
+# 키 반복 시작 딜레이 (낮을수록 빠름, 기본값 25, 최소 10)
+defaults write NSGlobalDomain InitialKeyRepeat -int 20
 
 # 자동 대문자 끄기
 defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false
