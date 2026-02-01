@@ -88,7 +88,7 @@ Current steps (9 total):
 1. Clone bare repository
 2. Backup existing files
 3. Checkout dotfiles
-4. Install oh-my-zsh plugins (zsh-autosuggestions) + Starship + check Karabiner + apply Claude Code settings
+4. Install oh-my-zsh plugins (zsh-autosuggestions) + Starship + check Karabiner + apply Claude Code settings + install Claude Code skills
 5. Create .zshrc.secrets template
 6. Update .zshrc with source lines
 7. Set zsh as default shell

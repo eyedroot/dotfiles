@@ -128,7 +128,7 @@ dotfiles checkout
 dotfiles config status.showUntrackedFiles no
 
 # 4. Install oh-my-zsh plugins and Starship prompt
-echo "[4/9] Installing oh-my-zsh plugins and Starship..."
+echo "[4/9] Installing oh-my-zsh plugins, Starship, and Claude Code skills..."
 if [ -d "$HOME/.oh-my-zsh" ]; then
     ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
 
@@ -182,6 +182,19 @@ if [ -f "$HOME/.claude/settings.json.dotfiles" ]; then
         echo "    Claude Code settings already exists. Skipping."
         echo "        To apply dotfiles settings: cp ~/.claude/settings.json.dotfiles ~/.claude/settings.json"
     fi
+fi
+
+# Install Claude Code skills
+if command -v npx &> /dev/null; then
+    if [ ! -L "$HOME/.claude/skills/find-skills" ]; then
+        echo "    Installing Claude Code skills..."
+        npx -y skills add vercel-labs/skills --skill find-skills -g -y
+    else
+        echo "    Claude Code skills already installed."
+    fi
+else
+    echo "    [!] npx not found. Skipping Claude Code skills installation."
+    echo "        Install Node.js and run: npx skills add vercel-labs/skills --skill find-skills -g -y"
 fi
 
 # 5. Create secrets template if not exists
