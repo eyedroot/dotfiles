@@ -26,7 +26,7 @@ unfocused-split-opacity = 0.9
 unfocused-split-fill = #94E2D5
 
 # Split pane divider
-split-divider-color = #FF6600
+split-divider-color = #cba6f7
 
 # macOS specific
 macos-titlebar-style = native
