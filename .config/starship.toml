@@ -2,19 +2,20 @@
 
 # M365Princess Theme for Starship
 # Inspired by oh-my-posh M365Princess theme
+# Using rounded powerline glyphs (U+E0B4)
 
 command_timeout = 1000
 
 format = """
-[](plum)\
+[](fg:plum)\
 $os\
 $username\
-[](bg:blush fg:plum)\
+[](bg:blush fg:plum)\
 $directory\
-[](bg:salmon fg:blush)\
+[](bg:salmon fg:blush)\
 $git_branch\
 $git_status\
-[](fg:salmon bg:sky)\
+[](fg:salmon bg:sky)\
 $c\
 $rust\
 $golang\
@@ -24,10 +25,10 @@ $java\
 $kotlin\
 $haskell\
 $python\
-[](fg:sky bg:teal_blue)\
+[](fg:sky bg:teal_blue)\
 $conda\
 $time\
-[ ](fg:teal_blue)\
+[ ](fg:teal_blue)\
 $cmd_duration\
 $line_break\
 $character"""
