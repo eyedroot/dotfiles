@@ -170,6 +170,14 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         echo "        Config file installed but won't take effect until you run:"
         echo "        brew install --cask karabiner-elements"
     fi
+
+    # Ensure KeyBindings directory exists for DefaultKeyBinding.dict
+    if [ -f "$HOME/Library/KeyBindings/DefaultKeyBinding.dict" ]; then
+        echo "    macOS KeyBindings (₩ → \`) applied."
+    else
+        mkdir -p "$HOME/Library/KeyBindings"
+        echo "    [!] KeyBindings directory created but DefaultKeyBinding.dict not found."
+    fi
 fi
 
 # Apply Claude Code settings (if not exists)

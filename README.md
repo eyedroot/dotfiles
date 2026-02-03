@@ -6,6 +6,7 @@ Personal dotfiles managed with a bare Git repository.
 
 - `~/.config/ghostty/config` - Ghostty terminal configuration
 - `~/.config/karabiner/karabiner.json` - Karabiner-Elements key mappings (macOS)
+- `~/Library/KeyBindings/DefaultKeyBinding.dict` - macOS key bindings (₩ → ` 변환)
 - `~/.vimrc` - Vim configuration
 - `~/.zshrc.shared` - Shared zsh aliases and settings (includes Starship init)
 - `~/.config/starship.toml` - Starship prompt configuration (optional)
