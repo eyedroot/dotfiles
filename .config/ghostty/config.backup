@@ -7,11 +7,10 @@ font-thicken = true
 adjust-cell-height = 10%
 
 # Theme
-# theme = Catppuccin Latte
+theme = Catppuccin Latte
 # theme = Bluloco Light
 # theme = Catppuccin Frappe
 # theme = 0x96f
-theme = Catppuccin Mocha
 
 # Window settings
 window-padding-x = 16
@@ -20,7 +19,7 @@ window-decoration = true
 window-title-font-family = "Sarasa Mono K"
 
 # Background (modern glassmorphic style)
-background-opacity = 0.85
+background-opacity = 1
 background-blur-radius = 20
 unfocused-split-opacity = 0.9
 unfocused-split-fill = #94E2D5
