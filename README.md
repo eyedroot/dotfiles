@@ -13,6 +13,7 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.dotfiles-install.sh` - Installation script
 - `~/.Brewfile` - Homebrew packages (formulae & casks)
 - `~/.claude/settings.json.dotfiles` - Claude Code settings (model, plugins, status line)
+- `~/.tmux.conf` - tmux configuration (Catppuccin Mocha theme, TPM)
 - `~/.config/intelephense/settings.json` - Intelephense PHP LSP settings
 - `~/.config/macos/defaults.sh` - macOS system defaults (Dock, Finder, keyboard, etc.)
 - `~/CLAUDE.md` - Claude Code instructions
