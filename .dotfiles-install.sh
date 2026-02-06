@@ -192,6 +192,15 @@ if [ -f "$HOME/.claude/settings.json.dotfiles" ]; then
     fi
 fi
 
+# Install TPM (Tmux Plugin Manager)
+if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
+    echo "    Installing TPM (Tmux Plugin Manager)..."
+    git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+    echo "    TPM installed. Run 'prefix + I' inside tmux to install plugins."
+else
+    echo "    TPM already installed."
+fi
+
 # Install Claude Code skills
 if command -v npx &> /dev/null; then
     if [ ! -L "$HOME/.claude/skills/find-skills" ]; then

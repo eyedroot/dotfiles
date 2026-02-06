@@ -33,6 +33,7 @@ The install script will automatically:
 - Backup existing config files
 - Clone and checkout dotfiles
 - Install oh-my-zsh plugins (zsh-autosuggestions) and Starship prompt
+- Install TPM (Tmux Plugin Manager)
 - Check Karabiner-Elements installation (macOS)
 - Set zsh as default shell
 - Optionally install Homebrew packages from Brewfile
@@ -87,12 +88,18 @@ echo '[ -f "$HOME/.zshrc.secrets" ] && source "$HOME/.zshrc.secrets"' >> ~/.zshr
    mkdir -p ~/.config && starship preset pure-preset -o ~/.config/starship.toml
    ```
 
-4. **Apply Claude Code settings** (if skipped during install):
+4. **Install tmux plugins** (inside tmux session):
+   ```bash
+   # Start tmux, then press: prefix + I (capital I)
+   # This installs all plugins defined in .tmux.conf (Catppuccin, battery, cpu, etc.)
+   ```
+
+5. **Apply Claude Code settings** (if skipped during install):
    ```bash
    cp ~/.claude/settings.json.dotfiles ~/.claude/settings.json
    ```
 
-5. **Install optional apps** (macOS):
+6. **Install optional apps** (macOS):
    ```bash
    brew install --cask karabiner-elements  # Keyboard customization
    brew bundle --file=~/.Brewfile          # All packages
