@@ -22,8 +22,8 @@ window-title-font-family = "Sarasa Mono K"
 # Background (modern glassmorphic style)
 background-opacity = 0.85
 background-blur-radius = 20
-unfocused-split-opacity = 0.9
-unfocused-split-fill = #94E2D5
+unfocused-split-opacity = 1
+# unfocused-split-fill = #94E2D5
 
 # Split pane divider
 split-divider-color = #cba6f7
