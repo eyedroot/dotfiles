@@ -63,10 +63,6 @@ defaults write com.apple.finder FXPreferredGroupBy -string "Kind"
 # 종류(Kind)로 정렬
 defaults write com.apple.finder FXPreferredSortBy -string "Kind"
 
-# 기존 폴더별 뷰 설정 초기화 (홈 디렉토리 내 .DS_Store 제거)
-# .DS_Store에 저장된 개별 폴더 설정이 기본값을 덮어쓰므로 제거해야 일괄 적용됨
-find "$HOME" -name ".DS_Store" -type f -delete 2>/dev/null
-
 # 리스트 뷰 기본 폰트 크기 14
 /usr/libexec/PlistBuddy -c "Set :StandardViewSettings:ListViewSettings:textSize 14" ~/Library/Preferences/com.apple.finder.plist
 

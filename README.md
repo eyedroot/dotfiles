@@ -94,12 +94,18 @@ echo '[ -f "$HOME/.zshrc.secrets" ] && source "$HOME/.zshrc.secrets"' >> ~/.zshr
    # This installs all plugins defined in .tmux.conf (Catppuccin, battery, cpu, etc.)
    ```
 
-5. **Apply Claude Code settings** (if skipped during install):
+5. **Intelephense 라이센스 등록** (PHP 개발 시):
+   ```bash
+   # 라이센스 키를 파일에 입력
+   echo "your-license-key" > ~/.config/intelephense_license.txt
+   ```
+
+6. **Apply Claude Code settings** (if skipped during install):
    ```bash
    cp ~/.claude/settings.json.dotfiles ~/.claude/settings.json
    ```
 
-6. **Install optional apps** (macOS):
+7. **Install optional apps** (macOS):
    ```bash
    brew install --cask karabiner-elements  # Keyboard customization
    brew bundle --file=~/.Brewfile          # All packages

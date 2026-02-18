@@ -60,6 +60,7 @@ cask "stats"
 cask "switchhosts"
 cask "telegram"
 cask "visual-studio-code"
+cask "zed"
 cask "zoom"
 cask "zulu@17"
 
