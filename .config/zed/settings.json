@@ -7,22 +7,49 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "multi_cursor_modifier": "alt",
+  "text_rendering_mode": "platform_default",
+  "project_panel": {
+    "indent_size": 25.0,
+    "hide_root": false,
+    "bold_folder_labels": true,
+    "dock": "left"
+  },
+  "sticky_scroll": {
+    "enabled": true,
+  },
+  "cursor_shape": "bar",
+  "icon_theme": "JetBrains New UI Icons (Light)",
   "base_keymap": "JetBrains",
   "buffer_font_size": 15,
-  "buffer_line_height": "comfortable",
+  "buffer_line_height": {
+    "custom": 1.5,
+  },
   "buffer_font_family": "Sarasa Mono K",
   "buffer_font_features": {
     "liga": true,
   },
-  "ui_font_family": "Sarasa Mono K",
+  "ui_font_family": "SF Pro Text",
   "ui_font_size": 16,
   "format_on_save": "on",
   "autosave": "on_focus_change",
   "vim_mode": false,
   "theme": {
     "mode": "system",
-    "light": "One Light",
-    "dark": "One Dark",
+    "light": "JetBrains Light",
+    "dark": "JetBrains Dark",
+  },
+  "minimap": {
+    "show": "always",
+    "display_in": "active_editor",
+    "thumb": "always",
+    "thumb_border": "left_open",
+    "current_line_highlight": "line",
+  },
+  "tabs": {
+    "file_icons": true,
+    "git_status": true,
+    "show_diagnostics": "errors",
   },
   "git": {
     "inline_blame": {
