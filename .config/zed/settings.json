@@ -13,7 +13,7 @@
     "indent_size": 25.0,
     "hide_root": false,
     "bold_folder_labels": true,
-    "dock": "left"
+    "dock": "left",
   },
   "sticky_scroll": {
     "enabled": true,
@@ -30,14 +30,14 @@
     "liga": true,
   },
   "ui_font_family": "SF Pro Text",
-  "ui_font_size": 16,
+  "ui_font_size": 15,
   "format_on_save": "on",
   "autosave": "on_focus_change",
   "vim_mode": false,
   "theme": {
-    "mode": "system",
+    "mode": "light",
     "light": "JetBrains Light",
-    "dark": "JetBrains Dark",
+    "dark": "JetBrains New Dark",
   },
   "minimap": {
     "show": "always",
@@ -55,6 +55,23 @@
     "inline_blame": {
       "enabled": true,
     },
+  },
+  "auto_install_extensions": {
+    "html": true,
+    "php": true,
+    "blade": true,
+    "tailwindcss": true,
+    "env": true,
+    "sql": true,
+    "vue": true,
+    "toml": true,
+    "xml": true,
+    "emmet": true,
+    "kotlin": true,
+    "log": true,
+    "csv": true,
+    "graphql": true,
+    "dockerfile": true,
   },
   "languages": {
     "PHP": {
