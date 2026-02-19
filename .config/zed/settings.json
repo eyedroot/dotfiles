@@ -23,7 +23,7 @@
   "base_keymap": "JetBrains",
   "buffer_font_size": 15,
   "buffer_line_height": {
-    "custom": 1.5,
+    "custom": 1.4,
   },
   "buffer_font_family": "Sarasa Mono K",
   "buffer_font_features": {
@@ -36,7 +36,7 @@
   "vim_mode": false,
   "theme": {
     "mode": "light",
-    "light": "JetBrains Light",
+    "light": "GitHub Light",
     "dark": "JetBrains New Dark",
   },
   "minimap": {
@@ -50,6 +50,17 @@
     "file_icons": true,
     "git_status": true,
     "show_diagnostics": "errors",
+  },
+  "inlay_hints": {
+    "enabled": true,
+    "show_parameter_hints": true,
+    "show_type_hints": true,
+  },
+  "agent": {
+    "commit_message_model": {
+      "provider": "zed.dev",
+      "model": "claude-sonnet-4-6",
+    },
   },
   "git": {
     "inline_blame": {
