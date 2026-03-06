@@ -8,6 +8,9 @@ export PATH="$HOME/.local/bin:$PATH"
 # PostgreSQL client tools (libpq)
 export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
 
+# Go
+export PATH="$PATH:$(go env GOPATH)/bin"
+
 # Aliases
 alias dotfiles='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
 
