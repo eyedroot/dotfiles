@@ -6,6 +6,7 @@ tap "homebrew/bundle"
 tap "oven-sh/bun"
 
 # ===== Formulae =====
+brew "bitwarden-cli"
 brew "btop"
 brew "oven-sh/bun/bun"
 brew "claude-code"
