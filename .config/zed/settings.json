@@ -7,6 +7,15 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "edit_predictions": {
+    "provider": "zed",
+  },
+  "session": {
+    "trust_all_worktrees": true,
+  },
+  "git_panel": {
+    "tree_view": true,
+  },
   "multi_cursor_modifier": "alt",
   "text_rendering_mode": "platform_default",
   "project_panel": {
@@ -29,15 +38,15 @@
   "buffer_font_features": {
     "liga": true,
   },
-  "ui_font_family": "SF Pro Text",
-  "ui_font_size": 15,
+  "ui_font_family": ".SystemUIFont",
+  "ui_font_size": 15.5,
   "format_on_save": "on",
   "autosave": "on_focus_change",
   "vim_mode": false,
   "theme": {
     "mode": "light",
-    "light": "GitHub Light",
-    "dark": "JetBrains New Dark",
+    "light": "Warm Light",
+    "dark": "Snazzy Theme",
   },
   "minimap": {
     "show": "always",
@@ -53,13 +62,13 @@
   },
   "inlay_hints": {
     "enabled": true,
-    "show_parameter_hints": true,
-    "show_type_hints": true,
+    "show_parameter_hints": false,
+    "show_type_hints": false,
   },
   "agent": {
     "commit_message_model": {
-      "provider": "zed.dev",
-      "model": "claude-sonnet-4-6",
+      "provider": "copilot_chat",
+      "model": "gpt-4o",
     },
   },
   "git": {
@@ -86,6 +95,7 @@
     "csv": true,
     "graphql": true,
     "dockerfile": true,
+    "make": true,
   },
   "languages": {
     "PHP": {
@@ -113,6 +123,11 @@
           ],
         },
       },
+    },
+  },
+  "theme_overrides": {
+    "Warm Light": {
+      "ignored": "#a08060",
     },
   },
 }

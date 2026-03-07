@@ -7,11 +7,11 @@ font-thicken = true
 adjust-cell-height = 10%
 
 # Theme
-# theme = Catppuccin Latte
+theme = Catppuccin Latte
 # theme = Bluloco Light
 # theme = Catppuccin Frappe
 # theme = 0x96f
-theme = Catppuccin Mocha
+# theme = Catppuccin Mocha
 
 # Window settings
 window-padding-x = 16
@@ -19,14 +19,16 @@ window-padding-y = 16
 window-decoration = true
 window-title-font-family = "Sarasa Mono K"
 
-# Background (modern glassmorphic style)
-background-opacity = 0.9
+# Background (warm light yellow - easy on the eyes)
+background = #FEFCF3
+foreground = #3B4252
+background-opacity = 0.95
 background-blur-radius = 20
 unfocused-split-opacity = 0.9
-unfocused-split-fill = #94E2D5
+unfocused-split-fill = #F0EDE4
 
 # Split pane divider
-split-divider-color = #cba6f7
+split-divider-color = #D5CEC0
 
 # macOS specific
 macos-titlebar-style = native
@@ -34,8 +36,32 @@ macos-option-as-alt = true
 window-save-state = always
 
 # Cursor
+cursor-color = #4A90D9
+cursor-text = #FEFCF3
 cursor-style = block
 cursor-style-blink = true
+
+# Selection
+selection-background = #D6EDDF
+selection-foreground = #3B4252
+
+# ANSI color overrides (warm yellow + blue + green palette)
+palette = 0=#3B4252
+palette = 1=#BF616A
+palette = 2=#5B9A6F
+palette = 3=#C08B30
+palette = 4=#4A90D9
+palette = 5=#8B6DAF
+palette = 6=#5E9EA0
+palette = 7=#D8D0C0
+palette = 8=#636A79
+palette = 9=#D08770
+palette = 10=#7BC08C
+palette = 11=#EBCB8B
+palette = 12=#6EB0E6
+palette = 13=#A78DC2
+palette = 14=#88C0D0
+palette = 15=#ECEFF4
 
 # Shell integration
 shell-integration = zsh

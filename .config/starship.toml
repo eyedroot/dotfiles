@@ -33,7 +33,7 @@ $cmd_duration\
 $line_break\
 $character"""
 
-palette = 'm365princess'
+palette = 'm365princess_light'
 
 [os]
 disabled = false
@@ -171,7 +171,7 @@ disabled = false
 show_notifications = true
 min_time_to_notify = 45000
 
-# M365Princess Color Palette
+# M365Princess Color Palette (Dark)
 [palettes.m365princess]
 plum = "#9B4F96"
 blush = "#D67BA6"
@@ -182,3 +182,15 @@ white = "#FFFFFF"
 red = "#E06C75"
 green = "#98C379"
 yellow = "#E5C07B"
+
+# M365Princess Light Palette (Catppuccin Latte based)
+[palettes.m365princess_light]
+plum = "#8839EF"
+blush = "#EA76CB"
+salmon = "#FE640B"
+sky = "#209FB5"
+teal_blue = "#1E66F5"
+white = "#FFFFFF"
+red = "#D20F39"
+green = "#40A02B"
+yellow = "#DF8E1D"
