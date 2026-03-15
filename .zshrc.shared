@@ -13,6 +13,8 @@ export PATH="$PATH:$(go env GOPATH)/bin"
 
 # Aliases
 alias dotfiles='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+alias cc="claude"
+alias ccd="claude --dangerously-skip-permissions"
 
 # Zoxide - smarter cd command
 # Usage: z <path>, zi (interactive selection with fzf)
