@@ -15,6 +15,8 @@ export PATH="$PATH:$(go env GOPATH)/bin"
 alias dotfiles='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
 alias cc="claude"
 alias ccd="claude --dangerously-skip-permissions"
+alias icloud='cd ~/Library/Mobile\ Documents'
+alias obsidian='cd ~/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/eyedroot'
 
 # Zoxide - smarter cd command
 # Usage: z <path>, zi (interactive selection with fzf)
