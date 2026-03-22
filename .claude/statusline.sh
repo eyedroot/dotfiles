@@ -13,10 +13,11 @@ bold='\033[1m'
 dim='\033[2m'
 reset='\033[0m'
 
-# Minimal palette: red + gray + black
+# Minimal palette: red + gray + black + yellow
 red='\033[38;2;180;30;30m'         # primary accent
 gray='\033[38;2;130;130;130m'      # sub text
 black='\033[38;2;40;40;40m'        # separators
+yellow='\033[38;2;220;180;50m'     # folder icon
 
 # Rate limit colors (by severity)
 rate_low='\033[38;2;130;130;130m'  # gray (safe)
@@ -34,14 +35,30 @@ project=$(basename "$cwd")
 style=$(echo "$input" | jq -r '.output_style.name // "default"')
 vim_mode=$(echo "$input" | jq -r '.vim.mode // empty')
 
+# ── Resolve real project name (handles worktrees) ────────
+real_project="$project"
+if git -C "$cwd" -c core.useBuiltinFSMonitor=false rev-parse --git-common-dir > /dev/null 2>&1; then
+    git_common=$(git -C "$cwd" -c core.useBuiltinFSMonitor=false rev-parse --git-common-dir 2>/dev/null)
+    if [ -n "$git_common" ]; then
+        resolved=$(cd "$cwd" && cd "$git_common" && cd .. && pwd)
+        real_project=$(basename "$resolved")
+    fi
+fi
+
+# ── Worktree info ────────────────────────────────────────
+worktree_info=""
+if [ "$real_project" != "$project" ]; then
+    worktree_info=$(printf "${sep}\033[38;2;90;160;180m[%s]\033[0m" "$project")
+fi
+
 # ── Git info ─────────────────────────────────────────────
 git_info=""
 if git -C "$cwd" -c core.useBuiltinFSMonitor=false rev-parse --git-dir > /dev/null 2>&1; then
     branch=$(git -C "$cwd" -c core.useBuiltinFSMonitor=false rev-parse --abbrev-ref HEAD 2>/dev/null)
     if ! git -C "$cwd" -c core.useBuiltinFSMonitor=false diff-index --quiet HEAD -- 2>/dev/null; then
-        git_info=$(printf "${sep}${bold}${red} %s${reset} ${bold}${red}±${reset}" "$branch")
+        git_info=$(printf "${sep}${bold}${red}⑃ %s${reset} ${bold}${red}±${reset}" "$branch")
     else
-        git_info=$(printf "${sep}${gray} %s${reset}" "$branch")
+        git_info=$(printf "${sep}${gray}⑃ %s${reset}" "$branch")
     fi
 fi
 
@@ -179,7 +196,7 @@ if [ -n "$usage_data" ] && echo "$usage_data" | jq -e '.five_hour' >/dev/null 2>
 fi
 
 # ── Output ───────────────────────────────────────────────
-printf "${bold}${red}⬡ %s${reset}%s${sep}${bold}${black}%s${reset}%s%s%s%s" \
-    "$project" "$git_info" "$model" "$ctx_info" "$rate_info" "$style_info" "$vim_info"
+printf "${bold}${yellow}▣ %s${reset}%s%s${sep}${bold}${black}%s${reset}%s%s%s%s" \
+    "$real_project" "$worktree_info" "$git_info" "$model" "$ctx_info" "$rate_info" "$style_info" "$vim_info"
 
 exit 0
