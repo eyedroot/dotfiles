@@ -196,7 +196,12 @@ if [ -n "$usage_data" ] && echo "$usage_data" | jq -e '.five_hour' >/dev/null 2>
 fi
 
 # ── Output ───────────────────────────────────────────────
-printf "${bold}${yellow}▣ %s${reset}%s%s${sep}${bold}${black}%s${reset}%s%s%s%s" \
-    "$real_project" "$worktree_info" "$git_info" "$model" "$ctx_info" "$rate_info" "$style_info" "$vim_info"
+# Line 1: project + git info
+printf "${bold}${yellow}▣ %s${reset}%s%s" \
+    "$real_project" "$worktree_info" "$git_info"
+echo ""
+# Line 2: model + context + rate limit + style + vim
+printf "${bold}${black}%s${reset}%s%s%s%s" \
+    "$model" "$ctx_info" "$rate_info" "$style_info" "$vim_info"
 
 exit 0
