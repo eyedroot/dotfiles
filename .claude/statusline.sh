@@ -13,17 +13,17 @@ bold='\033[1m'
 dim='\033[2m'
 reset='\033[0m'
 
-# Minimal palette: Catppuccin Mocha dark mode
-red='\033[38;2;243;139;168m'       # primary accent (Mocha Red)
-gray='\033[38;2;166;173;200m'      # sub text (Mocha Subtext0)
-black='\033[38;2;108;112;134m'     # separators (Mocha Overlay0)
-yellow='\033[38;2;249;226;175m'    # folder icon (Mocha Yellow)
+# Minimal palette: red + gray + black + yellow
+red='\033[38;2;180;30;30m'         # primary accent
+gray='\033[38;2;130;130;130m'      # sub text
+black='\033[38;2;40;40;40m'        # separators
+yellow='\033[38;2;220;180;50m'     # folder icon
 
 # Rate limit colors (by severity)
-rate_low='\033[38;2;166;173;200m'  # Subtext0 (safe)
-rate_mid='\033[38;2;249;226;175m'  # Yellow (warm)
-rate_high='\033[38;2;250;179;135m' # Peach (orange)
-rate_crit='\033[38;2;243;139;168m' # Red (critical)
+rate_low='\033[38;2;130;130;130m'  # gray (safe)
+rate_mid='\033[38;2;180;120;30m'   # warm
+rate_high='\033[38;2;180;80;20m'   # orange
+rate_crit='\033[38;2;180;30;30m'   # red
 
 sep=" ${black}│${reset} "
 
