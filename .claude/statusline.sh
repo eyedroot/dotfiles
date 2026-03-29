@@ -13,17 +13,23 @@ bold='\033[1m'
 dim='\033[2m'
 reset='\033[0m'
 
-# Minimal palette: red + gray + black + yellow
-red='\033[38;2;180;30;30m'         # primary accent
-gray='\033[38;2;130;130;130m'      # sub text
-black='\033[38;2;40;40;40m'        # separators
-yellow='\033[38;2;220;180;50m'     # folder icon
+# Colorful palette: Catppuccin Mocha vivid
+mauve='\033[38;2;203;166;247m'     # project name (Mocha Mauve)
+sapphire='\033[38;2;116;199;236m'  # model name (Mocha Sapphire)
+red='\033[38;2;243;139;168m'       # git dirty / context bar (Mocha Red)
+teal='\033[38;2;148;226;213m'      # rate limit icon (Mocha Teal)
+green='\033[38;2;166;227;161m'     # git clean branch (Mocha Green)
+gray='\033[38;2;186;194;222m'      # sub text (Mocha Subtext1)
+black='\033[38;2;127;132;156m'     # separators (Mocha Overlay1)
+yellow='\033[38;2;249;226;175m'    # folder icon (Mocha Yellow)
+peach='\033[38;2;250;179;135m'     # worktree info (Mocha Peach)
+lavender='\033[38;2;180;190;254m'  # style info (Mocha Lavender)
 
 # Rate limit colors (by severity)
-rate_low='\033[38;2;130;130;130m'  # gray (safe)
-rate_mid='\033[38;2;180;120;30m'   # warm
-rate_high='\033[38;2;180;80;20m'   # orange
-rate_crit='\033[38;2;180;30;30m'   # red
+rate_low='\033[38;2;148;226;213m'  # Teal (safe)
+rate_mid='\033[38;2;249;226;175m'  # Yellow (warm)
+rate_high='\033[38;2;250;179;135m' # Peach (orange)
+rate_crit='\033[38;2;243;139;168m' # Red (critical)
 
 sep=" ${black}│${reset} "
 
@@ -48,7 +54,7 @@ fi
 # ── Worktree info ────────────────────────────────────────
 worktree_info=""
 if [ "$real_project" != "$project" ]; then
-    worktree_info=$(printf "${sep}\033[38;2;90;160;180m[%s]\033[0m" "$project")
+    worktree_info=$(printf "${sep}${peach}[%s]${reset}" "$project")
 fi
 
 # ── Git info ─────────────────────────────────────────────
@@ -58,7 +64,7 @@ if git -C "$cwd" -c core.useBuiltinFSMonitor=false rev-parse --git-dir > /dev/nu
     if ! git -C "$cwd" -c core.useBuiltinFSMonitor=false diff-index --quiet HEAD -- 2>/dev/null; then
         git_info=$(printf "${sep}${bold}${red}⑃ %s${reset} ${bold}${red}±${reset}" "$branch")
     else
-        git_info=$(printf "${sep}${gray}⑃ %s${reset}" "$branch")
+        git_info=$(printf "${sep}${green}⑃ %s${reset}" "$branch")
     fi
 fi
 
@@ -80,7 +86,7 @@ fi
 # ── Style info ───────────────────────────────────────────
 style_info=""
 if [ "$style" != "default" ]; then
-    style_info=$(printf "${sep}${gray}⚙ %s${reset}" "$style")
+    style_info=$(printf "${sep}${lavender}⚙ %s${reset}" "$style")
 fi
 
 # ── Vim mode ─────────────────────────────────────────────
@@ -189,7 +195,7 @@ if [ -n "$usage_data" ] && echo "$usage_data" | jq -e '.five_hour' >/dev/null 2>
         fi
     fi
 
-    rate_info=$(printf "${sep}${gray}↻${reset} ${bold}${rate_color}%d%%${reset}" "$five_pct")
+    rate_info=$(printf "${sep}${teal}↻${reset} ${bold}${rate_color}%d%%${reset}" "$five_pct")
     if [ -n "$reset_time" ]; then
         rate_info+=$(printf " ${gray}→ %s${reset}" "$reset_time")
     fi
@@ -197,11 +203,11 @@ fi
 
 # ── Output ───────────────────────────────────────────────
 # Line 1: project + git info
-printf "${bold}${yellow}▣ %s${reset}%s%s" \
+printf "${bold}${mauve}▣ %s${reset}%s%s" \
     "$real_project" "$worktree_info" "$git_info"
 echo ""
 # Line 2: model + context + rate limit + style + vim
-printf "${bold}${black}%s${reset}%s%s%s%s" \
+printf "${bold}${sapphire}%s${reset}%s%s%s%s" \
     "$model" "$ctx_info" "$rate_info" "$style_info" "$vim_info"
 
 exit 0

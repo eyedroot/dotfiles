@@ -38,28 +38,22 @@
                         "description": "한글 모드에서 Ctrl 단축키 작동 (임시 영문 전환)",
                         "manipulators": [
                             {
-                                "type": "basic",
+                                "conditions": [
+                                    {
+                                        "input_sources": [{ "language": "ko" }],
+                                        "type": "input_source_if"
+                                    }
+                                ],
                                 "from": {
                                     "key_code": "left_control",
                                     "modifiers": { "optional": ["any"] }
                                 },
-                                "conditions": [
-                                    {
-                                        "type": "input_source_if",
-                                        "input_sources": [{ "language": "ko" }]
-                                    }
-                                ],
                                 "to": [
                                     { "select_input_source": { "language": "^en$" } },
                                     { "key_code": "left_control" }
                                 ],
-                                "to_after_key_up": [
-                                    {
-                                        "select_input_source": {
-                                            "language": "^ko$"
-                                        }
-                                    }
-                                ]
+                                "to_after_key_up": [{ "select_input_source": { "language": "^ko$" } }],
+                                "type": "basic"
                             }
                         ]
                     }
@@ -72,6 +66,15 @@
                         "is_pointing_device": true,
                         "product_id": 563,
                         "vendor_id": 13364
+                    },
+                    "ignore": false
+                },
+                {
+                    "identifiers": {
+                        "is_keyboard": true,
+                        "is_pointing_device": true,
+                        "product_id": 58488,
+                        "vendor_id": 13357
                     },
                     "ignore": false
                 }
