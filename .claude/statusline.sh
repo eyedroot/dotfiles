@@ -203,7 +203,7 @@ fi
 
 # ── Output ───────────────────────────────────────────────
 # Line 1: project + git info
-printf "${bold}${mauve}▣ %s${reset}%s%s" \
+printf "${bold}${mauve}✺ \033[4m%s${reset}%s%s" \
     "$real_project" "$worktree_info" "$git_info"
 echo ""
 # Line 2: model + context + rate limit + style + vim
