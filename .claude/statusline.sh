@@ -131,7 +131,7 @@ get_oauth_token() {
 
 # ── Fetch 5-hour usage (cached 60s) ─────────────────────
 cache_file="/tmp/claude/statusline-usage-cache.json"
-cache_max_age=60
+cache_max_age=180
 mkdir -p /tmp/claude
 
 needs_refresh=true
