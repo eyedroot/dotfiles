@@ -13,9 +13,9 @@ export PATH="$PATH:$(go env GOPATH)/bin"
 
 # Aliases
 alias dotfiles='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
-alias cc="claude"
-alias cca="claude --enable-auto-mode"
-alias ccd="claude --dangerously-skip-permissions"
+alias cc="CLAUDE_CODE_NO_FLICKER=1 claude"
+alias cca="CLAUDE_CODE_NO_FLICKER=1 claude --enable-auto-mode"
+alias ccd="CLAUDE_CODE_NO_FLICKER=1 claude --dangerously-skip-permissions"
 alias icloud='cd ~/Library/Mobile\ Documents'
 alias obsidian='cd ~/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/eyedroot'
 
