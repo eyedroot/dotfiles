@@ -58,6 +58,11 @@
   "language": "korean",
   "sandbox": {
     "enabled": true,
+    "network": {
+      "allowUnixSockets": [
+        "~/.bitwarden-ssh-agent.sock"
+      ]
+    },
     "filesystem": {
       "allowWrite": ["~/Library/Application Support/rtk/", "~/.dotfiles/"]
     }
