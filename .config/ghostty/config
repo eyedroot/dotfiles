@@ -55,3 +55,6 @@ keybind = ctrl+shift+left=goto_split:left
 keybind = ctrl+shift+right=goto_split:right
 keybind = ctrl+shift+up=goto_split:top
 keybind = ctrl+shift+down=goto_split:bottom
+
+# Local overrides (machine-specific, not tracked by git)
+config-file = ~/.config/ghostty/config.local

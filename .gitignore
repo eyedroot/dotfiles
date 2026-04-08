@@ -1,2 +1,5 @@
 # Intelephense license (machine-specific)
 .config/intelephense_license.txt
+
+# Ghostty local overrides (machine-specific)
+.config/ghostty/config.local
