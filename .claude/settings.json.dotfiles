@@ -64,6 +64,10 @@
       ]
     },
     "filesystem": {
+      "allowRead": [
+        "~/.ssh/known_hosts",
+        "~/.ssh/config"
+      ],
       "allowWrite": ["~/Library/Application Support/rtk/", "~/.dotfiles/"]
     }
   },
