@@ -41,20 +41,16 @@ project=$(basename "$cwd")
 style=$(echo "$input" | jq -r '.output_style.name // "default"')
 vim_mode=$(echo "$input" | jq -r '.vim.mode // empty')
 
-# ── Resolve real project name (handles worktrees) ────────
+# ── Worktree info (uses built-in workspace.git_worktree) ──
 real_project="$project"
-if git -C "$cwd" -c core.useBuiltinFSMonitor=false rev-parse --git-common-dir > /dev/null 2>&1; then
-    git_common=$(git -C "$cwd" -c core.useBuiltinFSMonitor=false rev-parse --git-common-dir 2>/dev/null)
-    if [ -n "$git_common" ]; then
-        resolved=$(cd "$cwd" && cd "$git_common" && cd .. && pwd)
-        real_project=$(basename "$resolved")
-    fi
-fi
-
-# ── Worktree info ────────────────────────────────────────
 worktree_info=""
-if [ "$real_project" != "$project" ]; then
-    worktree_info=$(printf "${sep}${peach}[%s]${reset}" "$project")
+wt_name=$(echo "$input" | jq -r '.workspace.git_worktree.name // empty')
+if [ -n "$wt_name" ]; then
+    wt_original=$(echo "$input" | jq -r '.workspace.git_worktree.original_repo_dir // empty')
+    if [ -n "$wt_original" ]; then
+        real_project=$(basename "$wt_original")
+    fi
+    worktree_info=$(printf "${sep}${peach}[%s]${reset}" "$wt_name")
 fi
 
 # ── Git info ─────────────────────────────────────────────
