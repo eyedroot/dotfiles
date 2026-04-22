@@ -38,6 +38,7 @@ brew "uv"
 brew "wget"
 brew "yarn"
 brew "yt-dlp"
+brew "pyenv"
 
 # ===== Casks (GUI Applications) =====
 cask "bitwarden"
