@@ -16,6 +16,7 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.tmux.conf` - tmux configuration (Catppuccin Mocha theme, TPM)
 - `~/.config/intelephense/settings.json` - Intelephense PHP LSP settings
 - `~/.config/macos/defaults.sh` - macOS system defaults (Dock, Finder, keyboard, etc.)
+- `~/.local/bin/morning-update` - Daily update routine (brew, ncu -g, graphifyy)
 - `~/CLAUDE.md` - Claude Code instructions
 
 ## Installation
