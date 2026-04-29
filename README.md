@@ -15,6 +15,7 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.claude/settings.json.dotfiles` - Claude Code settings (model, plugins, status line)
 - `~/.tmux.conf` - tmux configuration (Catppuccin Mocha theme, TPM)
 - `~/.config/intelephense/settings.json` - Intelephense PHP LSP settings
+- `~/.config/opencode/opencode.json` - opencode CLI configuration (Ollama provider)
 - `~/.config/macos/defaults.sh` - macOS system defaults (Dock, Finder, keyboard, etc.)
 - `~/.local/bin/morning-update` - Daily update routine (brew, ncu -g, graphifyy)
 - `~/CLAUDE.md` - Claude Code instructions

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (local)",
+      "options": {
+        "baseURL": "http://localhost:11434/v1"
+      },
+      "models": {
+        "gemma3:4b": {
+          "name": "Gemma 3 4B (local)"
+        },
+        "gemma4:latest": {
+          "name": "Gemma 4 (local)"
+        }
+      }
+    }
+  },
+  "model": "ollama/gemma3:4b"
+}
