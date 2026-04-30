@@ -7,6 +7,12 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "outline_panel": {
+    "dock": "right"
+  },
+  "collaboration_panel": {
+    "dock": "right"
+  },
   "edit_predictions": {
     "provider": "zed",
   },
@@ -14,6 +20,7 @@
     "trust_all_worktrees": true,
   },
   "git_panel": {
+    "dock": "right",
     "tree_view": true,
   },
   "multi_cursor_modifier": "alt",
@@ -22,7 +29,7 @@
     "indent_size": 25.0,
     "hide_root": false,
     "bold_folder_labels": true,
-    "dock": "left",
+    "dock": "right",
   },
   "sticky_scroll": {
     "enabled": true,
@@ -66,6 +73,7 @@
     "show_type_hints": false,
   },
   "agent": {
+    "dock": "left",
     "commit_message_model": {
       "provider": "copilot_chat",
       "model": "gpt-4o",

@@ -191,7 +191,14 @@ if [ -n "$usage_data" ] && echo "$usage_data" | jq -e '.five_hour' >/dev/null 2>
         fi
     fi
 
-    rate_info=$(printf "${sep}${teal}↻${reset} ${bold}${rate_color}%d%%${reset}" "$five_pct")
+    rate_filled=$(( five_pct / 10 ))
+    [ "$rate_filled" -gt 10 ] && rate_filled=10
+    [ "$rate_filled" -lt 0 ] && rate_filled=0
+    rate_empty=$(( 10 - rate_filled ))
+    rate_bar=""
+    for ((i=0; i<rate_filled; i++)); do rate_bar+="▰"; done
+    for ((i=0; i<rate_empty; i++)); do rate_bar+="▱"; done
+    rate_info=$(printf "${sep}${teal}↻${reset} ${bold}${rate_color}%s${reset}" "$rate_bar")
     if [ -n "$reset_time" ]; then
         rate_info+=$(printf " ${gray}→ %s${reset}" "$reset_time")
     fi
