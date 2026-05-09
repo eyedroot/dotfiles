@@ -16,6 +16,8 @@ This repository manages personal dotfiles using a bare Git repository.
 ~/.config/starship.toml                # Starship prompt config (optional)
 ~/.Brewfile                            # Homebrew packages list
 ~/.claude/settings.json.dotfiles       # Claude Code settings (no permissions)
+~/.codex/AGENTS.md                     # Codex CLI agent instructions
+~/.codex/config.toml                   # Codex CLI config (model, MCP servers, plugins)
 ~/.dotfiles-install.sh                 # Installation script (9 steps)
 ~/CLAUDE.md                            # Claude Code instructions
 ~/README.md                            # Repository documentation
@@ -53,6 +55,8 @@ git --git-dir=$HOME/.dotfiles --work-tree=$HOME <command>
 | Shell configs | `~/.zshrc.shared` | Yes | aliases, Starship init |
 | Package lists | `~/.Brewfile` | Yes | brew formulae & casks |
 | Claude Code | `~/.claude/settings.json.dotfiles` | Yes | model, plugins, statusLine |
+| Codex CLI | `~/.codex/{AGENTS.md,config.toml}` | Yes | agent rules, model, MCP servers |
+| Codex state | `~/.codex/{auth.json,*.sqlite,sessions/,logs/}` | No | auth tokens, runtime state |
 | Machine-specific | `~/.zshrc.secrets` | No | API keys, local paths |
 | Main shell config | `~/.zshrc` | No | oh-my-zsh, machine-specific |
 | Local permissions | `~/.claude/settings.local.json` | No | path-specific permissions |

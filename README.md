@@ -13,6 +13,8 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.dotfiles-install.sh` - Installation script
 - `~/.Brewfile` - Homebrew packages (formulae & casks)
 - `~/.claude/settings.json.dotfiles` - Claude Code settings (model, plugins, status line)
+- `~/.codex/AGENTS.md` - Codex CLI agent instructions
+- `~/.codex/config.toml` - Codex CLI config (model, MCP servers, trusted projects, plugins)
 - `~/.tmux.conf` - tmux configuration (Catppuccin Mocha theme, TPM)
 - `~/.config/intelephense/settings.json` - Intelephense PHP LSP settings
 - `~/.config/opencode/opencode.json` - opencode CLI configuration (Ollama provider)
