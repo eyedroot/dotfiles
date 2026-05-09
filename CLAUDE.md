@@ -17,7 +17,7 @@ This repository manages personal dotfiles using a bare Git repository.
 ~/.Brewfile                            # Homebrew packages list
 ~/.claude/settings.json.dotfiles       # Claude Code settings (no permissions)
 ~/.codex/AGENTS.md                     # Codex CLI agent instructions
-~/.codex/config.toml                   # Codex CLI config (model, MCP servers, plugins)
+~/.codex/config.toml.dotfiles          # Codex CLI config template (model, MCP servers, plugins)
 ~/.dotfiles-install.sh                 # Installation script (9 steps)
 ~/CLAUDE.md                            # Claude Code instructions
 ~/README.md                            # Repository documentation
@@ -55,7 +55,8 @@ git --git-dir=$HOME/.dotfiles --work-tree=$HOME <command>
 | Shell configs | `~/.zshrc.shared` | Yes | aliases, Starship init |
 | Package lists | `~/.Brewfile` | Yes | brew formulae & casks |
 | Claude Code | `~/.claude/settings.json.dotfiles` | Yes | model, plugins, statusLine |
-| Codex CLI | `~/.codex/{AGENTS.md,config.toml}` | Yes | agent rules, model, MCP servers |
+| Codex CLI | `~/.codex/{AGENTS.md,config.toml.dotfiles}` | Yes | agent rules, model, MCP servers (template) |
+| Codex local | `~/.codex/config.toml` | No | machine-specific (trusted projects, hooks.state, marketplaces) |
 | Codex state | `~/.codex/{auth.json,*.sqlite,sessions/,logs/}` | No | auth tokens, runtime state |
 | Machine-specific | `~/.zshrc.secrets` | No | API keys, local paths |
 | Main shell config | `~/.zshrc` | No | oh-my-zsh, machine-specific |

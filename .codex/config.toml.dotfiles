@@ -1,0 +1,43 @@
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+
+[notice.model_migrations]
+"gpt-5.1-codex-max" = "gpt-5.3-codex"
+"gpt-5.2-codex" = "gpt-5.3-codex"
+
+[mcp_servers.expo-mcp]
+url = "https://mcp.expo.dev/mcp"
+
+[mcp_servers.ref-tools]
+url = "https://server.smithery.ai/@ref-tools/ref-tools-mcp/mcp"
+enabled = false
+
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp"]
+
+[mcp_servers.figma-mcp-go]
+command = "npx"
+args = ["-y", "@vkhanhqui/figma-mcp-go"]
+
+[plugins."github@openai-curated"]
+enabled = true
+
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
+
+[plugins."hyperframes@openai-curated"]
+enabled = true
+
+[plugins."browser-use@openai-bundled"]
+enabled = true
+
+[profiles.auto]
+approval_policy = "never"
+sandbox_mode = "workspace-write"

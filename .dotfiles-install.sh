@@ -192,6 +192,18 @@ if [ -f "$HOME/.claude/settings.json.dotfiles" ]; then
     fi
 fi
 
+# Apply Codex CLI config (if not exists)
+if [ -f "$HOME/.codex/config.toml.dotfiles" ]; then
+    if [ ! -f "$HOME/.codex/config.toml" ]; then
+        echo "    Applying Codex CLI config..."
+        mkdir -p "$HOME/.codex"
+        cp "$HOME/.codex/config.toml.dotfiles" "$HOME/.codex/config.toml"
+    else
+        echo "    Codex CLI config already exists. Skipping."
+        echo "        To apply dotfiles config: cp ~/.codex/config.toml.dotfiles ~/.codex/config.toml"
+    fi
+fi
+
 # Install TPM (Tmux Plugin Manager)
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
     echo "    Installing TPM (Tmux Plugin Manager)..."
