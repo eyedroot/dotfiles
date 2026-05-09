@@ -7,6 +7,11 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "agent_servers": {
+    "claude-acp": {
+      "type": "registry"
+    }
+  },
   "outline_panel": {
     "dock": "right"
   },
@@ -29,7 +34,7 @@
     "indent_size": 25.0,
     "hide_root": false,
     "bold_folder_labels": true,
-    "dock": "right",
+    "dock": "left",
   },
   "sticky_scroll": {
     "enabled": true,
@@ -52,8 +57,8 @@
   "vim_mode": false,
   "theme": {
     "mode": "light",
-    "light": "Warm Light",
-    "dark": "Snazzy Theme",
+    "light": "New Darcula Light",
+    "dark": "JetBrains Light",
   },
   "minimap": {
     "show": "always",
@@ -73,6 +78,7 @@
     "show_type_hints": false,
   },
   "agent": {
+    "sidebar_side": "left",
     "dock": "left",
     "commit_message_model": {
       "provider": "copilot_chat",
