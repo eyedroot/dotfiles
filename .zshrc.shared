@@ -19,7 +19,8 @@ alias ccd="CLAUDE_CODE_NO_FLICKER=1 claude --dangerously-skip-permissions"
 alias icloud='cd ~/Library/Mobile\ Documents'
 alias obsidian='cd ~/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/eyedroot'
 
-# Bitwarden SSH agent reset (recover after macOS sleep/wake hang)
+# Bitwarden SSH agent — socket path + reset script
+export SSH_AUTH_SOCK="$HOME/.bitwarden-ssh-agent.sock"
 alias bw-fix='~/.local/bin/bw-ssh-reset.sh'
 
 # Zoxide - smarter cd command
