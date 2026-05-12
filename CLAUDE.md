@@ -19,6 +19,7 @@ This repository manages personal dotfiles using a bare Git repository.
 ~/.codex/AGENTS.md                     # Codex CLI agent instructions
 ~/.codex/config.toml.dotfiles          # Codex CLI config template (model, MCP servers, plugins)
 ~/.local/bin/bw-ssh-reset.sh           # Bitwarden SSH agent reset (macOS sleep/wake)
+~/.local/bin/bw-diagnose.sh            # Bitwarden SSH agent diagnostic report
 ~/.dotfiles-install.sh                 # Installation script (9 steps)
 ~/CLAUDE.md                            # Claude Code instructions
 ~/README.md                            # Repository documentation

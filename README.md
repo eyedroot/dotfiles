@@ -21,6 +21,7 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.config/macos/defaults.sh` - macOS system defaults (Dock, Finder, keyboard, etc.)
 - `~/.local/bin/morning-update` - Daily update routine (brew, ncu -g, graphifyy)
 - `~/.local/bin/bw-ssh-reset.sh` - Bitwarden SSH agent reset (macOS sleep/wake recovery)
+- `~/.local/bin/bw-diagnose.sh` - Bitwarden SSH agent diagnostic report
 - `~/CLAUDE.md` - Claude Code instructions
 
 ## Installation
