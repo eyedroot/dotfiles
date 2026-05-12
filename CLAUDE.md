@@ -18,6 +18,7 @@ This repository manages personal dotfiles using a bare Git repository.
 ~/.claude/settings.json.dotfiles       # Claude Code settings (no permissions)
 ~/.codex/AGENTS.md                     # Codex CLI agent instructions
 ~/.codex/config.toml.dotfiles          # Codex CLI config template (model, MCP servers, plugins)
+~/.local/bin/bw-ssh-reset.sh           # Bitwarden SSH agent reset (macOS sleep/wake)
 ~/.dotfiles-install.sh                 # Installation script (9 steps)
 ~/CLAUDE.md                            # Claude Code instructions
 ~/README.md                            # Repository documentation

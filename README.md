@@ -20,6 +20,7 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.config/opencode/opencode.json` - opencode CLI configuration (Ollama provider)
 - `~/.config/macos/defaults.sh` - macOS system defaults (Dock, Finder, keyboard, etc.)
 - `~/.local/bin/morning-update` - Daily update routine (brew, ncu -g, graphifyy)
+- `~/.local/bin/bw-ssh-reset.sh` - Bitwarden SSH agent reset (macOS sleep/wake recovery)
 - `~/CLAUDE.md` - Claude Code instructions
 
 ## Installation
