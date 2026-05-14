@@ -9,14 +9,14 @@
 {
   "agent_servers": {
     "claude-acp": {
-      "type": "registry"
-    }
+      "type": "registry",
+    },
   },
   "outline_panel": {
-    "dock": "right"
+    "dock": "right",
   },
   "collaboration_panel": {
-    "dock": "right"
+    "dock": "right",
   },
   "edit_predictions": {
     "provider": "zed",
@@ -40,11 +40,15 @@
     "enabled": true,
   },
   "cursor_shape": "bar",
-  "icon_theme": "JetBrains New UI Icons (Light)",
+  "icon_theme": {
+    "mode": "dark",
+    "light": "JetBrains New UI Icons (Light)",
+    "dark": "JetBrains New UI Icons (Light)"
+  },
   "base_keymap": "JetBrains",
   "buffer_font_size": 15,
   "buffer_line_height": {
-    "custom": 1.4,
+    "custom": 1.3,
   },
   "buffer_font_family": "Sarasa Mono K",
   "buffer_font_features": {
@@ -57,7 +61,7 @@
   "vim_mode": false,
   "theme": {
     "mode": "light",
-    "light": "New Darcula Light",
+    "light": "Warm Light",
     "dark": "JetBrains Light",
   },
   "minimap": {
