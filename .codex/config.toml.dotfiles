@@ -1,5 +1,11 @@
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+approvals_reviewer = "auto_review"
+
 model = "gpt-5.5"
 model_reasoning_effort = "high"
+personality = "pragmatic"
+project_doc_fallback_filenames = ["AGENTS.local.md"]
 
 [notice.model_migrations]
 "gpt-5.1-codex-max" = "gpt-5.3-codex"
@@ -32,11 +38,42 @@ enabled = true
 [plugins."presentations@openai-primary-runtime"]
 enabled = true
 
+[plugins."atlassian-rovo@openai-curated"]
+enabled = true
+
+[plugins."codex-security@openai-curated"]
+enabled = true
+
+[plugins."remotion@openai-curated"]
+enabled = true
+
+[plugins."workflow@catenoid-tools"]
+enabled = true
+
+[plugins."supabase@openai-curated"]
+enabled = true
+
+[plugins."sentry@openai-curated"]
+enabled = true
+
 [plugins."hyperframes@openai-curated"]
 enabled = true
 
 [plugins."browser-use@openai-bundled"]
 enabled = true
+
+[features]
+memories = false
+chronicle = false
+
+[memories]
+no_memories_if_mcp_or_web_search = true
+
+[tui]
+status_line = ["project-name", "git-branch", "model-with-reasoning", "status", "context-remaining", "context-used"]
+
+[tui.model_availability_nux]
+"gpt-5.5" = 4
 
 [profiles.auto]
 approval_policy = "never"
