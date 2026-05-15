@@ -24,12 +24,8 @@ black='\033[38;2;127;132;156m'     # separators (Mocha Overlay1)
 yellow='\033[38;2;249;226;175m'    # folder icon (Mocha Yellow)
 peach='\033[38;2;250;179;135m'     # worktree info (Mocha Peach)
 lavender='\033[38;2;180;190;254m'  # style info (Mocha Lavender)
+burnt_orange='\033[38;2;200;135;75m'  # reset time (muted warm orange)
 
-# Rate limit colors (by severity)
-rate_low='\033[38;2;148;226;213m'  # Teal (safe)
-rate_mid='\033[38;2;249;226;175m'  # Yellow (warm)
-rate_high='\033[38;2;250;179;135m' # Peach (orange)
-rate_crit='\033[38;2;243;139;168m' # Red (critical)
 
 sep=" ${black}│${reset} "
 
@@ -168,14 +164,32 @@ rate_info=""
 if [ -n "$usage_data" ] && echo "$usage_data" | jq -e '.five_hour' >/dev/null 2>&1; then
     five_pct=$(echo "$usage_data" | jq -r '.five_hour.utilization // 0' | awk '{printf "%.0f", $1}')
 
+    frame=$(( $(date +%s) % 3 ))
+
     if [ "$five_pct" -ge 90 ]; then
-        rate_color="$rate_crit"
+        case $frame in
+            0) weather="⛈️" ;;
+            1) weather="🌩️" ;;
+            *) weather="🌧️" ;;
+        esac
     elif [ "$five_pct" -ge 70 ]; then
-        rate_color="$rate_high"
+        case $frame in
+            0) weather="☁️" ;;
+            1) weather="🌥️" ;;
+            *) weather="☁️" ;;
+        esac
     elif [ "$five_pct" -ge 50 ]; then
-        rate_color="$rate_mid"
+        case $frame in
+            0) weather="⛅" ;;
+            1) weather="🌤️" ;;
+            *) weather="⛅" ;;
+        esac
     else
-        rate_color="$rate_low"
+        case $frame in
+            0) weather="☀️" ;;
+            1) weather="🌤️" ;;
+            *) weather="☀️" ;;
+        esac
     fi
 
     # reset time (parse as UTC, display as local)
@@ -191,16 +205,9 @@ if [ -n "$usage_data" ] && echo "$usage_data" | jq -e '.five_hour' >/dev/null 2>
         fi
     fi
 
-    rate_filled=$(( five_pct / 10 ))
-    [ "$rate_filled" -gt 10 ] && rate_filled=10
-    [ "$rate_filled" -lt 0 ] && rate_filled=0
-    rate_empty=$(( 10 - rate_filled ))
-    rate_bar=""
-    for ((i=0; i<rate_filled; i++)); do rate_bar+="▰"; done
-    for ((i=0; i<rate_empty; i++)); do rate_bar+="▱"; done
-    rate_info=$(printf "${sep}${teal}↻${reset} ${bold}${rate_color}%s${reset}" "$rate_bar")
+    rate_info=$(printf "${sep}%s" "$weather")
     if [ -n "$reset_time" ]; then
-        rate_info+=$(printf " ${gray}→ %s${reset}" "$reset_time")
+        rate_info+=$(printf " ${burnt_orange}→ %s${reset}" "$reset_time")
     fi
 fi
 
