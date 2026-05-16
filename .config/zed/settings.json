@@ -7,6 +7,8 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "ui_font_weight": 500.0,
+  "diff_view_style": "unified",
   "agent_servers": {
     "claude-acp": {
       "type": "registry",
@@ -41,12 +43,12 @@
   },
   "cursor_shape": "bar",
   "icon_theme": {
-    "mode": "dark",
-    "light": "JetBrains New UI Icons (Light)",
-    "dark": "JetBrains New UI Icons (Light)",
+    "mode": "system",
+    "light": "VSCode Great Icons Theme",
+    "dark": "JetBrains New UI Icons (Light)"
   },
   "base_keymap": "JetBrains",
-  "buffer_font_size": 14.5,
+  "buffer_font_size": 15.0,
   "buffer_line_height": {
     "custom": 1.3,
   },
