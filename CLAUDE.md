@@ -20,6 +20,7 @@ This repository manages personal dotfiles using a bare Git repository.
 ~/.codex/config.toml.dotfiles          # Codex CLI config template (model, MCP servers, plugins)
 ~/.local/bin/bw-ssh-reset.sh           # Bitwarden SSH agent reset (macOS sleep/wake)
 ~/.local/bin/bw-diagnose.sh            # Bitwarden SSH agent diagnostic report
+~/.hammerspoon/init.lua                # Hammerspoon (macOS automation) config
 ~/.dotfiles-install.sh                 # Installation script (9 steps)
 ~/CLAUDE.md                            # Claude Code instructions
 ~/README.md                            # Repository documentation
@@ -54,6 +55,7 @@ git --git-dir=$HOME/.dotfiles --work-tree=$HOME <command>
 | Type | Location | Git Tracked | Examples |
 |------|----------|-------------|----------|
 | App configs | `~/.config/*`, `~/.vimrc` | Yes | ghostty, karabiner, vim, intelephense |
+| Automation | `~/.hammerspoon/init.lua` | Yes | global hotkeys, macOS automation |
 | Shell configs | `~/.zshrc.shared` | Yes | aliases, Starship init |
 | Package lists | `~/.Brewfile` | Yes | brew formulae & casks |
 | Claude Code | `~/.claude/settings.json.dotfiles` | Yes | model, plugins, statusLine |
