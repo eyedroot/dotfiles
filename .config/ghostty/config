@@ -48,7 +48,11 @@ mouse-hide-while-typing = true
 
 # Copy/Paste
 copy-on-select = clipboard
-confirm-close-surface = false
+
+# Quit/close confirmation (CMD+Q 포함)
+# true  = 셸 작업 중일 때만 확인
+# always = 항상 확인
+confirm-close-surface = true
 
 # Split pane focus navigation
 keybind = ctrl+shift+left=goto_split:left
