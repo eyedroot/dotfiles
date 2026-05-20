@@ -7,6 +7,7 @@ This repository manages personal dotfiles using a bare Git repository.
 ```
 ~/.dotfiles/                           # Bare git repository
 ~/.config/ghostty/config               # Ghostty terminal config
+~/.config/herdr/config.toml            # herdr (tmux) tab shortcuts + theme
 ~/.config/intelephense/settings.json   # Intelephense PHP LSP config
 ~/.config/karabiner/karabiner.json     # Karabiner key mappings (macOS)
 ~/.config/macos/defaults.sh            # macOS system defaults script
