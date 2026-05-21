@@ -4,10 +4,14 @@ onboarding = false
 name = "vesper"
 
 [ui.toast]
-delivery = "system"
+delivery = "herdr"
 
 [ui]
 show_agent_labels_on_pane_borders = true
 
 [keys.indexed]
 tabs = "ctrl"
+
+[keys]
+prefix = "ctrl+shift+b"
+workspace_picker = "ctrl+shift+w"
