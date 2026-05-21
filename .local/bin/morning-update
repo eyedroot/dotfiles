@@ -5,6 +5,7 @@
 #   3. claude update
 #   4. herdr update
 #   5. pip3 install --upgrade graphifyy (prompt to run install hooks if upgraded)
+#   6. pip3 install --upgrade "headroom-ai[proxy]"
 
 set -u
 
@@ -14,7 +15,7 @@ warn() { print -P "%F{yellow}  ! $1%f"; }
 err()  { print -P "%F{red}  ✗ $1%f"; }
 
 # ---------- 1. Homebrew ----------
-hdr "[1/5] Homebrew update & upgrade"
+hdr "[1/6] Homebrew update & upgrade"
 if command -v brew >/dev/null; then
   brew update
   brew upgrade
@@ -24,7 +25,7 @@ else
 fi
 
 # ---------- 2. Global npm packages (ncu) ----------
-hdr "[2/5] Global npm packages (ncu -g)"
+hdr "[2/6] Global npm packages (ncu -g)"
 if command -v ncu >/dev/null; then
   ncu_out="$(ncu -g 2>&1)"
   print -- "$ncu_out"
@@ -44,7 +45,7 @@ else
 fi
 
 # ---------- 3. Claude Code ----------
-hdr "[3/5] Claude Code update"
+hdr "[3/6] Claude Code update"
 if command -v claude >/dev/null; then
   claude update
   ok "claude update done"
@@ -53,7 +54,7 @@ else
 fi
 
 # ---------- 4. herdr ----------
-hdr "[4/5] herdr update"
+hdr "[4/6] herdr update"
 if command -v herdr >/dev/null; then
   herdr update
   ok "herdr update done"
@@ -62,7 +63,7 @@ else
 fi
 
 # ---------- 5. graphifyy ----------
-hdr "[5/5] pip3 upgrade graphifyy"
+hdr "[5/6] pip3 upgrade graphifyy"
 if command -v pip3 >/dev/null; then
   before="$(pip3 show graphifyy 2>/dev/null | awk '/^Version:/ {print $2}')"
   pip3 install --upgrade graphifyy
@@ -78,6 +79,24 @@ if command -v pip3 >/dev/null; then
     print "    graphify claude install"
   else
     ok "graphifyy already up to date (${after})"
+  fi
+else
+  err "pip3 not found, skipping"
+fi
+
+# ---------- 6. headroom-ai ----------
+hdr "[6/6] pip3 upgrade headroom-ai[proxy]"
+if command -v pip3 >/dev/null; then
+  before="$(pip3 show headroom-ai 2>/dev/null | awk '/^Version:/ {print $2}')"
+  pip3 install --upgrade "headroom-ai[proxy]"
+  after="$(pip3 show headroom-ai 2>/dev/null | awk '/^Version:/ {print $2}')"
+
+  if [[ -z "$after" ]]; then
+    err "headroom-ai install failed"
+  elif [[ "$before" != "$after" ]]; then
+    warn "headroom-ai: ${before:-none} → ${after}"
+  else
+    ok "headroom-ai already up to date (${after})"
   fi
 else
   err "pip3 not found, skipping"
