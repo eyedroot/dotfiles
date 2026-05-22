@@ -4,6 +4,7 @@
 #   2. ncu -g (parse output, run "npm -g install ..." it suggests)
 #   3. claude update
 #   4. herdr update
+#   5. context-mode upgrade
 
 set -u
 
@@ -13,7 +14,7 @@ warn() { print -P "%F{yellow}  ! $1%f"; }
 err()  { print -P "%F{red}  ✗ $1%f"; }
 
 # ---------- 1. Homebrew ----------
-hdr "[1/4] Homebrew update & upgrade"
+hdr "[1/5] Homebrew update & upgrade"
 if command -v brew >/dev/null; then
   brew update
   brew upgrade
@@ -23,7 +24,7 @@ else
 fi
 
 # ---------- 2. Global npm packages (ncu) ----------
-hdr "[2/4] Global npm packages (ncu -g)"
+hdr "[2/5] Global npm packages (ncu -g)"
 if command -v ncu >/dev/null; then
   ncu_out="$(ncu -g 2>&1)"
   print -- "$ncu_out"
@@ -43,7 +44,7 @@ else
 fi
 
 # ---------- 3. Claude Code ----------
-hdr "[3/4] Claude Code update"
+hdr "[3/5] Claude Code update"
 if command -v claude >/dev/null; then
   claude update
   ok "claude update done"
@@ -52,12 +53,25 @@ else
 fi
 
 # ---------- 4. herdr ----------
-hdr "[4/4] herdr update"
+hdr "[4/5] herdr update"
 if command -v herdr >/dev/null; then
   herdr update
   ok "herdr update done"
 else
   err "herdr not found, skipping"
+fi
+
+# ---------- 5. context-mode ----------
+hdr "[5/5] context-mode upgrade"
+ctx_cli="$HOME/.claude/plugins/marketplaces/context-mode/cli.bundle.mjs"
+if [[ ! -f "$ctx_cli" ]]; then
+  ctx_cli="$(ls -1t $HOME/.claude/plugins/cache/context-mode/context-mode/*/cli.bundle.mjs 2>/dev/null | head -1)"
+fi
+if [[ -n "$ctx_cli" && -f "$ctx_cli" ]] && command -v node >/dev/null; then
+  node "$ctx_cli" upgrade
+  ok "context-mode upgrade done"
+else
+  err "context-mode CLI not found, skipping"
 fi
 
 hdr "All done."
