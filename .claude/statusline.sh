@@ -24,7 +24,11 @@ black='\033[38;2;127;132;156m'     # separators (Mocha Overlay1)
 yellow='\033[38;2;249;226;175m'    # folder icon (Mocha Yellow)
 peach='\033[38;2;250;179;135m'     # worktree info (Mocha Peach)
 lavender='\033[38;2;180;190;254m'  # style info (Mocha Lavender)
-burnt_orange='\033[38;2;200;135;75m'  # reset time (muted warm orange)
+
+rate_low='\033[38;2;148;226;213m'  # Teal (safe)
+rate_mid='\033[38;2;249;226;175m'  # Yellow (warm)
+rate_high='\033[38;2;250;179;135m' # Peach (orange)
+rate_crit='\033[38;2;243;139;168m' # Red (critical)
 
 
 sep=" ${black}│${reset} "
@@ -164,32 +168,14 @@ rate_info=""
 if [ -n "$usage_data" ] && echo "$usage_data" | jq -e '.five_hour' >/dev/null 2>&1; then
     five_pct=$(echo "$usage_data" | jq -r '.five_hour.utilization // 0' | awk '{printf "%.0f", $1}')
 
-    frame=$(( $(date +%s) % 3 ))
-
     if [ "$five_pct" -ge 90 ]; then
-        case $frame in
-            0) weather="⛈️" ;;
-            1) weather="🌩️" ;;
-            *) weather="🌧️" ;;
-        esac
+        rate_color="$rate_crit"
     elif [ "$five_pct" -ge 70 ]; then
-        case $frame in
-            0) weather="☁️" ;;
-            1) weather="🌥️" ;;
-            *) weather="☁️" ;;
-        esac
+        rate_color="$rate_high"
     elif [ "$five_pct" -ge 50 ]; then
-        case $frame in
-            0) weather="⛅" ;;
-            1) weather="🌤️" ;;
-            *) weather="⛅" ;;
-        esac
+        rate_color="$rate_mid"
     else
-        case $frame in
-            0) weather="☀️" ;;
-            1) weather="🌤️" ;;
-            *) weather="☀️" ;;
-        esac
+        rate_color="$rate_low"
     fi
 
     # reset time (parse as UTC, display as local)
@@ -205,9 +191,41 @@ if [ -n "$usage_data" ] && echo "$usage_data" | jq -e '.five_hour' >/dev/null 2>
         fi
     fi
 
-    rate_info=$(printf "${sep}%s" "$weather")
+    rate_filled=$(( five_pct / 10 ))
+    [ "$rate_filled" -gt 10 ] && rate_filled=10
+    [ "$rate_filled" -lt 0 ] && rate_filled=0
+    rate_empty=$(( 10 - rate_filled ))
+    rate_bar=""
+    for ((i=0; i<rate_filled; i++)); do rate_bar+="▰"; done
+    for ((i=0; i<rate_empty; i++)); do rate_bar+="▱"; done
+    rate_info=$(printf "${sep}${teal}↻${reset} ${bold}${rate_color}%s${reset}" "$rate_bar")
     if [ -n "$reset_time" ]; then
-        rate_info+=$(printf " ${burnt_orange}→ %s${reset}" "$reset_time")
+        rate_info+=$(printf " ${gray}→ %s${reset}" "$reset_time")
+    fi
+fi
+
+# ── Context Mode ─────────────────────────────────────────
+ctx_mode_info=""
+CTX_CLI=$(find "$HOME/.claude/plugins/cache/context-mode/context-mode" -name "cli.bundle.mjs" -maxdepth 3 2>/dev/null | sort -V | tail -1)
+if [ -n "$CTX_CLI" ]; then
+    # nvm node 절대 경로 사용 (set -f glob 비활성화 환경 대응, bun은 bundle 미지원)
+    JS_BIN=$(find "$HOME/.nvm/versions/node" -name "node" -path "*/bin/node" -maxdepth 4 2>/dev/null | sort -V | tail -1)
+    if [ -n "$JS_BIN" ] && [ -x "$JS_BIN" ]; then
+        ctx_raw=$("$JS_BIN" "$CTX_CLI" statusline 2>/dev/null)
+        if [ -n "$ctx_raw" ]; then
+            ctx_pct=$(echo "$ctx_raw" | grep -oE '[0-9]+%' | grep -oE '[0-9]+' | head -1)
+            if [ -n "$ctx_pct" ]; then
+                ctx_filled=$(( ctx_pct / 10 ))
+                [ "$ctx_filled" -gt 10 ] && ctx_filled=10
+                ctx_empty=$(( 10 - ctx_filled ))
+                ctx_bar=""
+                for ((i=0; i<ctx_filled; i++)); do ctx_bar+="▰"; done
+                for ((i=0; i<ctx_empty; i++)); do ctx_bar+="▱"; done
+                ctx_mode_info=$(printf "${sep}${green}● ctx-mode${reset} ${bold}${green}%s${reset} ${gray}%d%%${reset}" "$ctx_bar" "$ctx_pct")
+            else
+                ctx_mode_info=$(printf "${sep}${teal}%s${reset}" "$ctx_raw")
+            fi
+        fi
     fi
 fi
 
@@ -216,8 +234,8 @@ fi
 printf "${bold}${mauve}✺ \033[4m%s${reset}%s%s" \
     "$real_project" "$worktree_info" "$git_info"
 echo ""
-# Line 2: model + context + rate limit + style + vim
-printf "${bold}${sapphire}%s${reset}%s%s%s%s" \
-    "$model" "$ctx_info" "$rate_info" "$style_info" "$vim_info"
+# Line 2: model + context + rate limit + style + vim + context-mode
+printf "${bold}${sapphire}%s${reset}%s%s%s%s%s" \
+    "$model" "$ctx_info" "$rate_info" "$style_info" "$vim_info" "$ctx_mode_info"
 
 exit 0
