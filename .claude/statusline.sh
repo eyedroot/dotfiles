@@ -208,8 +208,17 @@ fi
 ctx_mode_info=""
 CTX_CLI=$(find "$HOME/.claude/plugins/cache/context-mode/context-mode" -name "cli.bundle.mjs" -maxdepth 3 2>/dev/null | sort -V | tail -1)
 if [ -n "$CTX_CLI" ]; then
-    # nvm node 절대 경로 사용 (set -f glob 비활성화 환경 대응, bun은 bundle 미지원)
+    # node 절대 경로 탐색 (set -f glob 비활성화 환경 대응, bun은 bundle 미지원)
+    # nvm → Homebrew(arm64) → Homebrew(intel) → PATH 순으로 fallback
     JS_BIN=$(find "$HOME/.nvm/versions/node" -name "node" -path "*/bin/node" -maxdepth 4 2>/dev/null | sort -V | tail -1)
+    if [ -z "$JS_BIN" ] || [ ! -x "$JS_BIN" ]; then
+        for candidate in /opt/homebrew/bin/node /usr/local/bin/node "$(command -v node 2>/dev/null)"; do
+            if [ -n "$candidate" ] && [ -x "$candidate" ]; then
+                JS_BIN="$candidate"
+                break
+            fi
+        done
+    fi
     if [ -n "$JS_BIN" ] && [ -x "$JS_BIN" ]; then
         ctx_raw=$("$JS_BIN" "$CTX_CLI" statusline 2>/dev/null)
         if [ -n "$ctx_raw" ]; then
