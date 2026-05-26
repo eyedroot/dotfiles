@@ -1,10 +1,10 @@
 onboarding = false
 
 [theme]
-name = "rose-pine"
+name = "vesper"
 
 [ui.toast]
-delivery = "herdr"
+delivery = "system"
 
 [ui]
 show_agent_labels_on_pane_borders = true
