@@ -28,6 +28,9 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.local/bin/ssh-keygen-bw` - SSH commit-signing wrapper for GUI apps (Fork etc.); register once with `git config --global gpg.ssh.program ~/.local/bin/ssh-keygen-bw`
 - `~/.hammerspoon/init.lua` - Hammerspoon (macOS automation) global hotkeys
 - `~/CLAUDE.md` - Claude Code instructions
+- `~/.local/bin/start-remote-sim-view.sh` - Start a Tailscale-accessible iOS Simulator viewer
+- `~/.local/bin/serve-sim-viewer.js` - Local MJPEG wrapper for `serve-sim`
+- `~/Library/LaunchAgents/com.eyedroot.serve-sim-viewer.plist` - Keeps the simulator viewer running
 
 ## Installation
 
@@ -121,6 +124,17 @@ echo '[ -f "$HOME/.zshrc.secrets" ] && source "$HOME/.zshrc.secrets"' >> ~/.zshr
    brew install --cask karabiner-elements  # Keyboard customization
    brew bundle --file=~/.Brewfile          # All packages
    ```
+
+6. **Start remote iOS Simulator viewer** (macOS, optional):
+   ```bash
+   ~/.local/bin/start-remote-sim-view.sh
+   ```
+
+   Requirements:
+   - Tailscale must be installed, logged in, and Serve enabled for the tailnet.
+   - Xcode Simulator runtime must include the default device, or pass a simulator name:
+     `~/.local/bin/start-remote-sim-view.sh "iPhone 17 Pro (26.5)"`.
+   - `serve-sim` is used if installed globally; otherwise the script falls back to `npx --yes serve-sim@latest`.
 
 ## Usage
 
