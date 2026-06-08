@@ -1,7 +1,8 @@
 # Ghostty Terminal Configuration
 
 # Font settings
-font-family = "Sarasa Mono K"
+# font-family = "Sarasa Mono K"
+font-family = "D2Coding Ligature"
 font-size = 15
 font-thicken = true
 adjust-cell-height = 10%
