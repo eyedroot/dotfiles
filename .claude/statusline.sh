@@ -204,47 +204,13 @@ if [ -n "$usage_data" ] && echo "$usage_data" | jq -e '.five_hour' >/dev/null 2>
     fi
 fi
 
-# ── Context Mode ─────────────────────────────────────────
-ctx_mode_info=""
-CTX_CLI=$(find "$HOME/.claude/plugins/cache/context-mode/context-mode" -name "cli.bundle.mjs" -maxdepth 3 2>/dev/null | sort -V | tail -1)
-if [ -n "$CTX_CLI" ]; then
-    # node 절대 경로 탐색 (set -f glob 비활성화 환경 대응, bun은 bundle 미지원)
-    # nvm → Homebrew(arm64) → Homebrew(intel) → PATH 순으로 fallback
-    JS_BIN=$(find "$HOME/.nvm/versions/node" -name "node" -path "*/bin/node" -maxdepth 4 2>/dev/null | sort -V | tail -1)
-    if [ -z "$JS_BIN" ] || [ ! -x "$JS_BIN" ]; then
-        for candidate in /opt/homebrew/bin/node /usr/local/bin/node "$(command -v node 2>/dev/null)"; do
-            if [ -n "$candidate" ] && [ -x "$candidate" ]; then
-                JS_BIN="$candidate"
-                break
-            fi
-        done
-    fi
-    if [ -n "$JS_BIN" ] && [ -x "$JS_BIN" ]; then
-        ctx_raw=$("$JS_BIN" "$CTX_CLI" statusline 2>/dev/null)
-        if [ -n "$ctx_raw" ]; then
-            ctx_pct=$(echo "$ctx_raw" | grep -oE '[0-9]+%' | grep -oE '[0-9]+' | head -1)
-            if [ -n "$ctx_pct" ]; then
-                ctx_filled=$(( ctx_pct / 10 ))
-                [ "$ctx_filled" -gt 10 ] && ctx_filled=10
-                ctx_empty=$(( 10 - ctx_filled ))
-                ctx_bar=""
-                for ((i=0; i<ctx_filled; i++)); do ctx_bar+="▰"; done
-                for ((i=0; i<ctx_empty; i++)); do ctx_bar+="▱"; done
-                ctx_mode_info=$(printf "${sep}${green}● ctx-mode${reset} ${bold}${green}%s${reset} ${gray}%d%%${reset}" "$ctx_bar" "$ctx_pct")
-            else
-                ctx_mode_info=$(printf "${sep}${teal}%s${reset}" "$ctx_raw")
-            fi
-        fi
-    fi
-fi
-
 # ── Output ───────────────────────────────────────────────
 # Line 1: project + git info
 printf "${bold}${mauve}✺ \033[4m%s${reset}%s%s" \
     "$real_project" "$worktree_info" "$git_info"
 echo ""
-# Line 2: model + context + rate limit + style + vim + context-mode
-printf "${bold}${sapphire}%s${reset}%s%s%s%s%s" \
-    "$model" "$ctx_info" "$rate_info" "$style_info" "$vim_info" "$ctx_mode_info"
+# Line 2: model + context + rate limit + style + vim
+printf "${bold}${sapphire}%s${reset}%s%s%s%s" \
+    "$model" "$ctx_info" "$rate_info" "$style_info" "$vim_info"
 
 exit 0
