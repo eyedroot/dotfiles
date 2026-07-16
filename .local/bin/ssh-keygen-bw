@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# SSH commit-signing wrapper for GUI apps (Fork etc.).
+# GUI apps inherit launchd's default SSH_AUTH_SOCK (Apple agent), not the
+# Bitwarden socket set in .zshrc.shared, so signing fails with
+# "Couldn't find key in agent". Force the Bitwarden socket here.
+# Registered via: git config --global gpg.ssh.program ~/.local/bin/ssh-keygen-bw
+set -u
+
+export SSH_AUTH_SOCK="$HOME/.bitwarden-ssh-agent.sock"
+
+exec /usr/bin/ssh-keygen "$@"

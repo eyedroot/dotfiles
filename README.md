@@ -23,6 +23,7 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.local/bin/morning-update` - Daily update routine (brew, ncu -g, graphifyy)
 - `~/.local/bin/bw-ssh-reset.sh` - Bitwarden SSH agent reset (macOS sleep/wake recovery)
 - `~/.local/bin/bw-diagnose.sh` - Bitwarden SSH agent diagnostic report
+- `~/.local/bin/ssh-keygen-bw` - SSH commit-signing wrapper for GUI apps (Fork etc.); register once with `git config --global gpg.ssh.program ~/.local/bin/ssh-keygen-bw`
 - `~/.hammerspoon/init.lua` - Hammerspoon (macOS automation) global hotkeys
 - `~/CLAUDE.md` - Claude Code instructions
 

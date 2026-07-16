@@ -21,6 +21,7 @@ This repository manages personal dotfiles using a bare Git repository.
 ~/.codex/config.toml.dotfiles          # Codex CLI config template (model, MCP servers, plugins)
 ~/.local/bin/bw-ssh-reset.sh           # Bitwarden SSH agent reset (macOS sleep/wake)
 ~/.local/bin/bw-diagnose.sh            # Bitwarden SSH agent diagnostic report
+~/.local/bin/ssh-keygen-bw             # SSH commit-signing wrapper for GUI apps (gpg.ssh.program)
 ~/.hammerspoon/init.lua                # Hammerspoon (macOS automation) config
 ~/.dotfiles-install.sh                 # Installation script (9 steps)
 ~/CLAUDE.md                            # Claude Code instructions
