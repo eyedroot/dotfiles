@@ -21,6 +21,9 @@ alias cdx-cora="cd ~/Github/cora-app && codex -p auto --add-dir ~/Github/cora-sb
 alias icloud='cd ~/Library/Mobile\ Documents'
 alias obsidian='cd ~/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/eyedroot'
 
+# Stage PostgreSQL port-forward (connect DB client to 127.0.0.1:15432)
+alias pg-stage='kubectl --context tk-stage -n kollus-postgresql port-forward svc/postgresql 15432:5432'
+
 # Bitwarden SSH agent — socket path + reset script
 export SSH_AUTH_SOCK="$HOME/.bitwarden-ssh-agent.sock"
 alias bw-fix='~/.local/bin/bw-ssh-reset.sh'
