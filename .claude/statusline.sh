@@ -13,22 +13,22 @@ bold='\033[1m'
 dim='\033[2m'
 reset='\033[0m'
 
-# Minimal light palette: red + gray + black + yellow
-mauve='\033[38;2;220;180;50m'      # project name (muted gold)
-sapphire='\033[38;2;40;40;40m'     # model name (near black)
-red='\033[38;2;180;30;30m'         # git dirty / context bar (primary accent)
-teal='\033[38;2;130;130;130m'      # rate limit icon (gray)
-green='\033[38;2;130;130;130m'     # git clean branch (gray)
-gray='\033[38;2;130;130;130m'      # sub text
-black='\033[38;2;40;40;40m'        # separators
-yellow='\033[38;2;220;180;50m'     # folder icon (muted gold)
-peach='\033[38;2;90;160;180m'      # worktree info (teal blue)
-lavender='\033[38;2;130;130;130m'  # style info (gray)
+# Colorful palette: Catppuccin Mocha vivid
+mauve='\033[38;2;203;166;247m'     # project name (Mocha Mauve)
+sapphire='\033[38;2;116;199;236m'  # model name (Mocha Sapphire)
+red='\033[38;2;243;139;168m'       # git dirty / context bar (Mocha Red)
+teal='\033[38;2;148;226;213m'      # rate limit icon (Mocha Teal)
+green='\033[38;2;166;227;161m'     # git clean branch (Mocha Green)
+gray='\033[38;2;186;194;222m'      # sub text (Mocha Subtext1)
+black='\033[38;2;127;132;156m'     # separators (Mocha Overlay1)
+yellow='\033[38;2;249;226;175m'    # folder icon (Mocha Yellow)
+peach='\033[38;2;250;179;135m'     # worktree info (Mocha Peach)
+lavender='\033[38;2;180;190;254m'  # style info (Mocha Lavender)
 
-rate_low='\033[38;2;130;130;130m'  # gray (safe)
-rate_mid='\033[38;2;180;120;30m'   # warm
-rate_high='\033[38;2;180;80;20m'   # orange
-rate_crit='\033[38;2;180;30;30m'   # red (critical)
+rate_low='\033[38;2;148;226;213m'  # Teal (safe)
+rate_mid='\033[38;2;249;226;175m'  # Yellow (warm)
+rate_high='\033[38;2;250;179;135m' # Peach (orange)
+rate_crit='\033[38;2;243;139;168m' # Red (critical)
 
 
 sep=" ${black}│${reset} "
