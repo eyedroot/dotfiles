@@ -23,5 +23,17 @@
     "bindings": {
       "cmd-shift-t": "editor::Rename"
     }
+  },
+  {
+    "context": "Editor && mode == full",
+    "bindings": {
+      "ctrl-alt-cmd-shift-o": "outline::Toggle"
+    }
+  },
+  {
+    "context": "Editor && mode == full",
+    "unbind": {
+      "cmd-f12": "outline::Toggle"
+    }
   }
 ]
