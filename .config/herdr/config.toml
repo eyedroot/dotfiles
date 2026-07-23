@@ -1,7 +1,7 @@
 onboarding = false
 
 [theme]
-name = "vesper"
+name = "catppuccin-latte"
 
 [ui.toast]
 delivery = "system"
@@ -13,5 +13,5 @@ show_agent_labels_on_pane_borders = true
 tabs = "ctrl"
 
 [keys]
-prefix = "ctrl+shift+z"
+# prefix = "ctrl+shift+z"
 workspace_picker = "ctrl+shift+a"
