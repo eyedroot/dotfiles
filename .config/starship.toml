@@ -33,7 +33,7 @@ $cmd_duration\
 $line_break\
 $character"""
 
-palette = 'm365princess'
+palette = 'm365princess_light'
 
 [os]
 disabled = false

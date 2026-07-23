@@ -13,22 +13,22 @@ bold='\033[1m'
 dim='\033[2m'
 reset='\033[0m'
 
-# Colorful palette: Catppuccin Mocha vivid
-mauve='\033[38;2;203;166;247m'     # project name (Mocha Mauve)
-sapphire='\033[38;2;116;199;236m'  # model name (Mocha Sapphire)
-red='\033[38;2;243;139;168m'       # git dirty / context bar (Mocha Red)
-teal='\033[38;2;148;226;213m'      # rate limit icon (Mocha Teal)
-green='\033[38;2;166;227;161m'     # git clean branch (Mocha Green)
-gray='\033[38;2;186;194;222m'      # sub text (Mocha Subtext1)
-black='\033[38;2;127;132;156m'     # separators (Mocha Overlay1)
-yellow='\033[38;2;249;226;175m'    # folder icon (Mocha Yellow)
-peach='\033[38;2;250;179;135m'     # worktree info (Mocha Peach)
-lavender='\033[38;2;180;190;254m'  # style info (Mocha Lavender)
+# Colorful palette: Catppuccin Latte vivid (light mode)
+mauve='\033[38;2;136;57;239m'      # project name (Latte Mauve)
+sapphire='\033[38;2;32;159;181m'   # model name (Latte Sapphire)
+red='\033[38;2;210;15;57m'         # git dirty / context bar (Latte Red)
+teal='\033[38;2;23;146;153m'       # rate limit icon (Latte Teal)
+green='\033[38;2;64;160;43m'       # git clean branch (Latte Green)
+gray='\033[38;2;92;95;119m'        # sub text (Latte Subtext1)
+black='\033[38;2;140;143;161m'     # separators (Latte Overlay1)
+yellow='\033[38;2;223;142;29m'     # folder icon (Latte Yellow)
+peach='\033[38;2;254;100;11m'      # worktree info (Latte Peach)
+lavender='\033[38;2;114;135;253m'  # style info (Latte Lavender)
 
-rate_low='\033[38;2;148;226;213m'  # Teal (safe)
-rate_mid='\033[38;2;249;226;175m'  # Yellow (warm)
-rate_high='\033[38;2;250;179;135m' # Peach (orange)
-rate_crit='\033[38;2;243;139;168m' # Red (critical)
+rate_low='\033[38;2;23;146;153m'   # Teal (safe)
+rate_mid='\033[38;2;223;142;29m'   # Yellow (warm)
+rate_high='\033[38;2;254;100;11m'  # Peach (orange)
+rate_crit='\033[38;2;210;15;57m'   # Red (critical)
 
 
 sep=" ${black}│${reset} "
