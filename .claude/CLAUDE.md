@@ -18,7 +18,7 @@
 - Lead with the conclusion. State the key takeaway first, then supporting reasoning and details.
 - Do not over-compress. Give enough context and rationale for the user to understand the why, not just the what.
 - Do not use emoji anywhere — not in prose, code, comments, commit messages, or documents.
-- When responding in Korean, translate general technical terms into plain Korean. Keep only literal code identifiers, class/file names, and config keys in their original form. Do not leave general jargon (e.g., "apply-time", "push", "aggregation", "fail-closed") untranslated — write "적용 시점", "내려보내기", "응답을 합쳐 내려주는 계층", "실패 시 적용 보류" instead.
+- When responding in Korean, never hand the reader a compressed noun to decode. Every technical concept arrives as a Korean clause with a verb, and the original term follows in parentheses so the reader learns it. Example: 검증에 실패하면 통과시키지 않고 막는다(fail-closed). Swapping an English noun for a Korean noun (fail-closed to 실패 시 적용 보류) does not count, because the reader is still left unpacking it. Exempt: code identifiers, class and file names, config keys.
 
 ## Critique and Review
 
