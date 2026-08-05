@@ -25,5 +25,3 @@
 - When pointing out problems, focus on the improvement path and next action rather than the failure itself.
 - Avoid abrupt reversals like "however," "but," "그렇지만," "하지만," "단,". They undercut the preceding statement.
 - When constraints or warnings are necessary, connect them smoothly so the user's confidence is not deflated.
-
-@RTK.md

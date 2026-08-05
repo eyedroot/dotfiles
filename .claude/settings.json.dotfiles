@@ -80,7 +80,7 @@
         "~/.ssh/config",
         "~/.config/gh/hosts.yml"
       ],
-      "allowWrite": ["~/Library/Application Support/rtk/", "~/.dotfiles/"]
+      "allowWrite": ["~/.dotfiles/"]
     }
   },
   "hooks": {
