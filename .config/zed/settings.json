@@ -61,7 +61,7 @@
   "icon_theme": {
     "mode": "dark",
     "light": "Catppuccin Latte",
-    "dark": "Icons modern material (Dark)",
+    "dark": "JetBrains Icons Light",
   },
   "base_keymap": "JetBrains",
   "buffer_font_size": 14.5,
@@ -79,7 +79,7 @@
   "vim_mode": false,
   "theme": {
     "mode": "light",
-    "light": "JetBrains Light",
+    "light": "One Light",
     "dark": "BlackFox",
   },
   "minimap": {
