@@ -1,10 +1,11 @@
 #!/usr/bin/env zsh
 # Morning update routine
 #   1. brew update && brew upgrade
-#   2. Codex CLI standalone update
-#   3. ncu -g (parse output, run "npm -g install ..." it suggests)
-#   4. claude update
-#   5. herdr update
+#   2. Node.js latest LTS via nvm (migrates global packages, updates default alias)
+#   3. Codex CLI standalone update
+#   4. ncu -g (parse output, run "npm -g install ..." it suggests)
+#   5. claude update
+#   6. herdr update
 
 set -u
 
@@ -14,7 +15,7 @@ warn() { print -P "%F{yellow}  ! $1%f"; }
 err()  { print -P "%F{red}  ✗ $1%f"; }
 
 # ---------- 1. Homebrew ----------
-hdr "[1/5] Homebrew update & upgrade"
+hdr "[1/6] Homebrew update & upgrade"
 if command -v brew >/dev/null; then
   brew update
   brew upgrade
@@ -23,8 +24,36 @@ else
   err "brew not found, skipping"
 fi
 
-# ---------- 2. Codex CLI ----------
-hdr "[2/5] Codex CLI update"
+# ---------- 2. Node.js LTS (nvm) ----------
+# Runs before the npm/ncu step so global packages land in the new node version.
+hdr "[2/6] Node.js latest LTS via nvm"
+export NVM_DIR="$HOME/.nvm"
+if [[ -s "/opt/homebrew/opt/nvm/nvm.sh" ]]; then
+  source "/opt/homebrew/opt/nvm/nvm.sh"
+  node_latest="$(nvm version-remote --lts)"
+  node_current="$(nvm version default)"
+  if [[ "$node_latest" == "N/A" ]]; then
+    err "could not resolve latest LTS from nodejs.org, skipping"
+  elif [[ "$node_latest" == "$node_current" ]]; then
+    ok "node already at latest LTS ($node_current)"
+  else
+    warn "upgrading node: $node_current -> $node_latest"
+    if [[ "$node_current" == "N/A" ]]; then
+      nvm install "$node_latest" && nvm alias default "$node_latest" &&
+        ok "node $node_latest installed (default alias set)" || err "node install failed"
+    else
+      nvm install "$node_latest" --reinstall-packages-from="$node_current" &&
+        nvm alias default "$node_latest" &&
+        ok "node upgraded to $node_latest (globals migrated, default alias updated)" ||
+        err "node upgrade failed"
+    fi
+  fi
+else
+  err "nvm not found, skipping"
+fi
+
+# ---------- 3. Codex CLI ----------
+hdr "[3/6] Codex CLI update"
 if command -v curl >/dev/null; then
   if (
     set -o pipefail
@@ -39,8 +68,8 @@ else
   err "curl not found, skipping"
 fi
 
-# ---------- 3. Global npm packages (ncu) ----------
-hdr "[3/5] Global npm packages (ncu -g)"
+# ---------- 4. Global npm packages (ncu) ----------
+hdr "[4/6] Global npm packages (ncu -g)"
 if command -v ncu >/dev/null; then
   ncu_out="$(ncu -g 2>&1)"
   print -- "$ncu_out"
@@ -59,8 +88,8 @@ else
   err "ncu not found, skipping"
 fi
 
-# ---------- 4. Claude Code ----------
-hdr "[4/5] Claude Code update"
+# ---------- 5. Claude Code ----------
+hdr "[5/6] Claude Code update"
 if command -v claude >/dev/null; then
   claude update
   ok "claude update done"
@@ -68,8 +97,8 @@ else
   err "claude not found, skipping"
 fi
 
-# ---------- 5. herdr ----------
-hdr "[5/5] herdr update"
+# ---------- 6. herdr ----------
+hdr "[6/6] herdr update"
 if command -v herdr >/dev/null; then
   herdr update
   ok "herdr update done"

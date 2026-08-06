@@ -20,7 +20,7 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.config/intelephense/settings.json` - Intelephense PHP LSP settings
 - `~/.config/opencode/opencode.json` - opencode CLI configuration (Ollama provider)
 - `~/.config/macos/defaults.sh` - macOS system defaults (Dock, Finder, keyboard, etc.)
-- `~/.local/bin/morning-update` - Daily update routine (Homebrew, Codex CLI, npm, and other developer tools)
+- `~/.local/bin/morning-update` - Daily update routine (Homebrew, Node.js latest LTS via nvm, Codex CLI, npm globals, and other developer tools)
 - `~/.local/bin/bw-ssh-reset.sh` - Bitwarden SSH agent reset (macOS sleep/wake recovery)
 - `~/.local/bin/bw-diagnose.sh` - Bitwarden SSH agent diagnostic report
 - `~/.local/bin/ssh-keygen-bw` - SSH commit-signing wrapper for GUI apps (Fork etc.); register once with `git config --global gpg.ssh.program ~/.local/bin/ssh-keygen-bw`
