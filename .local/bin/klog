@@ -15,6 +15,7 @@ POD_FILTER=""
 GREP_PATTERN=""
 FOLLOW=1
 LINES=50
+LINES_SET=0
 PLAIN=0
 PIN=0
 NOPAGER=0
@@ -40,6 +41,7 @@ cluster/namespace/pod 선택만으로 바로 tail 한다.
   klog -n <ns> -p 'api'         # 이름이 정규식과 일치하는 pod 전부 자동 선택
   klog -g 'ERROR'               # 로그를 패턴으로 필터링 (대소문자 무시, ERE)
   klog --once -l 100            # follow 없이 마지막 100줄만 출력
+  klog -l 5000                  # 위로 스크롤할 과거분 조정 (페이저 기본 500줄)
   klog --no-pager               # 페이저 없이 스트리밍 (터미널 스크롤백 사용)
   klog --pin                    # 페이저 없이 헤더만 상단 고정 (스크롤백은 잘림)
   klog --plain                  # 하이라이트/항목 간 여백 없이 원본 그대로 출력
@@ -64,7 +66,7 @@ while [ $# -gt 0 ]; do
     -n|--namespace) NAMESPACE="$2"; shift 2 ;;
     -p|--pod)       POD_FILTER="$2"; shift 2 ;;
     -g|--grep)      GREP_PATTERN="$2"; shift 2 ;;
-    -l|--lines)     LINES="$2"; shift 2 ;;
+    -l|--lines)     LINES="$2"; LINES_SET=1; shift 2 ;;
     --once)         FOLLOW=0; shift ;;
     --pin)          PIN=1; shift ;;
     --no-pager)     NOPAGER=1; shift ;;
@@ -317,6 +319,12 @@ if [ "$FOLLOW" -eq 1 ] && [ -t 1 ]; then
 fi
 SCREEN_MODE=0
 [ "$MODE" = "pin" ] && SCREEN_MODE=1
+
+# 페이저 모드에서 위로 스크롤할 수 있는 범위는 tail로 가져온 과거분까지다.
+# -l 지정이 없으면 기본값을 넉넉히 잡는다 (500줄 ≈ 수백 KB, 부담 없음).
+if [ "$MODE" = "pager" ] && [ "$LINES_SET" -eq 0 ]; then
+  LINES=500
+fi
 
 HEADER_LINES=$(( 2 + ${#P_NAMES[@]} * 2 ))
 
