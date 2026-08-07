@@ -1,0 +1,326 @@
+#!/usr/bin/env bash
+#
+# klog - Kubernetes Laravel log tailer (fzf TUI)
+#
+# 컨테이너 내부 파일(storage/logs/laravel-*.log)에 기록되는 Laravel 로그를
+# cluster/namespace/pod 선택만으로 바로 tail 한다.
+# 클러스터에는 조회(get)와 읽기 전용 exec(ls, tail)만 수행한다.
+# follow 모드에서는 화면 상단에 고정 헤더(클러스터/pod/컨테이너/파일)를 표시한다.
+
+set -uo pipefail
+
+CONTEXT=""
+NAMESPACE=""
+POD_FILTER=""
+GREP_PATTERN=""
+FOLLOW=1
+LINES=50
+PLAIN=0
+
+RESET=$'\033[0m'
+BOLD=$'\033[1m'
+DIM=$'\033[2m'
+# pod 접두어용 색상 (256색). 로그 본문 하이라이트 색과 겹치지 않게 고른다.
+COLORS=($'\033[38;5;209m' $'\033[38;5;79m' $'\033[38;5;176m' $'\033[38;5;150m' $'\033[38;5;68m' $'\033[38;5;179m')
+
+usage() {
+  cat <<'EOF'
+klog - Kubernetes Laravel log tailer (fzf TUI)
+
+컨테이너 내부 파일(storage/logs/laravel-*.log)에 기록되는 Laravel 로그를
+cluster/namespace/pod 선택만으로 바로 tail 한다.
+클러스터에는 조회(get)와 읽기 전용 exec(ls, tail)만 수행한다.
+follow 모드에서는 화면 상단에 고정 헤더로 클러스터/pod/컨테이너/파일을 표시한다.
+
+사용법:
+  klog                          # cluster → namespace → pod 순서로 fzf 선택
+  klog -c dev-cluster           # cluster 지정 (선택 단계 생략)
+  klog -n my-namespace          # namespace 지정
+  klog -n <ns> -p 'api'         # 이름이 정규식과 일치하는 pod 전부 자동 선택
+  klog -g 'ERROR'               # 로그를 패턴으로 필터링 (대소문자 무시, ERE)
+  klog --once -l 100            # follow 없이 마지막 100줄만 출력
+  klog --plain                  # 하이라이트/항목 간 여백 없이 원본 그대로 출력
+  pod 선택 화면에서 TAB을 누르면 여러 pod를 동시에 tail 한다.
+
+로그 라인의 타임스탬프, 로그 레벨(INFO/ERROR 등), JSON의 키/문자열/숫자를
+색으로 구분하고, 새 로그 항목이 시작될 때마다 빈 줄을 넣어 가독성을 높인다.
+EOF
+}
+
+die() {
+  echo "klog: $*" >&2
+  exit 1
+}
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -c|--context)   CONTEXT="$2"; shift 2 ;;
+    -n|--namespace) NAMESPACE="$2"; shift 2 ;;
+    -p|--pod)       POD_FILTER="$2"; shift 2 ;;
+    -g|--grep)      GREP_PATTERN="$2"; shift 2 ;;
+    -l|--lines)     LINES="$2"; shift 2 ;;
+    --once)         FOLLOW=0; shift ;;
+    --plain)        PLAIN=1; shift ;;
+    -h|--help)      usage; exit 0 ;;
+    *)              die "알 수 없는 옵션: $1 (-h 로 사용법 확인)" ;;
+  esac
+done
+
+command -v fzf >/dev/null 2>&1 || die "fzf가 필요합니다: brew install fzf"
+command -v kubectl >/dev/null 2>&1 || die "kubectl이 필요합니다"
+command -v perl >/dev/null 2>&1 || die "perl이 필요합니다"
+
+# ---------- cluster 선택 ----------
+if [ -z "$CONTEXT" ]; then
+  CTX_LIST=$(kubectl config get-contexts -o name 2>/dev/null)
+  [ -z "$CTX_LIST" ] && die "kubeconfig에서 context를 찾지 못했습니다."
+  CONTEXT=$(echo "$CTX_LIST" | fzf --height=40% --reverse --prompt="cluster> ") || exit 130
+fi
+
+k() {
+  kubectl --context "$CONTEXT" "$@"
+}
+
+# ---------- namespace 선택 ----------
+if [ -z "$NAMESPACE" ]; then
+  NS_LIST=$(k get ns -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null)
+  if [ -z "$NS_LIST" ]; then
+    die "namespace 목록을 가져올 수 없습니다. 권한이 제한된 계정이면 -n <namespace>로 직접 지정하세요."
+  fi
+  NAMESPACE=$(echo "$NS_LIST" | fzf --height=50% --reverse --prompt="namespace ($CONTEXT)> ") || exit 130
+fi
+
+# ---------- pod 선택 ----------
+POD_TABLE=$(k get pods -n "$NAMESPACE" --no-headers 2>/dev/null)
+[ -z "$POD_TABLE" ] && die "$CONTEXT/$NAMESPACE 에서 pod를 찾지 못했습니다."
+
+if [ -n "$POD_FILTER" ]; then
+  SELECTED_PODS=$(echo "$POD_TABLE" | awk '{print $1}' | grep -E "$POD_FILTER" || true)
+  [ -z "$SELECTED_PODS" ] && die "'$POD_FILTER'와 일치하는 pod가 없습니다."
+else
+  SELECTED_PODS=$(echo "$POD_TABLE" \
+    | fzf -m --height=50% --reverse --prompt="pod ($CONTEXT/$NAMESPACE, TAB=복수 선택)> " \
+    | awk '{print $1}') || exit 130
+  [ -z "$SELECTED_PODS" ] && exit 130
+fi
+
+# ---------- 컨테이너/로그 파일 탐지 ----------
+pick_container() {
+  # 단일 컨테이너면 그대로, 여러 개면 이름에 app이 들어간 것을 우선한다.
+  local pod="$1" containers="$2" count app
+  count=$(echo "$containers" | wc -w | tr -d ' ')
+  if [ "$count" -eq 1 ]; then
+    echo "$containers" | tr -d ' '
+    return 0
+  fi
+  app=$(echo "$containers" | tr ' ' '\n' | grep -E -- '-app$' | head -1)
+  if [ -z "$app" ]; then
+    app=$(echo "$containers" | tr ' ' '\n' | grep -i 'app' | head -1)
+  fi
+  if [ -n "$app" ]; then
+    echo "$app"
+    return 0
+  fi
+  echo "$containers" | tr ' ' '\n' | grep -v '^$' \
+    | fzf --height=30% --reverse --prompt="container ($pod)> "
+}
+
+find_logfile() {
+  # 흔한 Laravel 경로 후보에서 가장 최근 laravel*.log를 찾는다.
+  local pod="$1" container="$2"
+  k exec -n "$NAMESPACE" "$pod" -c "$container" -- sh -c '
+    for d in storage/logs /var/www/html/storage/logs /app/storage/logs; do
+      f=$(ls -t "$d"/laravel*.log 2>/dev/null | head -1)
+      if [ -n "$f" ]; then echo "$f"; exit 0; fi
+    done
+    exit 1' 2>/dev/null
+}
+
+filter_stream() {
+  if [ -n "$GREP_PATTERN" ]; then
+    grep --line-buffered -iE "$GREP_PATTERN"
+  else
+    cat
+  fi
+}
+
+# 라인 포매터: pod 접두어 + Laravel 로그 하이라이트 (256색).
+# 색 배치: 타임스탬프·env 접두어는 회색(245), 레벨은 의미별
+# (DEBUG 회색 / INFO·NOTICE 초록 114 / WARNING 노랑 221 / ERROR 계열 굵은 빨강 203),
+# JSON은 키 파랑(111) / 문자열 값 주황(180) / 숫자 보라(141) / true·false·null 빨강(203).
+# - 값 매칭은 키 치환이 남긴 리셋 코드(\e[0m:) 뒤에서만 일어나므로
+#   타임스탬프의 콜론(13:33:57)을 오염시키지 않는다.
+# - 새 로그 항목([YYYY-MM-DD ...로 시작)이 올 때마다 빈 줄을 넣고,
+#   스택 트레이스 같은 연속 줄은 붙여서 항목 단위로 묶어 보여준다.
+PERL_FMT='
+BEGIN {
+  $| = 1;
+  $c = $ENV{KLOG_COLOR}; $p = $ENV{KLOG_POD}; $plain = $ENV{KLOG_PLAIN};
+  $gray = "\e[38;5;245m";
+  %lv = (DEBUG => "\e[38;5;245m", INFO => "\e[38;5;114m", NOTICE => "\e[38;5;114m",
+         WARNING => "\e[1;38;5;221m", ERROR => "\e[1;38;5;203m", CRITICAL => "\e[1;38;5;203m",
+         ALERT => "\e[1;38;5;203m", EMERGENCY => "\e[1;38;5;203m");
+}
+chomp; my $l = $_;
+if (!$plain) {
+  print "\n" if $l =~ /^\[\d{4}-\d{2}-\d{2}/ && $seen++;
+  $l =~ s/^\[(\d{4}-\d{2}-\d{2}[^\]]*)\]/$gray\[$1\]\e[0m/;
+  $l =~ s/([A-Za-z_][\w-]*)\.(DEBUG|INFO|NOTICE|WARNING|ERROR|CRITICAL|ALERT|EMERGENCY):/"$gray$1.\e[0m" . $lv{$2} . "$2\e[0m:"/e;
+  $l =~ s/"([^"]*)"\s*:/\e[38;5;111m"$1"\e[0m:/g;
+  $l =~ s/\e\[0m:\s*"([^"]*)"/\e[0m:\e[38;5;180m"$1"\e[0m/g;
+  $l =~ s/\e\[0m:(-?\d+(?:\.\d+)?)/\e[0m:\e[38;5;141m$1\e[0m/g;
+  $l =~ s/\e\[0m:(true|false|null)\b/\e[0m:\e[38;5;203m$1\e[0m/g;
+}
+print $c, "[", $p, "]\e[0m ", $l, "\n";
+'
+
+P_NAMES=()
+P_CONTAINERS=()
+P_FILES=()
+P_NODES=()
+P_PHASES=()
+P_COLORS=()
+
+IDX=0
+for POD in $SELECTED_PODS; do
+  META=$(k get pod -n "$NAMESPACE" "$POD" \
+    -o jsonpath='{.status.phase}|{.spec.nodeName}|{range .spec.containers[*]}{.name}{" "}{end}' 2>/dev/null)
+  if [ -z "$META" ]; then
+    echo "${DIM}[skip] $POD: pod 정보를 가져오지 못했습니다.${RESET}" >&2
+    continue
+  fi
+  PHASE=${META%%|*}
+  REST=${META#*|}
+  NODE=${REST%%|*}
+  CONTAINERS=${REST#*|}
+
+  CONTAINER=$(pick_container "$POD" "$CONTAINERS")
+  if [ -z "$CONTAINER" ]; then
+    echo "${DIM}[skip] $POD: 컨테이너를 확인하지 못했습니다.${RESET}" >&2
+    continue
+  fi
+  LOGFILE=$(find_logfile "$POD" "$CONTAINER")
+  if [ -z "$LOGFILE" ]; then
+    echo "${DIM}[skip] $POD/$CONTAINER: laravel*.log 파일이 없습니다.${RESET}" >&2
+    continue
+  fi
+
+  P_NAMES+=("$POD")
+  P_CONTAINERS+=("$CONTAINER")
+  P_FILES+=("$LOGFILE")
+  P_NODES+=("$NODE")
+  P_PHASES+=("$PHASE")
+  P_COLORS+=("${COLORS[$((IDX % ${#COLORS[@]}))]}")
+  IDX=$((IDX + 1))
+done
+
+[ ${#P_NAMES[@]} -eq 0 ] && die "tail 할 수 있는 pod가 없습니다."
+
+STARTED_AT=$(date '+%H:%M:%S')
+
+# ---------- 고정 헤더 ----------
+# follow + TTY일 때 DECSTBM(스크롤 영역)으로 헤더를 상단에 고정한다.
+SCREEN_MODE=0
+[ "$FOLLOW" -eq 1 ] && [ -t 1 ] && SCREEN_MODE=1
+
+HEADER_LINES=$(( 2 + ${#P_NAMES[@]} * 2 ))
+
+draw_header() {
+  local cols sep i title
+  cols=$(tput cols 2>/dev/null) || cols=120
+  sep=$(printf '%.0s─' $(seq 1 "$cols"))
+
+  title="── klog ── ${BOLD}${CONTEXT}${RESET} · ${NAMESPACE} · ${STARTED_AT} 시작"
+  [ -n "$GREP_PATTERN" ] && title="$title · filter: ${BOLD}${GREP_PATTERN}${RESET}"
+  [ "$FOLLOW" -eq 0 ] && title="$title · once"
+
+  # 줄바꿈(wrap)을 끈 채로 그려서 긴 줄이 헤더 높이를 무너뜨리지 않게 한다.
+  printf '\033[?7l\033[H'
+  printf '\033[K%s\n' "$title"
+  i=0
+  while [ $i -lt ${#P_NAMES[@]} ]; do
+    printf '\033[K %s●%s %s%s%s  %s%s · node %s%s\n' \
+      "${P_COLORS[$i]}" "$RESET" "$BOLD" "${P_NAMES[$i]}" "$RESET" \
+      "$DIM" "${P_PHASES[$i]}" "${P_NODES[$i]}" "$RESET"
+    printf '\033[K    └─ %s : %s%s%s\n' \
+      "${P_CONTAINERS[$i]}" "$BOLD" "${P_FILES[$i]}" "$RESET"
+    i=$((i + 1))
+  done
+  printf '\033[K%s%s%s\n' "$DIM" "${sep}" "$RESET"
+  printf '\033[?7h'
+}
+
+print_plain_header() {
+  echo "klog · ${BOLD}${CONTEXT}${RESET} · ${NAMESPACE}"
+  local i=0
+  while [ $i -lt ${#P_NAMES[@]} ]; do
+    echo " ${P_COLORS[$i]}●${RESET} ${P_NAMES[$i]} ${DIM}${P_PHASES[$i]} · node ${P_NODES[$i]}${RESET}"
+    echo "    └─ ${P_CONTAINERS[$i]} : ${P_FILES[$i]}"
+    i=$((i + 1))
+  done
+}
+
+setup_screen() {
+  local rows
+  rows=$(tput lines 2>/dev/null) || rows=40
+  printf '\033[2J'
+  draw_header
+  printf '\033[%d;%dr' $((HEADER_LINES + 1)) "$rows"
+  printf '\033[%d;1H' $((HEADER_LINES + 1))
+}
+
+on_winch() {
+  local rows
+  rows=$(tput lines 2>/dev/null) || rows=40
+  printf '\0337'
+  draw_header
+  printf '\033[%d;%dr' $((HEADER_LINES + 1)) "$rows"
+  printf '\0338'
+}
+
+# ---------- tail 실행 ----------
+# 각 tail 파이프라인(kubectl exec | grep | perl)을 독립된 프로세스 그룹으로 띄워
+# 종료 시 그룹 단위로 정리한다. $!만 죽이면 kubectl exec가 살아남는다.
+set -m
+
+cleanup() {
+  trap - INT TERM EXIT WINCH
+  local pgid
+  for pgid in $(jobs -p); do
+    kill -TERM -- -"$pgid" 2>/dev/null
+  done
+  wait 2>/dev/null
+  if [ "$SCREEN_MODE" -eq 1 ]; then
+    printf '\033[r\033[?7h'
+    printf '\033[%d;1H\n' "$(tput lines 2>/dev/null || echo 40)"
+  fi
+  exit 0
+}
+trap cleanup INT TERM EXIT
+
+if [ "$SCREEN_MODE" -eq 1 ]; then
+  setup_screen
+  trap on_winch WINCH
+else
+  print_plain_header
+fi
+
+PIDS=""
+i=0
+while [ $i -lt ${#P_NAMES[@]} ]; do
+  TAIL_CMD="tail -n $LINES"
+  [ "$FOLLOW" -eq 1 ] && TAIL_CMD="$TAIL_CMD -f"
+
+  k exec -n "$NAMESPACE" "${P_NAMES[$i]}" -c "${P_CONTAINERS[$i]}" \
+      -- sh -c "$TAIL_CMD '${P_FILES[$i]}'" 2>/dev/null \
+    | filter_stream \
+    | KLOG_COLOR="${P_COLORS[$i]}" KLOG_POD="${P_NAMES[$i]}" KLOG_PLAIN="$PLAIN" \
+        perl -ne "$PERL_FMT" &
+  PIDS="$PIDS $!"
+  i=$((i + 1))
+done
+
+# WINCH로 wait가 깨어나도 tail이 남아있으면 다시 기다린다.
+while [ -n "$(jobs -pr 2>/dev/null)" ]; do
+  wait $PIDS 2>/dev/null
+done
