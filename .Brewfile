@@ -4,6 +4,7 @@
 # Taps
 tap "homebrew/bundle"
 tap "oven-sh/bun"
+tap "catenoid-company/tap", "git@github.com:catenoid-company/homebrew-tap.git"
 
 # ===== Formulae =====
 brew "bitwarden-cli"
@@ -26,6 +27,7 @@ brew "gitui"
 brew "go"
 brew "htop"
 brew "k9s"
+brew "catenoid-company/tap/laratail"
 brew "deno"
 brew "libpq"
 brew "mise"
