@@ -5,7 +5,7 @@
 # 컨테이너 내부 파일(storage/logs/laravel-*.log)에 기록되는 Laravel 로그를
 # cluster/namespace/pod 선택만으로 바로 tail 한다.
 # 클러스터에는 조회(get)와 읽기 전용 exec(ls, tail)만 수행한다.
-# follow 모드에서는 화면 상단에 고정 헤더(클러스터/pod/컨테이너/파일)를 표시한다.
+# 기본 모드는 less 페이저 위에서 고정 헤더와 스크롤/검색을 함께 제공한다.
 
 set -uo pipefail
 
@@ -16,6 +16,8 @@ GREP_PATTERN=""
 FOLLOW=1
 LINES=50
 PLAIN=0
+PIN=0
+NOPAGER=0
 
 RESET=$'\033[0m'
 BOLD=$'\033[1m'
@@ -30,7 +32,6 @@ klog - Kubernetes Laravel log tailer (fzf TUI)
 컨테이너 내부 파일(storage/logs/laravel-*.log)에 기록되는 Laravel 로그를
 cluster/namespace/pod 선택만으로 바로 tail 한다.
 클러스터에는 조회(get)와 읽기 전용 exec(ls, tail)만 수행한다.
-follow 모드에서는 화면 상단에 고정 헤더로 클러스터/pod/컨테이너/파일을 표시한다.
 
 사용법:
   klog                          # cluster → namespace → pod 순서로 fzf 선택
@@ -39,11 +40,16 @@ follow 모드에서는 화면 상단에 고정 헤더로 클러스터/pod/컨테
   klog -n <ns> -p 'api'         # 이름이 정규식과 일치하는 pod 전부 자동 선택
   klog -g 'ERROR'               # 로그를 패턴으로 필터링 (대소문자 무시, ERE)
   klog --once -l 100            # follow 없이 마지막 100줄만 출력
+  klog --no-pager               # 페이저 없이 스트리밍 (터미널 스크롤백 사용)
+  klog --pin                    # 페이저 없이 헤더만 상단 고정 (스크롤백은 잘림)
   klog --plain                  # 하이라이트/항목 간 여백 없이 원본 그대로 출력
   pod 선택 화면에서 TAB을 누르면 여러 pod를 동시에 tail 한다.
 
-로그 라인의 타임스탬프, 로그 레벨(INFO/ERROR 등), JSON의 키/문자열/숫자를
-색으로 구분하고, 새 로그 항목이 시작될 때마다 빈 줄을 넣어 가독성을 높인다.
+기본 모드는 less 페이저 위에서 실행된다. 헤더가 화면 상단에 고정된 채
+로그가 따라 흐르고(follow), Ctrl-C를 누르면 따라가기를 멈추고 위로 스크롤하거나
+/패턴 으로 검색할 수 있다. F 로 따라가기를 재개하고 q 로 종료한다.
+pod가 하나면 라인 접두어를 붙이지 않고, 여러 개면 짧은 [1] [2] 태그로 구분한다.
+타임스탬프, 로그 레벨, JSON 요소를 색으로 구분하고 항목 사이에 빈 줄을 넣는다.
 EOF
 }
 
@@ -60,6 +66,8 @@ while [ $# -gt 0 ]; do
     -g|--grep)      GREP_PATTERN="$2"; shift 2 ;;
     -l|--lines)     LINES="$2"; shift 2 ;;
     --once)         FOLLOW=0; shift ;;
+    --pin)          PIN=1; shift ;;
+    --no-pager)     NOPAGER=1; shift ;;
     --plain)        PLAIN=1; shift ;;
     -h|--help)      usage; exit 0 ;;
     *)              die "알 수 없는 옵션: $1 (-h 로 사용법 확인)" ;;
@@ -144,7 +152,7 @@ filter_stream() {
   fi
 }
 
-# 라인 포매터: pod 접두어 + Laravel 로그 하이라이트 (256색).
+# 라인 포매터: pod 태그 접두어 + Laravel 로그 하이라이트 (256색).
 # 색 배치: 타임스탬프·env 접두어는 회색(245), 레벨은 의미별
 # (DEBUG 회색 / INFO·NOTICE 초록 114 / WARNING 노랑 221 / ERROR 계열 굵은 빨강 203),
 # JSON은 키 파랑(111) / 문자열 값 주황(180) / 숫자 보라(141) / true·false·null 빨강(203).
@@ -155,7 +163,7 @@ filter_stream() {
 PERL_FMT='
 BEGIN {
   $| = 1;
-  $c = $ENV{KLOG_COLOR}; $p = $ENV{KLOG_POD}; $plain = $ENV{KLOG_PLAIN};
+  $tag = $ENV{KLOG_TAG}; $plain = $ENV{KLOG_PLAIN};
   $gray = "\e[38;5;245m";
   %lv = (DEBUG => "\e[38;5;245m", INFO => "\e[38;5;114m", NOTICE => "\e[38;5;114m",
          WARNING => "\e[1;38;5;221m", ERROR => "\e[1;38;5;203m", CRITICAL => "\e[1;38;5;203m",
@@ -171,7 +179,7 @@ if (!$plain) {
   $l =~ s/\e\[0m:(-?\d+(?:\.\d+)?)/\e[0m:\e[38;5;141m$1\e[0m/g;
   $l =~ s/\e\[0m:(true|false|null)\b/\e[0m:\e[38;5;203m$1\e[0m/g;
 }
-print $c, "[", $p, "]\e[0m ", $l, "\n";
+print $tag, $l, "\n";
 '
 
 P_NAMES=()
@@ -218,10 +226,21 @@ done
 
 STARTED_AT=$(date '+%H:%M:%S')
 
-# ---------- 고정 헤더 ----------
-# follow + TTY일 때 DECSTBM(스크롤 영역)으로 헤더를 상단에 고정한다.
-SCREEN_MODE=0
-[ "$FOLLOW" -eq 1 ] && [ -t 1 ] && SCREEN_MODE=1
+pod_marker() {
+  # 헤더에 표시할 마커. 복수 pod면 로그 라인 태그와 같은 [N]을 쓴다.
+  if [ ${#P_NAMES[@]} -gt 1 ]; then
+    printf '%s[%d]%s' "${P_COLORS[$1]}" "$(( $1 + 1 ))" "$RESET"
+  else
+    printf '%s●%s' "${P_COLORS[$1]}" "$RESET"
+  fi
+}
+
+pod_tag() {
+  # 로그 라인 접두어. pod가 하나면 붙이지 않는다.
+  if [ ${#P_NAMES[@]} -gt 1 ]; then
+    printf '%s[%d]%s ' "${P_COLORS[$1]}" "$(( $1 + 1 ))" "$RESET"
+  fi
+}
 
 term_size() {
   # 명령 치환 $() 안에서 tput의 stdout은 파이프가 되어 실제 크기를 읽지 못하고
@@ -234,41 +253,58 @@ term_size() {
   [ -z "$COLS" ] && COLS=120
 }
 
-HEADER_LINES=$(( 2 + ${#P_NAMES[@]} * 2 ))
-
-draw_header() {
-  local sep i title
-  term_size
-  sep=$(printf '%.0s─' $(seq 1 "$COLS"))
-
+header_body() {
+  local i title
   title="── klog ── ${BOLD}${CONTEXT}${RESET} · ${NAMESPACE} · ${STARTED_AT} 시작"
   [ -n "$GREP_PATTERN" ] && title="$title · filter: ${BOLD}${GREP_PATTERN}${RESET}"
   [ "$FOLLOW" -eq 0 ] && title="$title · once"
-
-  # 줄바꿈(wrap)을 끈 채로 그려서 긴 줄이 헤더 높이를 무너뜨리지 않게 한다.
-  printf '\033[?7l\033[H'
-  printf '\033[K%s\n' "$title"
+  printf '%s\n' "$title"
   i=0
   while [ $i -lt ${#P_NAMES[@]} ]; do
-    printf '\033[K %s●%s %s%s%s  %s%s · node %s%s\n' \
-      "${P_COLORS[$i]}" "$RESET" "$BOLD" "${P_NAMES[$i]}" "$RESET" \
+    printf ' %s %s%s%s  %s%s · node %s%s\n' \
+      "$(pod_marker $i)" "$BOLD" "${P_NAMES[$i]}" "$RESET" \
       "$DIM" "${P_PHASES[$i]}" "${P_NODES[$i]}" "$RESET"
-    printf '\033[K    └─ %s : %s%s%s\n' \
+    printf '    └─ %s : %s%s%s\n' \
       "${P_CONTAINERS[$i]}" "$BOLD" "${P_FILES[$i]}" "$RESET"
     i=$((i + 1))
   done
-  printf '\033[K%s%s%s\n' "$DIM" "${sep}" "$RESET"
-  printf '\033[?7h'
 }
 
-print_plain_header() {
-  echo "klog · ${BOLD}${CONTEXT}${RESET} · ${NAMESPACE}"
-  local i=0
-  while [ $i -lt ${#P_NAMES[@]} ]; do
-    echo " ${P_COLORS[$i]}●${RESET} ${P_NAMES[$i]} ${DIM}${P_PHASES[$i]} · node ${P_NODES[$i]}${RESET}"
-    echo "    └─ ${P_CONTAINERS[$i]} : ${P_FILES[$i]}"
-    i=$((i + 1))
+# ---------- 출력 모드 결정 ----------
+# pager  : less 위에서 고정 헤더 + 스크롤/검색 (기본, follow + TTY)
+# pin    : DECSTBM 스크롤 영역으로 헤더 고정. 영역 밖으로 밀려난 줄은
+#          터미널 스크롤백에 남지 않는다.
+# stream : 일반 스트리밍. --no-pager, --once, 파이프 출력일 때.
+less_supports_header() {
+  local v
+  v=$(less --version 2>/dev/null | awk 'NR==1{print $2}')
+  [ -n "$v" ] && [ "${v%%.*}" -ge 600 ] 2>/dev/null
+}
+
+MODE="stream"
+if [ "$FOLLOW" -eq 1 ] && [ -t 1 ]; then
+  if [ "$PIN" -eq 1 ]; then
+    MODE="pin"
+  elif [ "$NOPAGER" -eq 0 ] && command -v less >/dev/null 2>&1 && less_supports_header; then
+    MODE="pager"
+  fi
+fi
+SCREEN_MODE=0
+[ "$MODE" = "pin" ] && SCREEN_MODE=1
+
+HEADER_LINES=$(( 2 + ${#P_NAMES[@]} * 2 ))
+
+draw_header() {
+  local sep line
+  term_size
+  sep=$(printf '%.0s─' $(seq 1 "$COLS"))
+  # 줄바꿈(wrap)을 끈 채로 그려서 긴 줄이 헤더 높이를 무너뜨리지 않게 한다.
+  printf '\033[?7l\033[H'
+  header_body | while IFS= read -r line; do
+    printf '\033[K%s\n' "$line"
   done
+  printf '\033[K%s%s%s\n' "$DIM" "$sep" "$RESET"
+  printf '\033[?7h'
 }
 
 setup_screen() {
@@ -286,10 +322,34 @@ on_winch() {
 }
 
 # ---------- tail 실행 ----------
+spawn_tails() {
+  local i tail_cmd
+  i=0
+  while [ $i -lt ${#P_NAMES[@]} ]; do
+    tail_cmd="tail -n $LINES"
+    [ "$FOLLOW" -eq 1 ] && tail_cmd="$tail_cmd -f"
+    k exec -n "$NAMESPACE" "${P_NAMES[$i]}" -c "${P_CONTAINERS[$i]}" \
+        -- sh -c "$tail_cmd '${P_FILES[$i]}'" 2>/dev/null \
+      | filter_stream \
+      | KLOG_TAG="$(pod_tag $i)" KLOG_PLAIN="$PLAIN" perl -ne "$PERL_FMT" &
+    i=$((i + 1))
+  done
+}
+
+wait_tails() {
+  # WINCH 등으로 wait가 깨어나도 tail이 남아있으면 다시 기다린다.
+  while [ -n "$(jobs -pr 2>/dev/null)" ]; do
+    wait 2>/dev/null
+  done
+}
+
 # 각 tail 파이프라인(kubectl exec | grep | perl)을 독립된 프로세스 그룹으로 띄워
 # 종료 시 그룹 단위로 정리한다. $!만 죽이면 kubectl exec가 살아남는다.
+# less도 자기 프로세스 그룹에서 tty 전면(foreground)을 잡으므로 Ctrl-C가
+# 스크립트를 죽이지 않고 less의 따라가기 중단 키로만 동작한다.
 set -m
 
+TMPD=""
 cleanup() {
   trap - INT TERM EXIT WINCH
   local pgid
@@ -302,33 +362,48 @@ cleanup() {
     printf '\033[r\033[?7h'
     printf '\033[%d;1H\n' "$ROWS"
   fi
+  if [ -t 1 ]; then
+    printf '\033]0;\007'
+  fi
+  [ -n "$TMPD" ] && rm -rf "$TMPD"
   exit 0
 }
 trap cleanup INT TERM EXIT
 
-if [ "$SCREEN_MODE" -eq 1 ]; then
-  setup_screen
-  trap on_winch WINCH
-else
-  print_plain_header
+# 현재 보고 있는 대상을 터미널 탭 제목에 표시한다.
+if [ -t 1 ]; then
+  printf '\033]0;klog · %s/%s\007' "$CONTEXT" "$NAMESPACE"
 fi
 
-PIDS=""
-i=0
-while [ $i -lt ${#P_NAMES[@]} ]; do
-  TAIL_CMD="tail -n $LINES"
-  [ "$FOLLOW" -eq 1 ] && TAIL_CMD="$TAIL_CMD -f"
-
-  k exec -n "$NAMESPACE" "${P_NAMES[$i]}" -c "${P_CONTAINERS[$i]}" \
-      -- sh -c "$TAIL_CMD '${P_FILES[$i]}'" 2>/dev/null \
-    | filter_stream \
-    | KLOG_COLOR="${P_COLORS[$i]}" KLOG_POD="${P_NAMES[$i]}" KLOG_PLAIN="$PLAIN" \
-        perl -ne "$PERL_FMT" &
-  PIDS="$PIDS $!"
-  i=$((i + 1))
-done
-
-# WINCH로 wait가 깨어나도 tail이 남아있으면 다시 기다린다.
-while [ -n "$(jobs -pr 2>/dev/null)" ]; do
-  wait $PIDS 2>/dev/null
-done
+case "$MODE" in
+  pager)
+    TMPD=$(mktemp -d "${TMPDIR:-/tmp/}klog.XXXXXX")
+    FIFO="$TMPD/stream"
+    mkfifo "$FIFO"
+    # 헤더(제목 1 + pod당 2 + 안내 1 + 구분선 1)를 스트림 맨 앞에 흘리고
+    # less --header로 그 줄 수만큼 화면 상단에 고정한다.
+    PAGER_HEADER_LINES=$(( 3 + ${#P_NAMES[@]} * 2 ))
+    (
+      set +m
+      term_size
+      header_body
+      printf '%s Ctrl-C: 스크롤/검색 모드 · F: 따라가기 재개 · q: 종료%s\n' "$DIM" "$RESET"
+      printf '%s%s%s\n' "$DIM" "$(printf '%.0s─' $(seq 1 "$COLS"))" "$RESET"
+      spawn_tails
+      wait_tails
+    ) > "$FIFO" &
+    # -f: FIFO는 일반 파일이 아니라서 less가 기본적으로 열기를 거부한다.
+    less -R -f +F "--header=$PAGER_HEADER_LINES" -- "$FIFO"
+    ;;
+  pin)
+    setup_screen
+    trap on_winch WINCH
+    spawn_tails
+    wait_tails
+    ;;
+  stream)
+    header_body
+    spawn_tails
+    wait_tails
+    ;;
+esac
