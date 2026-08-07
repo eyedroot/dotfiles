@@ -22,7 +22,7 @@ This repository manages personal dotfiles using a bare Git repository.
 ~/.local/bin/morning-update            # Daily update routine (brew, node LTS via nvm, Codex, npm globals, claude, herdr)
 ~/.local/bin/bw-ssh-reset.sh           # Bitwarden SSH agent reset (macOS sleep/wake)
 ~/.local/bin/bw-diagnose.sh            # Bitwarden SSH agent diagnostic report
-~/.local/bin/klog                      # Kubernetes Laravel log tailer TUI (fzf + kubectl)
+~/.local/bin/laratail                  # Kubernetes Laravel log tailer TUI (fzf + kubectl)
 ~/.local/bin/ssh-keygen-bw             # SSH commit-signing wrapper for GUI apps (gpg.ssh.program)
 ~/.hammerspoon/init.lua                # Hammerspoon (macOS automation) config
 ~/.dotfiles-install.sh                 # Installation script (9 steps)
