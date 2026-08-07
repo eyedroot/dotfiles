@@ -223,12 +223,23 @@ STARTED_AT=$(date '+%H:%M:%S')
 SCREEN_MODE=0
 [ "$FOLLOW" -eq 1 ] && [ -t 1 ] && SCREEN_MODE=1
 
+term_size() {
+  # 명령 치환 $() 안에서 tput의 stdout은 파이프가 되어 실제 크기를 읽지 못하고
+  # terminfo 기본값(80x24)을 돌려준다. 실제 tty에 직접 물어야 한다.
+  local s
+  s=$(stty size < /dev/tty 2>/dev/null) || s=""
+  ROWS=${s%% *}
+  COLS=${s##* }
+  [ -z "$ROWS" ] && ROWS=40
+  [ -z "$COLS" ] && COLS=120
+}
+
 HEADER_LINES=$(( 2 + ${#P_NAMES[@]} * 2 ))
 
 draw_header() {
-  local cols sep i title
-  cols=$(tput cols 2>/dev/null) || cols=120
-  sep=$(printf '%.0s─' $(seq 1 "$cols"))
+  local sep i title
+  term_size
+  sep=$(printf '%.0s─' $(seq 1 "$COLS"))
 
   title="── klog ── ${BOLD}${CONTEXT}${RESET} · ${NAMESPACE} · ${STARTED_AT} 시작"
   [ -n "$GREP_PATTERN" ] && title="$title · filter: ${BOLD}${GREP_PATTERN}${RESET}"
@@ -261,20 +272,16 @@ print_plain_header() {
 }
 
 setup_screen() {
-  local rows
-  rows=$(tput lines 2>/dev/null) || rows=40
   printf '\033[2J'
   draw_header
-  printf '\033[%d;%dr' $((HEADER_LINES + 1)) "$rows"
+  printf '\033[%d;%dr' $((HEADER_LINES + 1)) "$ROWS"
   printf '\033[%d;1H' $((HEADER_LINES + 1))
 }
 
 on_winch() {
-  local rows
-  rows=$(tput lines 2>/dev/null) || rows=40
   printf '\0337'
   draw_header
-  printf '\033[%d;%dr' $((HEADER_LINES + 1)) "$rows"
+  printf '\033[%d;%dr' $((HEADER_LINES + 1)) "$ROWS"
   printf '\0338'
 }
 
@@ -291,8 +298,9 @@ cleanup() {
   done
   wait 2>/dev/null
   if [ "$SCREEN_MODE" -eq 1 ]; then
+    term_size
     printf '\033[r\033[?7h'
-    printf '\033[%d;1H\n' "$(tput lines 2>/dev/null || echo 40)"
+    printf '\033[%d;1H\n' "$ROWS"
   fi
   exit 0
 }
