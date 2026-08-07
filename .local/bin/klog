@@ -160,10 +160,15 @@ filter_stream() {
 #   타임스탬프의 콜론(13:33:57)을 오염시키지 않는다.
 # - 새 로그 항목([YYYY-MM-DD ...로 시작)이 올 때마다 빈 줄을 넣고,
 #   스택 트레이스 같은 연속 줄은 붙여서 항목 단위로 묶어 보여준다.
+# KLOG_WRAP > 0 이면 그 폭에 맞춰 줄을 미리 접는다. less의 --header가
+# 줄바꿈(wrap)을 강제로 꺼버리기 때문에(청소되지 않는 -S 동작) 페이저 모드에서는
+# 포매터가 직접 접어야 한다. ANSI 색상 코드는 폭 계산에서 제외하고, 접는 지점에서
+# 색을 리셋한 뒤 다음 줄에서 다시 연다.
 PERL_FMT='
 BEGIN {
   $| = 1;
   $tag = $ENV{KLOG_TAG}; $plain = $ENV{KLOG_PLAIN};
+  $wrap = $ENV{KLOG_WRAP} || 0;
   $gray = "\e[38;5;245m";
   %lv = (DEBUG => "\e[38;5;245m", INFO => "\e[38;5;114m", NOTICE => "\e[38;5;114m",
          WARNING => "\e[1;38;5;221m", ERROR => "\e[1;38;5;203m", CRITICAL => "\e[1;38;5;203m",
@@ -179,7 +184,28 @@ if (!$plain) {
   $l =~ s/\e\[0m:(-?\d+(?:\.\d+)?)/\e[0m:\e[38;5;141m$1\e[0m/g;
   $l =~ s/\e\[0m:(true|false|null)\b/\e[0m:\e[38;5;203m$1\e[0m/g;
 }
-print $tag, $l, "\n";
+my $full = $tag . $l;
+$full = vwrap($full) if $wrap > 0;
+print $full, "\n";
+
+sub vwrap {
+  my ($s) = @_;
+  my $out = ""; my $col = 0; my $cur = "";
+  foreach my $t ($s =~ /(\e\[[0-9;]*m|.)/g) {
+    if (substr($t, 0, 1) eq "\e") {
+      $out .= $t;
+      $cur = ($t eq "\e[0m") ? "" : $cur . $t;
+      next;
+    }
+    if ($col >= $wrap) {
+      $out .= "\e[0m\n" . $cur;
+      $col = 0;
+    }
+    $out .= $t;
+    $col++;
+  }
+  return $out;
+}
 '
 
 P_NAMES=()
@@ -331,7 +357,8 @@ spawn_tails() {
     k exec -n "$NAMESPACE" "${P_NAMES[$i]}" -c "${P_CONTAINERS[$i]}" \
         -- sh -c "$tail_cmd '${P_FILES[$i]}'" 2>/dev/null \
       | filter_stream \
-      | KLOG_TAG="$(pod_tag $i)" KLOG_PLAIN="$PLAIN" perl -ne "$PERL_FMT" &
+      | KLOG_TAG="$(pod_tag $i)" KLOG_PLAIN="$PLAIN" KLOG_WRAP="${WRAP_WIDTH:-0}" \
+          perl -ne "$PERL_FMT" &
     i=$((i + 1))
   done
 }
@@ -356,6 +383,9 @@ cleanup() {
   for pgid in $(jobs -p); do
     kill -TERM -- -"$pgid" 2>/dev/null
   done
+  # wait가 어떤 이유로든 길어져도 임시 파일은 먼저 지운다.
+  # 열려 있는 FIFO는 unlink 후에도 프로세스가 파일 기술자로 계속 쓸 수 있다.
+  [ -n "$TMPD" ] && rm -rf "$TMPD" && TMPD=""
   wait 2>/dev/null
   if [ "$SCREEN_MODE" -eq 1 ]; then
     term_size
@@ -386,6 +416,8 @@ case "$MODE" in
     (
       set +m
       term_size
+      # less --header는 줄바꿈을 꺼버리므로 포매터가 시작 시점 폭으로 미리 접는다.
+      WRAP_WIDTH="$COLS"
       header_body
       printf '%s Ctrl-C: 스크롤/검색 모드 · F: 따라가기 재개 · q: 종료%s\n' "$DIM" "$RESET"
       printf '%s%s%s\n' "$DIM" "$(printf '%.0s─' $(seq 1 "$COLS"))" "$RESET"
@@ -394,6 +426,8 @@ case "$MODE" in
     ) > "$FIFO" &
     # -f: FIFO는 일반 파일이 아니라서 less가 기본적으로 열기를 거부한다.
     less -R -f +F "--header=$PAGER_HEADER_LINES" -- "$FIFO"
+    rm -rf "$TMPD" 2>/dev/null
+    TMPD=""
     ;;
   pin)
     setup_screen
