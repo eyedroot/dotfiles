@@ -4,14 +4,14 @@ onboarding = false
 name = "catppuccin"
 
 [theme.custom]
-accent = "#eba0ac"
+accent = "#94e2d5"
 # Sidebar row backgrounds: active workspace uses surface_dim, the navigate
 # cursor uses surface0. Defaults are too close to the Mocha terminal bg.
 # surface_dim also paints the sidebar border AND the active workspace row
-# background (one token, not separable in config). This is the deepest rose
-# that keeps the light bold row text at ~3:1 contrast; going brighter toward
-# accent (#eba0ac) makes the active row unreadable again.
-surface_dim = "#a25a6d"
+# background (one token, not separable in config). Deep teal stays saturated
+# at low luminance, so the border reads vivid while the light bold row text
+# keeps ~3.4:1 contrast — unlike pink/red, which turns muddy when darkened.
+surface_dim = "#2a7a6e"
 surface0 = "#585b70"
 surface1 = "#6c7086"
 red = "#f38ba8"
