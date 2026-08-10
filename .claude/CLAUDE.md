@@ -20,6 +20,10 @@
 - Do not use emoji anywhere — not in prose, code, comments, commit messages, or documents.
 - When responding in Korean, never hand the reader a compressed noun to decode. Every technical concept arrives as a Korean clause with a verb, and the original term follows in parentheses so the reader learns it. Example: 검증에 실패하면 통과시키지 않고 막는다(fail-closed). Swapping an English noun for a Korean noun (fail-closed to 실패 시 적용 보류) does not count, because the reader is still left unpacking it. Exempt: code identifiers, class and file names, config keys.
 
+## Git Commits
+
+- Never append `Co-Authored-By:` trailers to commit messages. This applies to every repository and every commit, including amends, squashes, and rebases.
+
 ## Critique and Review
 
 - When pointing out problems, focus on the improvement path and next action rather than the failure itself.
