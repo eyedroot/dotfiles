@@ -1,7 +1,16 @@
 onboarding = false
 
 [theme]
-name = "vesper"
+name = "catppuccin"
+
+[theme.custom]
+accent = "#eba0ac"
+red = "#f38ba8"
+green = "#a6e3a1"
+yellow = "#f9e2af"
+blue = "#89b4fa"
+mauve = "#f5c2e7"
+teal = "#94e2d5"
 
 [ui.toast]
 delivery = "system"
