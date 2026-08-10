@@ -25,7 +25,13 @@ delivery = "system"
 [ui]
 show_agent_labels_on_pane_borders = true
 
-agent_panel_sort = "spaces"
+agent_panel_sort = "priority"
+
+# Compact agent rows: one line per agent, workspace dimmed for context so the
+# panel reads as an attention queue instead of a second workspace list.
+[ui.sidebar.agents]
+rows = [["state_icon", "agent", { token = "workspace", dim = true }]]
+
 [keys.indexed]
 tabs = "ctrl"
 
