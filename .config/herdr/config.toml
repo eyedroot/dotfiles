@@ -7,9 +7,11 @@ name = "catppuccin"
 accent = "#eba0ac"
 # Sidebar row backgrounds: active workspace uses surface_dim, the navigate
 # cursor uses surface0. Defaults are too close to the Mocha terminal bg.
-# surface_dim is rose-tinted (accent family) so the active row reads by hue,
-# not just brightness; also tints separators and unfocused pane borders.
-surface_dim = "#503a46"
+# surface_dim also paints the sidebar border AND the active workspace row
+# background (one token, not separable in config). This is the deepest rose
+# that keeps the light bold row text at ~3:1 contrast; going brighter toward
+# accent (#eba0ac) makes the active row unreadable again.
+surface_dim = "#a25a6d"
 surface0 = "#585b70"
 surface1 = "#6c7086"
 red = "#f38ba8"
@@ -25,10 +27,14 @@ delivery = "system"
 [ui]
 show_agent_labels_on_pane_borders = true
 
-agent_panel_sort = "priority"
+agent_panel_sort = "spaces"
 
-# Compact agent rows: one line per agent, workspace dimmed for context so the
-# panel reads as an attention queue instead of a second workspace list.
+# Wider sidebar: default width up from 26, drag cap up from the stock 36.
+sidebar_width = 32
+sidebar_max_width = 48
+
+# Compact agent rows: one line per agent, workspace dimmed for context, so
+# the panel does not read as a second workspace list.
 [ui.sidebar.agents]
 rows = [["state_icon", "agent", { token = "workspace", dim = true }]]
 
