@@ -5,6 +5,13 @@ name = "catppuccin"
 
 [theme.custom]
 accent = "#eba0ac"
+# Sidebar row backgrounds: active workspace uses surface_dim, the navigate
+# cursor uses surface0. Defaults are too close to the Mocha terminal bg.
+# surface_dim is rose-tinted (accent family) so the active row reads by hue,
+# not just brightness; also tints separators and unfocused pane borders.
+surface_dim = "#503a46"
+surface0 = "#585b70"
+surface1 = "#6c7086"
 red = "#f38ba8"
 green = "#a6e3a1"
 yellow = "#f9e2af"
@@ -18,6 +25,7 @@ delivery = "system"
 [ui]
 show_agent_labels_on_pane_borders = true
 
+agent_panel_sort = "spaces"
 [keys.indexed]
 tabs = "ctrl"
 
