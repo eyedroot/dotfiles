@@ -41,16 +41,36 @@ project=$(basename "$cwd")
 style=$(echo "$input" | jq -r '.output_style.name // "default"')
 vim_mode=$(echo "$input" | jq -r '.vim.mode // empty')
 
-# ── Worktree info (uses built-in workspace.git_worktree) ──
+# ── Worktree info ─────────────────────────────────────────
+# Distinguish the main (source) worktree from linked worktrees:
+#   main worktree with linked children  →  project ⌂
+#   linked worktree                     →  origin-project ↳ worktree-name
 real_project="$project"
 worktree_info=""
 wt_name=$(echo "$input" | jq -r '.workspace.git_worktree.name // empty')
-if [ -n "$wt_name" ]; then
-    wt_original=$(echo "$input" | jq -r '.workspace.git_worktree.original_repo_dir // empty')
+wt_original=$(echo "$input" | jq -r '.workspace.git_worktree.original_repo_dir // empty')
+
+abs_git_dir=$(git -C "$cwd" -c core.useBuiltinFSMonitor=false rev-parse --absolute-git-dir 2>/dev/null)
+common_dir=$(git -C "$cwd" -c core.useBuiltinFSMonitor=false rev-parse --git-common-dir 2>/dev/null)
+case "$common_dir" in
+    ""|/*) ;;
+    *) common_dir="$cwd/$common_dir" ;;
+esac
+
+if [ -n "$abs_git_dir" ] && [ "$abs_git_dir" != "$common_dir" ]; then
+    # linked worktree: show the origin repo as project, arrow to worktree name
     if [ -n "$wt_original" ]; then
         real_project=$(basename "$wt_original")
+    else
+        real_project=$(basename "$(dirname "$common_dir")")
     fi
-    worktree_info=$(printf "${sep}${peach}[%s]${reset}" "$wt_name")
+    if [ -z "$wt_name" ]; then
+        wt_name=$(basename "$(git -C "$cwd" -c core.useBuiltinFSMonitor=false rev-parse --show-toplevel 2>/dev/null)")
+    fi
+    worktree_info=$(printf "${sep}${peach}↳ %s${reset}" "$wt_name")
+elif [ -n "$abs_git_dir" ] && [ -d "$abs_git_dir/worktrees" ] && [ -n "$(ls -A "$abs_git_dir/worktrees" 2>/dev/null)" ]; then
+    # main worktree that has linked worktrees: mark as the source
+    worktree_info=$(printf " ${peach}⌂${reset}")
 fi
 
 # ── Git info ─────────────────────────────────────────────
