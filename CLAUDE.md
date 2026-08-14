@@ -17,6 +17,7 @@ This repository manages personal dotfiles using a bare Git repository.
 ~/.config/starship.toml                # Starship prompt config (optional)
 ~/.Brewfile                            # Homebrew packages list
 ~/.claude/settings.json.dotfiles       # Claude Code settings (no permissions)
+~/.claude/CLAUDE.md                    # Claude Code global working principles
 ~/.codex/AGENTS.md                     # Codex CLI agent instructions
 ~/.codex/config.toml.dotfiles          # Codex CLI config template (model, MCP servers, plugins)
 ~/.local/bin/morning-update            # Daily update routine (brew, node LTS via nvm, Codex, npm globals, claude, herdr)
@@ -61,7 +62,7 @@ git --git-dir=$HOME/.dotfiles --work-tree=$HOME <command>
 | Automation | `~/.hammerspoon/init.lua` | Yes | global hotkeys, macOS automation |
 | Shell configs | `~/.zshrc.shared` | Yes | aliases, Starship init |
 | Package lists | `~/.Brewfile` | Yes | brew formulae & casks |
-| Claude Code | `~/.claude/settings.json.dotfiles` | Yes | model, plugins, statusLine |
+| Claude Code | `~/.claude/{settings.json.dotfiles,CLAUDE.md}` | Yes | model, plugins, statusLine, working principles |
 | Codex CLI | `~/.codex/{AGENTS.md,config.toml.dotfiles}` | Yes | agent rules, model, MCP servers (template) |
 | Codex local | `~/.codex/config.toml` | No | machine-specific (trusted projects, hooks.state, marketplaces) |
 | Codex state | `~/.codex/{auth.json,*.sqlite,sessions/,logs/}` | No | auth tokens, runtime state |

@@ -20,6 +20,15 @@
 - Do not use emoji anywhere — not in prose, code, comments, commit messages, or documents.
 - When responding in Korean, never hand the reader a compressed noun to decode. Every technical concept arrives as a Korean clause with a verb, and the original term follows in parentheses so the reader learns it. Example: 검증에 실패하면 통과시키지 않고 막는다(fail-closed). Swapping an English noun for a Korean noun (fail-closed to 실패 시 적용 보류) does not count, because the reader is still left unpacking it. Exempt: code identifiers, class and file names, config keys.
 
+## Explaining Technical Findings
+
+- Lead with a concrete scenario, not a taxonomy. Do not open with labeled buckets (`C-1`, `H-2`, severity tables); that makes the reader decode a classification before they understand the problem.
+- Walk through what actually happens: name the actor, show the input or request, and follow it step by step to the point where it breaks. A runnable line (`curl ...`) or a file:line trace beats a description of the category.
+- Introduce short labels only after the scenario has landed, and only as handles for referring back to it later.
+- Prefer one worked example over an exhaustive list. When several findings share a root cause, explain the cause once through a single scenario and mention the rest as variations of it.
+- When claiming something is unsafe or broken, show the path the request actually takes. An assertion without a traceable path is a classification, not an explanation.
+- The same applies when disagreeing with the user. Do not restate the conclusion louder; replay their reasoning against a concrete case and show where the case diverges from it.
+
 ## Git Commits
 
 - Never append `Co-Authored-By:` trailers to commit messages. This applies to every repository and every commit, including amends, squashes, and rebases.

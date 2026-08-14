@@ -14,6 +14,7 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.dotfiles-install.sh` - Installation script
 - `~/.Brewfile` - Homebrew packages (formulae & casks)
 - `~/.claude/settings.json.dotfiles` - Claude Code settings (model, plugins, status line)
+- `~/.claude/CLAUDE.md` - Claude Code global working principles (accuracy, response style, review stance)
 - `~/.codex/AGENTS.md` - Codex CLI agent instructions
 - `~/.codex/config.toml.dotfiles` - Codex CLI config template (model, MCP servers, plugins)
 - `~/.tmux.conf` - tmux configuration (Catppuccin Mocha theme, TPM)
