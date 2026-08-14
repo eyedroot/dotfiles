@@ -7,7 +7,7 @@ This repository manages personal dotfiles using a bare Git repository.
 ## Repository Structure
 
 - Bare git repository: `~/.dotfiles`, work tree: `$HOME`
-- Full list of tracked files: see the Contents section of `~/README.md`, or run `dotfiles ls-files`
+- Full list of tracked files: see the Contents section of `~/README.md`, or run `dotfiles ls-tree -r --full-tree --name-only HEAD` (works from any directory; plain `ls-files` only lists files under the current directory)
 
 ## Git Commands
 
