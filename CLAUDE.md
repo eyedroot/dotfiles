@@ -88,8 +88,6 @@ git --git-dir=$HOME/.dotfiles --work-tree=$HOME <command>
 
 - Detail 1
 - Detail 2
-
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 ```
 
 Types: `Add`, `Update`, `Fix`, `Remove`
