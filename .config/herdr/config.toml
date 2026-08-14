@@ -22,7 +22,7 @@ mauve = "#f5c2e7"
 teal = "#94e2d5"
 
 [ui.toast]
-delivery = "system"
+delivery = "terminal"
 
 [ui]
 show_agent_labels_on_pane_borders = true
