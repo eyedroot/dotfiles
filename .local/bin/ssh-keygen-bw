@@ -3,9 +3,27 @@
 # GUI apps inherit launchd's default SSH_AUTH_SOCK (Apple agent), not the
 # Bitwarden socket set in .zshrc.shared, so signing fails with
 # "Couldn't find key in agent". Force the Bitwarden socket here.
+#
+# Bitwarden 2 is sandboxed and creates its socket inside its container, while
+# older builds used the home directory. Both paths can exist at once and the
+# stale one still has a socket file that refuses connections, so probe for a
+# reachable agent instead of hardcoding a path.
+#
 # Registered via: git config --global gpg.ssh.program ~/.local/bin/ssh-keygen-bw
 set -u
 
-export SSH_AUTH_SOCK="$HOME/.bitwarden-ssh-agent.sock"
+for candidate in \
+  "$HOME/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock" \
+  "$HOME/.bitwarden-ssh-agent.sock"
+do
+  [ -S "$candidate" ] || continue
+
+  SSH_AUTH_SOCK="$candidate" /usr/bin/ssh-add -l >/dev/null 2>&1
+  # exit 2 means the agent is unreachable; 0 and 1 both mean it answered.
+  [ $? -eq 2 ] && continue
+
+  export SSH_AUTH_SOCK="$candidate"
+  break
+done
 
 exec /usr/bin/ssh-keygen "$@"
