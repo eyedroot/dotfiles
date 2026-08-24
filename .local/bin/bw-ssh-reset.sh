@@ -2,8 +2,10 @@
 # Bitwarden SSH agent reset — used after macOS sleep/wake hang.
 set -u
 
-SOCK="${SSH_AUTH_SOCK:-$HOME/.bitwarden-ssh-agent.sock}"
-APP_NAME="Bitwarden"
+SOCK="${SSH_AUTH_SOCK:-$HOME/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock}"
+APP_NAME="Bitwarden 2"
+# The binary inside the Bitwarden 2 bundle is still named "Bitwarden"
+PROC_NAME="Bitwarden"
 
 echo "[bw-ssh-reset] SSH_AUTH_SOCK=$SOCK"
 
@@ -12,14 +14,14 @@ osascript -e "tell application \"$APP_NAME\" to quit" 2>/dev/null
 
 # Wait for processes to actually exit (max 5s)
 for i in 1 2 3 4 5; do
-    if ! pgrep -x "$APP_NAME" >/dev/null 2>&1; then
+    if ! pgrep -x "$PROC_NAME" >/dev/null 2>&1; then
         break
     fi
     sleep 1
 done
 
 # Force kill if still alive
-if pgrep -x "$APP_NAME" >/dev/null 2>&1; then
+if pgrep -x "$PROC_NAME" >/dev/null 2>&1; then
     echo "[bw-ssh-reset] graceful quit failed, force killing..."
     pkill -f "/Applications/$APP_NAME.app" 2>/dev/null
     sleep 1

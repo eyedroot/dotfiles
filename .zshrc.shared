@@ -24,8 +24,20 @@ alias obsidian='cd ~/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/eyed
 # Stage PostgreSQL port-forward (connect DB client to 127.0.0.1:15432)
 alias pg-stage='kubectl --context tk-stage -n kollus-postgresql port-forward svc/postgresql 15432:5432'
 
-# Bitwarden SSH agent — socket path + reset script
-export SSH_AUTH_SOCK="$HOME/.bitwarden-ssh-agent.sock"
+# Bitwarden SSH agent — pick the first reachable socket + reset script.
+# Bitwarden 2 (sandboxed) keeps its socket inside the app container; the old
+# home-dir socket may linger stale and refuse connections, so probe both.
+for _bw_sock in \
+  "$HOME/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock" \
+  "$HOME/.bitwarden-ssh-agent.sock"; do
+  [ -S "$_bw_sock" ] || continue
+  SSH_AUTH_SOCK="$_bw_sock" ssh-add -l >/dev/null 2>&1
+  # exit 2 means the agent is unreachable; 0 and 1 both mean it answered.
+  [ $? -eq 2 ] && continue
+  export SSH_AUTH_SOCK="$_bw_sock"
+  break
+done
+unset _bw_sock
 alias bw-fix='~/.local/bin/bw-ssh-reset.sh'
 
 # Zoxide - smarter cd command
