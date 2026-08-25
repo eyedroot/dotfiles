@@ -90,7 +90,7 @@ delivery = "terminal"
 # All pairs clear WCAG AA on both the mantle sidebar and the active row.
 
 # Space rows: name, then branch · ahead/behind · uncommitted changes.
-# The branch is Mocha blue (#89b4fa, 6.8:1 on the active row, 8.7:1 on the
+# The branch is Mocha blue (#89b4fa, 6.8:1 on the active row, 8.3:1 on the
 # sidebar) with `dim = false`, so it is the one cool-toned cue in the panel
 # and reads as "which branch" at a glance instead of blending into the grays.
 # $dirty is reported by status.sh as "±<tracked changes> ?<untracked>" and
