@@ -59,6 +59,7 @@
     "CLAUDE_CODE_NO_FLICKER": "1"
   },
   "language": "korean",
+  "outputStyle": "fluent-korean:fluent-korean",
   "sandbox": {
     "enabled": true,
     "network": {
