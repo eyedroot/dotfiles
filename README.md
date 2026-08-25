@@ -5,7 +5,7 @@ Personal dotfiles managed with a bare Git repository.
 ## Contents
 
 - `~/.config/ghostty/config` - Ghostty terminal configuration
-- `~/.config/herdr/config.toml` - herdr (tmux) tab shortcuts + theme
+- `~/.config/herdr/config.toml` - herdr workspace manager: theme, sidebar rows, tab-bar status (with `status.sh` agent/git reporter)
 - `~/.config/karabiner/karabiner.json` - Karabiner-Elements key mappings (macOS)
 - `~/Library/KeyBindings/DefaultKeyBinding.dict` - macOS key bindings (₩ → ` 변환)
 - `~/.vimrc` - Vim configuration
