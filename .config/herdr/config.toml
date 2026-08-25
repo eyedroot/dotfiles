@@ -116,7 +116,7 @@ rows = [
 # contextual style for secondary rows applies dim, which Ghostty renders by
 # blending the color toward the background — that is what made the earlier
 # rosewater line look washed out). Peach on the burgundy row is 8.0:1, on the
-# mantle sidebar 10.3:1.
+# mantle sidebar 9.9:1.
 [ui.sidebar.agents.rows_by_agent]
 claude = [
   ["state_icon", { token = "agent", fg = "#eba0ac", bold = true }, { token = "state_text", fg = "#cfbfc5" }, { token = "workspace", fg = "#b4a5aa" }],
