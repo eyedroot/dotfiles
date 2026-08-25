@@ -85,17 +85,21 @@ delivery = "terminal"
 # explicit light foreground instead of `dim`, because dimmed text disappears
 # on the colored active row. Warm scale, top to bottom: peach #fab387
 # (Claude topic line, bold), maroon #eba0ac (agent name), rose-gray #cfbfc5
-# (state), warm subtext #b4a5aa (workspace / branch), yellow #f9e2af ($dirty).
+# (state), warm subtext #b4a5aa (workspace), blue #89b4fa (branch), yellow
+# #f9e2af ($dirty).
 # All pairs clear WCAG AA on both the mantle sidebar and the active row.
 
 # Space rows: name, then branch · ahead/behind · uncommitted changes.
+# The branch is Mocha blue (#89b4fa, 6.8:1 on the active row, 8.7:1 on the
+# sidebar) with `dim = false`, so it is the one cool-toned cue in the panel
+# and reads as "which branch" at a glance instead of blending into the grays.
 # $dirty is reported by status.sh as "±<tracked changes> ?<untracked>" and
 # disappears when the tree is clean (or when the reporter stops: 30s TTL).
 [ui.sidebar.spaces]
 row_gap = 0
 rows = [
   ["state_icon", "workspace"],
-  [{ token = "branch", fg = "#b4a5aa" }, "git_status", { token = "$dirty", fg = "#f9e2af" }],
+  [{ token = "branch", fg = "#89b4fa", dim = false }, "git_status", { token = "$dirty", fg = "#f9e2af" }],
 ]
 
 # Agent rows: one status line per agent, workspace in a softer tone for
