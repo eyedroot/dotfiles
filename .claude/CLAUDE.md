@@ -20,6 +20,18 @@
 - Do not use emoji anywhere — not in prose, code, comments, commit messages, or documents.
 - When responding in Korean, never hand the reader a compressed noun to decode. Every technical concept arrives as a Korean clause with a verb, and the original term follows in parentheses so the reader learns it. Example: 검증에 실패하면 통과시키지 않고 막는다(fail-closed). Swapping an English noun for a Korean noun (fail-closed to 실패 시 적용 보류) does not count, because the reader is still left unpacking it. Exempt: code identifiers, class and file names, config keys.
 
+## Code Comments and Documentation
+
+- Do not add comments that restate syntax or narrate what the code plainly does.
+- Do not leave ephemeral context from prompts, chat, plans, or the editing process in code comments or documentation.
+- Prefer clear names, types, enums, named constants, and small functions to comments.
+- Use comments only for information not recoverable from code: rationale and tradeoffs, invariants, external constraints, non-obvious security or performance reasons, and temporary workarounds.
+- For a temporary workaround, include a stable issue link and its removal condition when possible.
+- Keep public API documentation focused on contracts, inputs and outputs, errors, side effects, lifetime, and ownership.
+- Put cross-cutting design decisions in project documentation or ADRs, and verifiable behavior and edge cases in tests.
+- Before finishing, audit every added or modified comment and delete it if removing it would lose no non-obvious information.
+- Do not delete existing comments outside the requested scope.
+
 ## Explaining Technical Findings
 
 - Lead with a concrete scenario, not a taxonomy. Do not open with labeled buckets (`C-1`, `H-2`, severity tables); that makes the reader decode a classification before they understand the problem.
