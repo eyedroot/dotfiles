@@ -41,8 +41,9 @@ git --git-dir=$HOME/.dotfiles --work-tree=$HOME <command>
 | Automation | `~/.hammerspoon/init.lua` | Yes | global hotkeys, macOS automation |
 | Shell configs | `~/.zshrc.shared` | Yes | aliases, Starship init |
 | Package lists | `~/.Brewfile` | Yes | brew formulae & casks |
-| Claude Code | `~/.claude/{settings.json.dotfiles,CLAUDE.md}` | Yes | model, plugins, statusLine, working principles |
-| Codex CLI | `~/.codex/{AGENTS.md,config.toml.dotfiles}` | Yes | agent rules, model, MCP servers (template) |
+| Agent principles | `~/.agents/AGENTS.md` | Yes | shared working principles (single source) |
+| Claude Code | `~/.claude/{settings.json.dotfiles,CLAUDE.md}` | Yes | model, plugins, statusLine; CLAUDE.md imports `~/.agents/AGENTS.md` |
+| Codex CLI | `~/.codex/{AGENTS.md,config.toml.dotfiles}` | Yes | AGENTS.md is a symlink to `~/.agents/AGENTS.md`; config template |
 | Codex local | `~/.codex/config.toml` | No | machine-specific (trusted projects, hooks.state, marketplaces) |
 | Codex state | `~/.codex/{auth.json,*.sqlite,sessions/,logs/}` | No | auth tokens, runtime state |
 | Machine-specific | `~/.zshrc.secrets` | No | API keys, local paths |

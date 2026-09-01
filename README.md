@@ -13,9 +13,10 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.config/starship.toml` - Starship prompt configuration (optional)
 - `~/.dotfiles-install.sh` - Installation script
 - `~/.Brewfile` - Homebrew packages (formulae & casks)
+- `~/.agents/AGENTS.md` - Shared agent working principles (single source for Claude Code and Codex CLI)
 - `~/.claude/settings.json.dotfiles` - Claude Code settings (model, plugins, status line)
-- `~/.claude/CLAUDE.md` - Claude Code global working principles (accuracy, response style, review stance)
-- `~/.codex/AGENTS.md` - Codex CLI agent instructions
+- `~/.claude/CLAUDE.md` - Claude Code global memory (imports `~/.agents/AGENTS.md`)
+- `~/.codex/AGENTS.md` - Codex CLI agent instructions (symlink to `~/.agents/AGENTS.md`)
 - `~/.codex/config.toml.dotfiles` - Codex CLI config template (model, MCP servers, plugins)
 - `~/.tmux.conf` - tmux configuration (Catppuccin Mocha theme, TPM)
 - `~/.config/intelephense/settings.json` - Intelephense PHP LSP settings
