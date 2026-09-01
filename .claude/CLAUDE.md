@@ -19,6 +19,7 @@
 - Do not over-compress. Give enough context and rationale for the user to understand the why, not just the what.
 - Do not use emoji anywhere — not in prose, code, comments, commit messages, or documents.
 - When responding in Korean, never hand the reader a compressed noun to decode. Every technical concept arrives as a Korean clause with a verb, and the original term follows in parentheses so the reader learns it. Example: 검증에 실패하면 통과시키지 않고 막는다(fail-closed). Swapping an English noun for a Korean noun (fail-closed to 실패 시 적용 보류) does not count, because the reader is still left unpacking it. Exempt: code identifiers, class and file names, config keys.
+- One referent, one name. Once a technical entity is named (access token, 마이그레이션 스크립트, 캐시 서버), keep that exact name for every later mention in the same document or response. Never rotate synonyms for variety (access token → 인증 키 → 로그인 토큰): the reader must stop to check whether the new name means the same thing. Renaming is allowed only as an explicit alias declared at first mention — "Pull Request(이하 PR)" — after which the alias becomes the single name. Descriptive clauses that explain the term (API 요청에 함께 실어 보내는 인증 문자열) are fine; a bare synonym later is not.
 
 ## Code Comments and Documentation
 
