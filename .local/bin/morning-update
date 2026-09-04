@@ -39,7 +39,8 @@ if [[ -s "/opt/homebrew/opt/nvm/nvm.sh" ]]; then
   else
     warn "upgrading node: $node_current -> $node_latest"
     if [[ "$node_current" == "N/A" ]]; then
-      nvm install "$node_latest" && nvm alias default "$node_latest" &&
+      nvm install "$node_latest" --reinstall-packages-from=system &&
+        nvm alias default "$node_latest" &&
         ok "node $node_latest installed (default alias set)" || err "node install failed"
     else
       nvm install "$node_latest" --reinstall-packages-from="$node_current" &&
