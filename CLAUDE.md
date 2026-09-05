@@ -7,7 +7,9 @@ This repository manages personal dotfiles using a bare Git repository.
 ## Repository Structure
 
 - Bare git repository: `~/.dotfiles`, work tree: `$HOME`
-- Full list of tracked files: see the Contents section of `~/README.md`, or run `dotfiles ls-tree -r --full-tree --name-only HEAD` (works from any directory; plain `ls-files` only lists files under the current directory)
+- Shared behavior, verification, and authorization rules: `~/.agents/AGENTS.md`, loaded through the agent's global instructions. The rules below specialize dotfiles maintenance.
+- Full list of tracked files: run `dotfiles ls-tree -r --full-tree --name-only HEAD` (works from any directory; plain `ls-files` only lists files under the current directory)
+- Verify the relevant files against Git, current configuration, and installation code. Treat the classification below as orientation, not proof of the current tracking state.
 
 ## Git Commands
 
@@ -28,10 +30,10 @@ git --git-dir=$HOME/.dotfiles --work-tree=$HOME <command>
 
 ### Adding New Config Files
 
-1. Add the file to tracking: `dotfiles add ~/.config/app/config`
-2. Commit with descriptive message
-3. **Update README.md** if adding new application configs
-4. Push changes
+1. Inspect Git status and the proposed file contents; confirm the file is portable and contains no secrets.
+2. When committing is authorized, stage only the requested files: `dotfiles add <file>`.
+3. Review the staged diff and run checks appropriate to the changed files.
+4. Commit and push only when explicitly requested, using the commit message format below.
 
 ### File Classification
 
@@ -55,11 +57,8 @@ git --git-dir=$HOME/.dotfiles --work-tree=$HOME <command>
 1. **Never track sensitive data**: API keys, tokens, passwords go in `.zshrc.secrets`
 2. **Never track machine-specific paths**: Absolute paths like `/Users/username/...` go in `.zshrc.secrets`
 3. **Use `$HOME` instead of `~` or absolute paths** in tracked files
-4. **Always update README.md** when:
-   - Adding new config files
-   - Changing installation process
-   - Adding new features to install script
-5. **Test install script** after modifications
+4. **Validate the changed behavior**: Distinguish valid file syntax from successful application loading and observed runtime behavior. Do not report deployment or activation based only on a file edit.
+5. **Test installation changes in isolation**: When `.dotfiles-install.sh` changes, check its syntax and test the affected steps in an isolated environment; do not rerun installation for unrelated configuration or instruction edits.
 
 ### Commit Message Format
 
@@ -74,7 +73,7 @@ Types: `Add`, `Update`, `Fix`, `Remove`
 
 ## Installation Script Maintenance
 
-When modifying `.dotfiles-install.sh` (step details live in the script itself and `~/README.md`):
+When modifying `.dotfiles-install.sh`, inspect the affected steps in the script:
 
 1. Maintain support for multiple package managers (brew, apt, dnf, yum, pacman)
 2. Keep the dependency list updated: `DEPENDENCIES=(git zsh vim)`
