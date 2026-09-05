@@ -1,4 +1,0 @@
-interface:
-  display_name: "Terminal RPG EAS Release"
-  short_description: "Terminal RPG iOS build and OTA workflow"
-  default_prompt: "Use $terminal-rpg-eas-release to verify and ship the requested Terminal RPG iOS build or OTA update."
