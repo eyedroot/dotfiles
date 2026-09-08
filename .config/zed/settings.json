@@ -79,7 +79,7 @@
   "vim_mode": false,
   "theme": {
     "mode": "light",
-    "light": "One Light",
+    "light": "Sharp Solarized+",
     "dark": "BlackFox",
   },
   "minimap": {
