@@ -94,8 +94,8 @@ if [ "$usage" != "null" ]; then
     filled=$((pct / 10))
     empty=$((10 - filled))
     bar=""
-    for ((i=0; i<filled; i++)); do bar+="▰"; done
-    for ((i=0; i<empty; i++)); do bar+="▱"; done
+    for ((i=0; i<filled; i++)); do bar+="■"; done
+    for ((i=0; i<empty; i++)); do bar+="□"; done
     ctx_info=$(printf "${sep}${red}%s${reset} ${gray}%d%%${reset}" "$bar" "$pct")
 fi
 
@@ -216,8 +216,8 @@ if [ -n "$usage_data" ] && echo "$usage_data" | jq -e '.five_hour' >/dev/null 2>
     [ "$rate_filled" -lt 0 ] && rate_filled=0
     rate_empty=$(( 10 - rate_filled ))
     rate_bar=""
-    for ((i=0; i<rate_filled; i++)); do rate_bar+="▰"; done
-    for ((i=0; i<rate_empty; i++)); do rate_bar+="▱"; done
+    for ((i=0; i<rate_filled; i++)); do rate_bar+="■"; done
+    for ((i=0; i<rate_empty; i++)); do rate_bar+="□"; done
     rate_info=$(printf "${sep}${teal}↻${reset} ${bold}${rate_color}%s${reset}" "$rate_bar")
     if [ -n "$reset_time" ]; then
         rate_info+=$(printf " ${gray}→ %s${reset}" "$reset_time")
