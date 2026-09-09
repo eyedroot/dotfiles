@@ -7,7 +7,7 @@ font-family = "D2Coding Ligature"
 # font-family = "Geist Mono"
 font-size = 15
 font-thicken = true
-adjust-cell-height = 25%
+adjust-cell-height = 20%
 
 # Theme
 # theme = Catppuccin Latte
