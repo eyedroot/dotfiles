@@ -45,9 +45,12 @@ Shared global instructions for coding agents. Claude Code imports this file via 
 ## Code Comments and Documentation
 
 - Do not add comments that restate syntax or narrate what the code plainly does.
+- Do not restate a method, class, or property name in its own docblock. If the sentence is just the name spelled out in prose, delete it.
 - Do not leave ephemeral context from prompts, chat, plans, or the editing process in code comments or documentation.
 - Prefer clear names, types, enums, named constants, and small functions to comments.
 - Use comments only for information not recoverable from code: rationale and tradeoffs, invariants, external constraints, non-obvious security or performance reasons, and temporary workarounds.
+- Before writing a doc comment, name the one thing a reader would lose if it were absent. If nothing comes to mind, do not write it.
+- Write comments in plain, everyday language, and keep this rule even though comments otherwise follow project conventions rather than response style. Name the actual thing instead of gesturing at it with an abstract or figurative noun, and choose the familiar word over the compact one. In Korean, that means writing 클래스 rather than 골격, 기존 가입 워크스페이스 rather than 기가입, and 담당 범위 rather than 관심사.
 - For a temporary workaround, include a stable issue link and its removal condition when possible.
 - Keep public API documentation focused on contracts, inputs and outputs, errors, side effects, lifetime, and ownership.
 - Put cross-cutting design decisions in project documentation or ADRs, and verifiable behavior and edge cases in tests.
