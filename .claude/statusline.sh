@@ -13,25 +13,38 @@ bold='\033[1m'
 dim='\033[2m'
 reset='\033[0m'
 
-# Colorful palette: Catppuccin Mocha vivid
-mauve='\033[38;2;203;166;247m'     # project name (Mocha Mauve)
-sapphire='\033[38;2;116;199;236m'  # model name (Mocha Sapphire)
-red='\033[38;2;243;139;168m'       # git dirty / context bar (Mocha Red)
-teal='\033[38;2;148;226;213m'      # rate limit icon (Mocha Teal)
-green='\033[38;2;166;227;161m'     # git clean branch (Mocha Green)
-gray='\033[38;2;186;194;222m'      # sub text (Mocha Subtext1)
-black='\033[38;2;127;132;156m'     # separators (Mocha Overlay1)
-yellow='\033[38;2;249;226;175m'    # folder icon (Mocha Yellow)
-peach='\033[38;2;250;179;135m'     # worktree info (Mocha Peach)
-lavender='\033[38;2;180;190;254m'  # style info (Mocha Lavender)
+if [ "$TERM_PROGRAM" = "Unpeel" ]; then
+    layout="ink"
+    # Unpeel runs on a light background. Hue is reserved for what needs attention;
+    # everything else separates by value alone. slate-300 measures 1.5:1 against
+    # white, too faint to see, so the recessive tone is slate-400 instead.
+    ink='\033[38;2;15;23;42m'      # project and model name (slate 900)
+    body='\033[38;2;71;85;105m'    # branch, percentages, output style (slate 600)
+    faint='\033[38;2;148;163;184m' # separators and labels (slate 400)
+    alert='\033[38;2;185;28;28m'   # dirty worktree, 5h usage past 90% (red 700)
 
-rate_low='\033[38;2;148;226;213m'  # Teal (safe)
-rate_mid='\033[38;2;249;226;175m'  # Yellow (warm)
-rate_high='\033[38;2;250;179;135m' # Peach (orange)
-rate_crit='\033[38;2;243;139;168m' # Red (critical)
+    sep=" ${faint}·${reset} "
+else
+    layout="vivid"
+    # Colorful palette: Catppuccin Mocha vivid
+    mauve='\033[38;2;203;166;247m'     # project name (Mocha Mauve)
+    sapphire='\033[38;2;116;199;236m'  # model name (Mocha Sapphire)
+    red='\033[38;2;243;139;168m'       # git dirty / context bar (Mocha Red)
+    teal='\033[38;2;148;226;213m'      # rate limit icon (Mocha Teal)
+    green='\033[38;2;166;227;161m'     # git clean branch (Mocha Green)
+    gray='\033[38;2;186;194;222m'      # sub text (Mocha Subtext1)
+    black='\033[38;2;127;132;156m'     # separators (Mocha Overlay1)
+    yellow='\033[38;2;249;226;175m'    # folder icon (Mocha Yellow)
+    peach='\033[38;2;250;179;135m'     # worktree info (Mocha Peach)
+    lavender='\033[38;2;180;190;254m'  # style info (Mocha Lavender)
 
+    rate_low='\033[38;2;148;226;213m'  # Teal (safe)
+    rate_mid='\033[38;2;249;226;175m'  # Yellow (warm)
+    rate_high='\033[38;2;250;179;135m' # Peach (orange)
+    rate_crit='\033[38;2;243;139;168m' # Red (critical)
 
-sep=" ${black}│${reset} "
+    sep=" ${black}│${reset} "
+fi
 
 # ── Extract JSON data ────────────────────────────────────
 model=$(echo "$input" | jq -r '.model.display_name // "Claude"')
@@ -67,10 +80,18 @@ if [ -n "$abs_git_dir" ] && [ "$abs_git_dir" != "$common_dir" ]; then
     if [ -z "$wt_name" ]; then
         wt_name=$(basename "$(git -C "$cwd" -c core.useBuiltinFSMonitor=false rev-parse --show-toplevel 2>/dev/null)")
     fi
-    worktree_info=$(printf "${sep}${peach}↳ %s${reset}" "$wt_name")
+    if [ "$layout" = "ink" ]; then
+        worktree_info=$(printf "${sep}${body}↳ %s${reset}" "$wt_name")
+    else
+        worktree_info=$(printf "${sep}${peach}↳ %s${reset}" "$wt_name")
+    fi
 elif [ -n "$abs_git_dir" ] && [ -d "$abs_git_dir/worktrees" ] && [ -n "$(ls -A "$abs_git_dir/worktrees" 2>/dev/null)" ]; then
     # main worktree that has linked worktrees: mark as the source
-    worktree_info=$(printf " ${peach}⌂${reset}")
+    if [ "$layout" = "ink" ]; then
+        worktree_info=$(printf " ${faint}⌂${reset}")
+    else
+        worktree_info=$(printf " ${peach}⌂${reset}")
+    fi
 fi
 
 # ── Git info ─────────────────────────────────────────────
@@ -78,9 +99,17 @@ git_info=""
 if git -C "$cwd" -c core.useBuiltinFSMonitor=false rev-parse --git-dir > /dev/null 2>&1; then
     branch=$(git -C "$cwd" -c core.useBuiltinFSMonitor=false rev-parse --abbrev-ref HEAD 2>/dev/null)
     if ! git -C "$cwd" -c core.useBuiltinFSMonitor=false diff-index --quiet HEAD -- 2>/dev/null; then
-        git_info=$(printf "${sep}${bold}${red}⑃ %s${reset} ${bold}${red}±${reset}" "$branch")
+        if [ "$layout" = "ink" ]; then
+            git_info=$(printf "${sep}${body}%s${reset} ${alert}±${reset}" "$branch")
+        else
+            git_info=$(printf "${sep}${bold}${red}⑃ %s${reset} ${bold}${red}±${reset}" "$branch")
+        fi
     else
-        git_info=$(printf "${sep}${green}⑃ %s${reset}" "$branch")
+        if [ "$layout" = "ink" ]; then
+            git_info=$(printf "${sep}${body}%s${reset}" "$branch")
+        else
+            git_info=$(printf "${sep}${green}⑃ %s${reset}" "$branch")
+        fi
     fi
 fi
 
@@ -96,19 +125,29 @@ if [ "$usage" != "null" ]; then
     bar=""
     for ((i=0; i<filled; i++)); do bar+="■"; done
     for ((i=0; i<empty; i++)); do bar+="□"; done
-    ctx_info=$(printf "${sep}${red}%s${reset} ${gray}%d%%${reset}" "$bar" "$pct")
+    if [ "$layout" = "ink" ]; then
+        ctx_info=$(printf "${sep}${body}%d%%${reset}" "$pct")
+    else
+        ctx_info=$(printf "${sep}${red}%s${reset} ${gray}%d%%${reset}" "$bar" "$pct")
+    fi
 fi
 
 # ── Style info ───────────────────────────────────────────
 style_info=""
 if [ "$style" != "default" ]; then
-    style_info=$(printf "${sep}${lavender}⚙ %s${reset}" "$style")
+    if [ "$layout" = "ink" ]; then
+        style_info=$(printf "${sep}${body}%s${reset}" "$style")
+    else
+        style_info=$(printf "${sep}${lavender}⚙ %s${reset}" "$style")
+    fi
 fi
 
 # ── Vim mode ─────────────────────────────────────────────
 vim_info=""
 if [ -n "$vim_mode" ]; then
-    if [ "$vim_mode" = "NORMAL" ]; then
+    if [ "$layout" = "ink" ]; then
+        vim_info=$(printf "${sep}${alert}%s${reset}" "${vim_mode:0:1}")
+    elif [ "$vim_mode" = "NORMAL" ]; then
         vim_info=$(printf "${sep}${bold}${red}▌N${reset}")
     else
         vim_info=$(printf "${sep}${bold}${red}▌I${reset}")
@@ -188,7 +227,13 @@ rate_info=""
 if [ -n "$usage_data" ] && echo "$usage_data" | jq -e '.five_hour' >/dev/null 2>&1; then
     five_pct=$(echo "$usage_data" | jq -r '.five_hour.utilization // 0' | awk '{printf "%.0f", $1}')
 
-    if [ "$five_pct" -ge 90 ]; then
+    if [ "$layout" = "ink" ]; then
+        if [ "$five_pct" -ge 90 ]; then
+            rate_color="$alert"
+        else
+            rate_color="$body"
+        fi
+    elif [ "$five_pct" -ge 90 ]; then
         rate_color="$rate_crit"
     elif [ "$five_pct" -ge 70 ]; then
         rate_color="$rate_high"
@@ -218,19 +263,37 @@ if [ -n "$usage_data" ] && echo "$usage_data" | jq -e '.five_hour' >/dev/null 2>
     rate_bar=""
     for ((i=0; i<rate_filled; i++)); do rate_bar+="■"; done
     for ((i=0; i<rate_empty; i++)); do rate_bar+="□"; done
-    rate_info=$(printf "${sep}${teal}↻${reset} ${bold}${rate_color}%s${reset}" "$rate_bar")
+    if [ "$layout" = "ink" ]; then
+        rate_info=$(printf "${sep}${faint}5h${reset} ${rate_color}%d%%${reset}" "$five_pct")
+    else
+        rate_info=$(printf "${sep}${teal}↻${reset} ${bold}${rate_color}%s${reset}" "$rate_bar")
+    fi
     if [ -n "$reset_time" ]; then
-        rate_info+=$(printf " ${gray}→ %s${reset}" "$reset_time")
+        if [ "$layout" = "ink" ]; then
+            rate_info+=$(printf " ${faint}→ %s${reset}" "$reset_time")
+        else
+            rate_info+=$(printf " ${gray}→ %s${reset}" "$reset_time")
+        fi
     fi
 fi
 
 # ── Output ───────────────────────────────────────────────
 # Line 1: project + git info
-printf "${bold}${mauve}✺ \033[4m%s${reset}%s%s" \
-    "$real_project" "$worktree_info" "$git_info"
+if [ "$layout" = "ink" ]; then
+    printf "${bold}${ink}%s${reset}%s%s" \
+        "$real_project" "$worktree_info" "$git_info"
+else
+    printf "${bold}${mauve}✺ \033[4m%s${reset}%s%s" \
+        "$real_project" "$worktree_info" "$git_info"
+fi
 echo ""
 # Line 2: model + context + rate limit + style + vim
-printf "${bold}${sapphire}%s${reset}%s%s%s%s" \
-    "$model" "$ctx_info" "$rate_info" "$style_info" "$vim_info"
+if [ "$layout" = "ink" ]; then
+    printf "${ink}%s${reset}%s%s%s%s" \
+        "$model" "$ctx_info" "$rate_info" "$style_info" "$vim_info"
+else
+    printf "${bold}${sapphire}%s${reset}%s%s%s%s" \
+        "$model" "$ctx_info" "$rate_info" "$style_info" "$vim_info"
+fi
 
 exit 0

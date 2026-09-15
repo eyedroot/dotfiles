@@ -58,6 +58,16 @@ fi
 
 # Starship prompt
 if command -v starship &> /dev/null; then
+  # Starship's palette key is static, so Unpeel (light background) gets a generated
+  # copy of the shared config with only the palette line swapped.
+  if [ "$TERM_PROGRAM" = "Unpeel" ]; then
+    starship_daylight_config="${XDG_CACHE_HOME:-$HOME/.cache}/starship/starship.daylight.toml"
+    mkdir -p "$(dirname "$starship_daylight_config")"
+    sed "s/^palette = 'm365princess'$/palette = 'm365princess_daylight'/" \
+      "$HOME/.config/starship.toml" > "$starship_daylight_config"
+    export STARSHIP_CONFIG="$starship_daylight_config"
+    unset starship_daylight_config
+  fi
   eval "$(starship init zsh)"
 fi
 

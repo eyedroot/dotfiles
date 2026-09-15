@@ -183,14 +183,16 @@ red = "#E06C75"
 green = "#98C379"
 yellow = "#E5C07B"
 
-# M365Princess Light Palette (Catppuccin Latte based)
-[palettes.m365princess_light]
-plum = "#8839EF"
-blush = "#EA76CB"
-salmon = "#FE640B"
-sky = "#209FB5"
-teal_blue = "#1E66F5"
+# M365Princess Daylight Palette
+# Segment text is white on every colored background, so each color is deep
+# enough to clear WCAG AA (4.5:1) against white; the lowest here is 4.9:1.
+[palettes.m365princess_daylight]
+plum = "#6D28D9"
+blush = "#A21CAF"
+salmon = "#C2410C"
+sky = "#1D4ED8"
+teal_blue = "#0F766E"
 white = "#FFFFFF"
-red = "#D20F39"
-green = "#40A02B"
-yellow = "#DF8E1D"
+red = "#BE123C"
+green = "#15803D"
+yellow = "#A16207"
