@@ -97,7 +97,7 @@ delivery = "terminal"
 # $dirty is reported by status.sh as "±<tracked changes> ?<untracked>" and
 # disappears when the tree is clean (or when the reporter stops: 30s TTL).
 [ui.sidebar.spaces]
-row_gap = 0
+row_gap = 1
 rows = [
   ["state_icon", "workspace"],
   [{ token = "branch", fg = "#89dceb", dim = false }, "git_status", { token = "$dirty", fg = "#f9e2af" }],
@@ -106,7 +106,7 @@ rows = [
 # Agent rows: one status line per agent, workspace in a softer tone for
 # context so the panel does not read as a second workspace list.
 [ui.sidebar.agents]
-row_gap = 0
+row_gap = 1
 rows = [
   ["state_icon", { token = "agent", fg = "#eba0ac", bold = true }, { token = "state_text", fg = "#cfbfc5" }, { token = "workspace", fg = "#b4a5aa" }],
 ]
