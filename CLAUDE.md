@@ -42,6 +42,7 @@ git --git-dir=$HOME/.dotfiles --work-tree=$HOME <command>
 | App configs | `~/.config/*`, `~/.vimrc` | Yes | ghostty, karabiner, vim, intelephense |
 | Automation | `~/.hammerspoon/init.lua` | Yes | global hotkeys, macOS automation |
 | Shell configs | `~/.zshrc.shared` | Yes | aliases, Starship init |
+| Git hooks | `~/.config/git/hooks/` | Yes | global hook chain; fills new worktrees with vendor, `.env` link, IDE code style. Needs `core.hooksPath` in the untracked `~/.gitconfig` |
 | Package lists | `~/.Brewfile` | Yes | brew formulae & casks |
 | Agent principles | `~/.agents/AGENTS.md` | Yes | shared working principles (single source) |
 | Claude Code | `~/.claude/{settings.json.dotfiles,CLAUDE.md}` | Yes | model, plugins, statusLine; CLAUDE.md imports `~/.agents/AGENTS.md` |
