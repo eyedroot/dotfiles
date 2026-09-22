@@ -65,7 +65,8 @@
     "network": {
       "allowUnixSockets": [
         "~/.bitwarden-ssh-agent.sock",
-        "~/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"
+        "~/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock",
+        "~/Library/Application Support/orca"
       ]
     },
     "filesystem": {
