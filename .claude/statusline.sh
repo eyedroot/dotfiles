@@ -26,22 +26,58 @@ if [ "$TERM_PROGRAM" = "Unpeel" ]; then
     sep=" ${faint}·${reset} "
 else
     layout="vivid"
-    # Colorful palette: Catppuccin Mocha vivid
-    mauve='\033[38;2;203;166;247m'     # project name (Mocha Mauve)
-    sapphire='\033[38;2;116;199;236m'  # model name (Mocha Sapphire)
-    red='\033[38;2;243;139;168m'       # git dirty / context bar (Mocha Red)
-    teal='\033[38;2;148;226;213m'      # rate limit icon (Mocha Teal)
-    green='\033[38;2;166;227;161m'     # git clean branch (Mocha Green)
-    gray='\033[38;2;186;194;222m'      # sub text (Mocha Subtext1)
-    black='\033[38;2;127;132;156m'     # separators (Mocha Overlay1)
-    yellow='\033[38;2;249;226;175m'    # folder icon (Mocha Yellow)
-    peach='\033[38;2;250;179;135m'     # worktree info (Mocha Peach)
-    lavender='\033[38;2;180;190;254m'  # style info (Mocha Lavender)
+    # The status line cannot query the terminal background, so Claude Code's
+    # own theme setting is the light/dark switch; the UI around the status
+    # line already follows that value. "auto" follows the macOS appearance,
+    # which is what Claude Code itself resolves it to.
+    claude_theme=$(jq -r '.theme // "dark"' "$HOME/.claude/settings.json" 2>/dev/null)
+    if [ "$claude_theme" = "auto" ]; then
+        if [ "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" = "Dark" ]; then
+            claude_theme="dark"
+        else
+            claude_theme="light"
+        fi
+    fi
+    case "$claude_theme" in
+        light*)
+            # Light palette, matched to the Ghostty warm-paper setup (background
+            # #FEFCF3, Nord-leaning ANSI colors). Each hue is a darker shade of
+            # the corresponding ANSI color so it clears 4.5:1 on the paper.
+            mauve='\033[38;2;122;92;158m'     # project name (violet)
+            sapphire='\033[38;2;43;98;160m'   # model name (deep blue)
+            red='\033[38;2;176;80;90m'        # git dirty / context bar
+            teal='\033[38;2;58;126;128m'      # rate limit icon
+            green='\033[38;2;63;127;82m'      # git clean branch
+            gray='\033[38;2;99;106;121m'      # sub text (ANSI bright black)
+            black='\033[38;2;168;161;150m'    # separators (warm faint)
+            yellow='\033[38;2;143;99;24m'     # folder icon (amber)
+            peach='\033[38;2;163;88;26m'      # worktree info (burnt orange)
+            lavender='\033[38;2;94;99;168m'   # style info (indigo)
 
-    rate_low='\033[38;2;148;226;213m'  # Teal (safe)
-    rate_mid='\033[38;2;249;226;175m'  # Yellow (warm)
-    rate_high='\033[38;2;250;179;135m' # Peach (orange)
-    rate_crit='\033[38;2;243;139;168m' # Red (critical)
+            rate_low='\033[38;2;58;126;128m'  # Teal (safe)
+            rate_mid='\033[38;2;143;99;24m'   # Amber (warm)
+            rate_high='\033[38;2;163;88;26m'  # Burnt orange
+            rate_crit='\033[38;2;176;80;90m'  # Red (critical)
+            ;;
+        *)
+            # Colorful palette: Catppuccin Mocha vivid
+            mauve='\033[38;2;203;166;247m'     # project name (Mocha Mauve)
+            sapphire='\033[38;2;116;199;236m'  # model name (Mocha Sapphire)
+            red='\033[38;2;243;139;168m'       # git dirty / context bar (Mocha Red)
+            teal='\033[38;2;148;226;213m'      # rate limit icon (Mocha Teal)
+            green='\033[38;2;166;227;161m'     # git clean branch (Mocha Green)
+            gray='\033[38;2;186;194;222m'      # sub text (Mocha Subtext1)
+            black='\033[38;2;127;132;156m'     # separators (Mocha Overlay1)
+            yellow='\033[38;2;249;226;175m'    # folder icon (Mocha Yellow)
+            peach='\033[38;2;250;179;135m'     # worktree info (Mocha Peach)
+            lavender='\033[38;2;180;190;254m'  # style info (Mocha Lavender)
+
+            rate_low='\033[38;2;148;226;213m'  # Teal (safe)
+            rate_mid='\033[38;2;249;226;175m'  # Yellow (warm)
+            rate_high='\033[38;2;250;179;135m' # Peach (orange)
+            rate_crit='\033[38;2;243;139;168m' # Red (critical)
+            ;;
+    esac
 
     sep=" ${black}│${reset} "
 fi
