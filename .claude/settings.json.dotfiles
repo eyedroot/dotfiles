@@ -65,8 +65,7 @@
     "network": {
       "allowUnixSockets": [
         "~/.bitwarden-ssh-agent.sock",
-        "~/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock",
-        "~/Library/Application Support/orca"
+        "~/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"
       ]
     },
     "filesystem": {
@@ -75,7 +74,9 @@
         "~/.ssh/config",
         "~/.config/gh/hosts.yml"
       ],
-      "allowWrite": ["~/.dotfiles/"]
+      "allowWrite": [
+        "~/.dotfiles/"
+      ]
     }
   },
   "hooks": {
