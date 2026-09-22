@@ -1,14 +1,21 @@
 onboarding = false
 
 # ── Theme ─────────────────────────────────────────────────────────────────
+# herdr reads the host background (OSC 11 / DEC 2031) and picks the light or
+# dark name, so flipping the Ghostty theme flips the sidebar chrome with it.
+# Sidebar row `fg` values further down are fixed hex and do not follow this
+# switch; they are tuned for the light palette and need a manual swap.
 [theme]
 name = "catppuccin"
+auto_switch = true
+dark_name = "catppuccin"
+light_name = "catppuccin-latte"
 
 # Catppuccin Mocha base with a burgundy accent family. Rule of thumb for every
 # override: text that can land on a colored row must stay light, and the
 # colored rows must stay dark, so contrast holds on both the mantle sidebar
 # and the active row.
-[theme.custom]
+[theme.custom.dark]
 # Wine-rose accent for the tab pill, borders, dots and navigation UI. herdr
 # paints dark text on the accent (tab number), so it cannot go as deep as a
 # true #800020 without losing that digit (#cc6480 vs #1e1e2e = 4.6:1, AA);
@@ -47,6 +54,35 @@ subtext0 = "#b4a5aa"
 overlay1 = "#8c7c82"
 overlay0 = "#75666c"
 
+# Light counterpart, matched to the Ghostty warm-paper setup (background
+# #FEFCF3, foreground #3B4252, Nord-leaning ANSI palette). The burgundy family
+# is inverted: rows get a pale rose wash and the wine tone moves into text and
+# icons, so dark text keeps at least 4.5:1 on every surface.
+[theme.custom.light]
+accent = "#b85c7a"
+
+# A shade under the pane background so the rail still reads as a panel
+# without a hard edge against the translucent pane area.
+sidebar_bg = "#f2eee3"
+active_row_bg = "#f0d6de"
+selection_bg = "#dcd8ce"
+surface_dim = "#c99aab"
+
+# ANSI-palette hues from the Ghostty config, so sidebar icons and the
+# terminal text inside the panes share one set of colors.
+red = "#bf616a"
+green = "#5b9a6f"
+yellow = "#c08b30"
+blue = "#4a90d9"
+mauve = "#8b6daf"
+teal = "#5e9ea0"
+peach = "#d08770"
+
+text = "#3b4252"
+subtext0 = "#636a79"
+overlay1 = "#7d7580"
+overlay0 = "#948b90"
+
 # ── UI ────────────────────────────────────────────────────────────────────
 [ui]
 show_agent_labels_on_pane_borders = true
@@ -82,25 +118,27 @@ tab_bar_right_separator = " · "
 delivery = "terminal"
 
 # Sidebar rows. Every token that is not the bold workspace name carries an
-# explicit light foreground instead of `dim`, because dimmed text disappears
-# on the colored active row. Warm scale, top to bottom: peach #fab387
-# (Claude topic line, bold), maroon #eba0ac (agent name), rose-gray #cfbfc5
-# (state), warm subtext #b4a5aa (workspace), cyan/sky #89dceb (branch), yellow
-# #f9e2af ($dirty).
-# All pairs clear WCAG AA on both the mantle sidebar and the active row.
+# explicit foreground instead of `dim`, because dimmed text disappears on the
+# colored active row. Light-palette scale, top to bottom: burnt orange #a3581a
+# (Claude topic line, bold), wine #9e3d5a (agent name), warm gray #6e6268
+# (state), #716569 (workspace), deep blue #2b62a0 (branch), amber #8f6318
+# ($dirty). All pairs clear WCAG AA on the paper sidebar (#f2eee3) and stay
+# above 4:1 on the rose active row (#f0d6de).
+#
+# The dark-palette values these replaced (sky #89dceb, yellow #f9e2af, maroon
+# #eba0ac, rose-gray #cfbfc5, warm subtext #b4a5aa, peach #fab387) are in the
+# dotfiles history; `fg` is fixed hex and cannot follow theme.auto_switch.
 
 # Space rows: name, then branch · ahead/behind · uncommitted changes.
-# The branch is Mocha sky, the palette's cyan (#89dceb, 9.2:1 on the
-# active row, 11.3:1 on the sidebar) with `dim = false`, so it is the one
-# cool-toned cue in the panel and reads as "which branch" at a glance instead
-# of blending into the grays.
+# The branch is the one cool-toned cue in the panel with `dim = false`, so it
+# reads as "which branch" at a glance instead of blending into the grays.
 # $dirty is reported by status.sh as "±<tracked changes> ?<untracked>" and
 # disappears when the tree is clean (or when the reporter stops: 30s TTL).
 [ui.sidebar.spaces]
 row_gap = 1
 rows = [
   ["state_icon", "workspace"],
-  [{ token = "branch", fg = "#89dceb", dim = false }, "git_status", { token = "$dirty", fg = "#f9e2af" }],
+  [{ token = "branch", fg = "#2b62a0", dim = false }, "git_status", { token = "$dirty", fg = "#8f6318" }],
 ]
 
 # Agent rows: one status line per agent, workspace in a softer tone for
@@ -108,7 +146,7 @@ rows = [
 [ui.sidebar.agents]
 row_gap = 1
 rows = [
-  ["state_icon", { token = "agent", fg = "#eba0ac", bold = true }, { token = "state_text", fg = "#cfbfc5" }, { token = "workspace", fg = "#b4a5aa" }],
+  ["state_icon", { token = "agent", fg = "#9e3d5a", bold = true }, { token = "state_text", fg = "#6e6268" }, { token = "workspace", fg = "#716569" }],
 ]
 
 # Claude Code writes its conversation topic to the terminal title
@@ -117,15 +155,13 @@ rows = [
 # board. Delete this block to go back to one line per agent.
 #
 # The topic line is the one you scan to tell sessions apart, so it gets the
-# most visible treatment in the panel: peach, bold, and `dim = false` (herdr's
+# most visible treatment in the panel: bold and `dim = false` (herdr's
 # contextual style for secondary rows applies dim, which Ghostty renders by
-# blending the color toward the background — that is what made the earlier
-# rosewater line look washed out). Peach on the burgundy row is 8.0:1, on the
-# mantle sidebar 9.9:1.
+# blending the color toward the background, which washes the line out).
 [ui.sidebar.agents.rows_by_agent]
 claude = [
-  ["state_icon", { token = "agent", fg = "#eba0ac", bold = true }, { token = "state_text", fg = "#cfbfc5" }, { token = "workspace", fg = "#b4a5aa" }],
-  [{ token = "terminal_title_stripped", fg = "#fab387", bold = true, dim = false }],
+  ["state_icon", { token = "agent", fg = "#9e3d5a", bold = true }, { token = "state_text", fg = "#6e6268" }, { token = "workspace", fg = "#716569" }],
+  [{ token = "terminal_title_stripped", fg = "#a3581a", bold = true, dim = false }],
 ]
 
 # ── Keys ──────────────────────────────────────────────────────────────────
