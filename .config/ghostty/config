@@ -7,7 +7,7 @@ font-family = "Sarasa Mono K"
 # font-family = "Geist Mono"
 font-size = 15
 font-thicken = true
-adjust-cell-height = 23%
+adjust-cell-height = 20%
 
 # Theme
 theme = Catppuccin Latte
@@ -24,9 +24,9 @@ window-title-font-family = "Sarasa Mono K"
 
 # Background (warm light yellow - easy on the eyes)
 background = #FEFCF3
-foreground = #3B4252
-background-opacity = 0.95
-background-blur-radius = 20
+foreground = #2E3440
+# Opaque on purpose: windows showing through, even blurred, soften glyph edges.
+background-opacity = 1
 unfocused-split-opacity = 1
 unfocused-split-fill = #F0EDE4
 
@@ -49,22 +49,22 @@ selection-background = #D6EDDF
 selection-foreground = #3B4252
 
 # ANSI color overrides (warm yellow + blue + green palette)
-palette = 0=#3B4252
-palette = 1=#BF616A
-palette = 2=#5B9A6F
-palette = 3=#C08B30
-palette = 4=#4A90D9
-palette = 5=#8B6DAF
-palette = 6=#5E9EA0
-palette = 7=#D8D0C0
+palette = 0=#2E3440
+palette = 1=#A83F4B
+palette = 2=#3A7650
+palette = 3=#8A5D12
+palette = 4=#2B62A0
+palette = 5=#74479A
+palette = 6=#2A7478
+palette = 7=#857E71
 palette = 8=#636A79
-palette = 9=#D08770
-palette = 10=#7BC08C
-palette = 11=#EBCB8B
-palette = 12=#6EB0E6
-palette = 13=#A78DC2
-palette = 14=#88C0D0
-palette = 15=#ECEFF4
+palette = 9=#B4502A
+palette = 10=#2E7F5A
+palette = 11=#9A6A00
+palette = 12=#3572B8
+palette = 13=#8E4A8A
+palette = 14=#22788A
+palette = 15=#A9A294
 
 # Shell integration
 shell-integration = zsh
