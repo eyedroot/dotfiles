@@ -7,15 +7,15 @@
 command_timeout = 1000
 
 format = """
-[](fg:plum)\
+[](fg:segment_user)\
 $os\
 $username\
-[](bg:blush fg:plum)\
+[](bg:segment_dir fg:segment_user)\
 $directory\
-[](bg:salmon fg:blush)\
+[](bg:segment_git fg:segment_dir)\
 $git_branch\
 $git_status\
-[](fg:salmon bg:sky)\
+[](fg:segment_git bg:segment_lang)\
 $c\
 $rust\
 $golang\
@@ -25,19 +25,19 @@ $java\
 $kotlin\
 $haskell\
 $python\
-[](fg:sky bg:teal_blue)\
+[](fg:segment_lang bg:segment_time)\
 $conda\
 $time\
-[ ](fg:teal_blue)\
+[ ](fg:segment_time)\
 $cmd_duration\
 $line_break\
 $character"""
 
-palette = 'm365princess_daylight'
+palette = 'codex_light'
 
 [os]
 disabled = false
-style = "bg:plum fg:white"
+style = "bg:segment_user fg:text_user"
 
 [os.symbols]
 Windows = ""
@@ -63,12 +63,12 @@ RedHatEnterprise = "󱄛"
 
 [username]
 show_always = true
-style_user = "bg:plum fg:white"
-style_root = "bg:plum fg:white"
+style_user = "bg:segment_user fg:text_user"
+style_root = "bg:segment_user fg:text_user"
 format = '[ $user]($style)'
 
 [directory]
-style = "bg:blush fg:white"
+style = "bg:segment_dir fg:text_dir"
 format = "[ $path ]($style)"
 truncation_length = 3
 truncation_symbol = "…/"
@@ -82,117 +82,132 @@ truncation_symbol = "…/"
 
 [git_branch]
 symbol = ""
-style = "bg:salmon"
-format = '[[ $symbol $branch ](fg:white bg:salmon)]($style)'
+style = "bg:segment_git"
+format = '[[ $symbol $branch ](fg:text_git bg:segment_git)]($style)'
 
 [git_status]
-style = "bg:salmon"
-format = '[[($all_status$ahead_behind )](fg:white bg:salmon)]($style)'
+style = "bg:segment_git"
+format = '[[($all_status$ahead_behind )](fg:text_git bg:segment_git)]($style)'
 
 [nodejs]
 symbol = ""
-style = "bg:sky"
-format = '[[ $symbol( $version) ](fg:white bg:sky)]($style)'
+style = "bg:segment_lang"
+format = '[[ $symbol( $version) ](fg:text_lang bg:segment_lang)]($style)'
 
 [c]
 symbol = " "
-style = "bg:sky"
-format = '[[ $symbol( $version) ](fg:white bg:sky)]($style)'
+style = "bg:segment_lang"
+format = '[[ $symbol( $version) ](fg:text_lang bg:segment_lang)]($style)'
 
 [rust]
 symbol = ""
-style = "bg:sky"
-format = '[[ $symbol( $version) ](fg:white bg:sky)]($style)'
+style = "bg:segment_lang"
+format = '[[ $symbol( $version) ](fg:text_lang bg:segment_lang)]($style)'
 
 [golang]
 symbol = ""
-style = "bg:sky"
-format = '[[ $symbol( $version) ](fg:white bg:sky)]($style)'
+style = "bg:segment_lang"
+format = '[[ $symbol( $version) ](fg:text_lang bg:segment_lang)]($style)'
 
 [php]
 symbol = ""
-style = "bg:sky"
-format = '[[ $symbol( $version) ](fg:white bg:sky)]($style)'
+style = "bg:segment_lang"
+format = '[[ $symbol( $version) ](fg:text_lang bg:segment_lang)]($style)'
 
 [java]
 symbol = " "
-style = "bg:sky"
-format = '[[ $symbol( $version) ](fg:white bg:sky)]($style)'
+style = "bg:segment_lang"
+format = '[[ $symbol( $version) ](fg:text_lang bg:segment_lang)]($style)'
 
 [kotlin]
 symbol = ""
-style = "bg:sky"
-format = '[[ $symbol( $version) ](fg:white bg:sky)]($style)'
+style = "bg:segment_lang"
+format = '[[ $symbol( $version) ](fg:text_lang bg:segment_lang)]($style)'
 
 [haskell]
 symbol = ""
-style = "bg:sky"
-format = '[[ $symbol( $version) ](fg:white bg:sky)]($style)'
+style = "bg:segment_lang"
+format = '[[ $symbol( $version) ](fg:text_lang bg:segment_lang)]($style)'
 
 [python]
 symbol = ""
-style = "bg:sky"
-format = '[[ $symbol( $version)(\(#$virtualenv\)) ](fg:white bg:sky)]($style)'
+style = "bg:segment_lang"
+format = '[[ $symbol( $version)(\(#$virtualenv\)) ](fg:text_lang bg:segment_lang)]($style)'
 
 [docker_context]
 symbol = ""
-style = "bg:teal_blue"
-format = '[[ $symbol( $context) ](fg:white bg:teal_blue)]($style)'
+style = "bg:segment_time"
+format = '[[ $symbol( $context) ](fg:text_time bg:segment_time)]($style)'
 
 [conda]
 symbol = "  "
-style = "fg:white bg:teal_blue"
+style = "fg:text_time bg:segment_time"
 format = '[$symbol$environment ]($style)'
 ignore_base = false
 
 [time]
 disabled = false
 time_format = "%R"
-style = "bg:teal_blue"
-format = '[[  $time ](fg:white bg:teal_blue)]($style)'
+style = "bg:segment_time"
+format = '[[  $time ](fg:text_time bg:segment_time)]($style)'
 
 [line_break]
 disabled = true
 
 [character]
 disabled = false
-success_symbol = '[❯](bold fg:salmon)'
-error_symbol = '[❯](bold fg:red)'
-vimcmd_symbol = '[❮](bold fg:plum)'
-vimcmd_replace_one_symbol = '[❮](bold fg:blush)'
-vimcmd_replace_symbol = '[❮](bold fg:blush)'
-vimcmd_visual_symbol = '[❮](bold fg:sky)'
+success_symbol = '[❯](bold fg:prompt_ok)'
+error_symbol = '[❯](bold fg:prompt_error)'
+vimcmd_symbol = '[❮](bold fg:vim_normal)'
+vimcmd_replace_one_symbol = '[❮](bold fg:vim_replace)'
+vimcmd_replace_symbol = '[❮](bold fg:vim_replace)'
+vimcmd_visual_symbol = '[❮](bold fg:vim_visual)'
 
 [cmd_duration]
 show_milliseconds = true
 format = " in $duration "
-style = "fg:teal_blue"
+style = "fg:duration"
 disabled = false
 show_notifications = true
 min_time_to_notify = 45000
 
 # M365Princess Color Palette (Dark)
 [palettes.m365princess]
-plum = "#9B4F96"
-blush = "#D67BA6"
-salmon = "#E8899E"
-sky = "#74C2E1"
-teal_blue = "#3B8EA5"
-white = "#FFFFFF"
-red = "#E06C75"
-green = "#98C379"
-yellow = "#E5C07B"
+segment_user = "#9B4F96"
+segment_dir = "#D67BA6"
+segment_git = "#E8899E"
+segment_lang = "#74C2E1"
+segment_time = "#3B8EA5"
+text_user = "#FFFFFF"
+text_dir = "#FFFFFF"
+text_git = "#FFFFFF"
+text_lang = "#FFFFFF"
+text_time = "#FFFFFF"
+prompt_ok = "#E8899E"
+prompt_error = "#E06C75"
+vim_normal = "#9B4F96"
+vim_replace = "#D67BA6"
+vim_visual = "#74C2E1"
+duration = "#3B8EA5"
 
-# M365Princess Daylight Palette
-# Segment text is white on every colored background, so each color is deep
-# enough to clear WCAG AA (4.5:1) against white; the lowest here is 5.7:1.
-[palettes.m365princess_daylight]
-plum = "#7A3F78"
-blush = "#9C3F6E"
-salmon = "#A8483F"
-sky = "#2F6699"
-teal_blue = "#23687A"
-white = "#FFFFFF"
-red = "#B3261E"
-green = "#3A7650"
-yellow = "#8A5D12"
+# Codex light palette, taken from the Codex app's color scale. The user segment
+# is the one solid accent with white text; the rest are pale surfaces with dark
+# text, the same split as the herdr tab bar. Every text color clears 4.5:1 on
+# its segment and on the white Ghostty background.
+[palettes.codex_light]
+segment_user = "#0169cc"  # blue-500
+segment_dir = "#e5f3ff"   # blue-50
+segment_git = "#f3f3f3"   # gray-75
+segment_lang = "#ececec"  # gray-100
+segment_time = "#e3e3e3"  # gray-200
+text_user = "#ffffff"
+text_dir = "#004f99"      # blue-600
+text_git = "#1a1c1f"      # Codex ink
+text_lang = "#5d5d5d"     # gray-500
+text_time = "#5d5d5d"     # gray-500
+prompt_ok = "#0169cc"     # blue-500
+prompt_error = "#ba2623"  # red-600
+vim_normal = "#004f99"    # blue-600
+vim_replace = "#b9480d"   # orange-600
+vim_visual = "#5d5d5d"    # gray-500
+duration = "#5d5d5d"      # gray-500
