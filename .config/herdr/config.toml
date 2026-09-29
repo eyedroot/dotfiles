@@ -54,39 +54,42 @@ subtext0 = "#b4a5aa"
 overlay1 = "#8c7c82"
 overlay0 = "#75666c"
 
-# Light counterpart, matched to the Ghostty warm-paper setup (background
-# #FEFCF3, foreground #2E3440, ANSI palette tuned to 4.5:1). The burgundy family
-# is inverted: rows get a pale rose wash and the wine tone moves into text and
-# icons, so dark text keeps at least 4.5:1 on every surface.
+# Light counterpart, matched to the Ghostty setup (white background, foreground
+# #202020, Rider Melon Light ANSI palette from PhpStorm). The accent family is
+# the Codex app's blue scale: blue-50 rows, blue-100 border, blue-500 accent,
+# blue-600 agent names. Codex's own accent (#339cff, blue-300) is only 2.9:1
+# against the light tab number herdr draws on the pill, so the pill takes
+# blue-500 instead.
 [theme.custom.light]
-accent = "#9e3d5a"
+accent = "#0169cc"
 
 # A shade under the pane background so the rail still reads as a panel
 # without a hard edge against the pane area.
-sidebar_bg = "#f2eee3"
-active_row_bg = "#f0d6de"
-selection_bg = "#dcd8ce"
-surface_dim = "#c99aab"
+sidebar_bg = "#f7f7f7"
+active_row_bg = "#e5f3ff"
+selection_bg = "#e3e3e3"
+surface_dim = "#99ceff"
 
-# Catppuccin Latte's surfaces are blue-gray (#ccd0da, #bcc0cc) and read cold on
-# the paper; surface0 is the inactive tab pill behind the overlay0 tab number.
-surface0 = "#e8e3d6"
-surface1 = "#d5cec0"
+# Catppuccin Latte's surfaces are blue-gray (#ccd0da, #bcc0cc); these neutral
+# grays match the PhpStorm tool windows. surface0 is the inactive tab pill
+# behind the overlay0 tab number.
+surface0 = "#ececec"
+surface1 = "#d5d5d5"
 
 # ANSI-palette hues from the Ghostty config, so sidebar icons and the
 # terminal text inside the panes share one set of colors.
-red = "#a83f4b"
-green = "#3a7650"
-yellow = "#8a5d12"
-blue = "#2b62a0"
-mauve = "#74479a"
-teal = "#2a7478"
-peach = "#b4502a"
+red = "#d91400"
+green = "#248700"
+yellow = "#9a6d00"
+blue = "#0f54d6"
+mauve = "#941290"
+teal = "#00855f"
+peach = "#a14916"
 
-text = "#2e3440"
-subtext0 = "#636a79"
-overlay1 = "#6b6166"
-overlay0 = "#7a7070"
+text = "#202020"
+subtext0 = "#656565"
+overlay1 = "#5f5f5f"
+overlay0 = "#727272"
 
 # ── UI ────────────────────────────────────────────────────────────────────
 [ui]
@@ -124,26 +127,26 @@ delivery = "terminal"
 
 # Sidebar rows. Every token that is not the bold workspace name carries an
 # explicit foreground instead of `dim`, because dimmed text disappears on the
-# colored active row. Light-palette scale, top to bottom: burnt orange #a3581a
-# (Claude topic line, bold), wine #9e3d5a (agent name), warm gray #6e6268
-# (state), #716569 (workspace), deep blue #2b62a0 (branch), amber #8f6318
-# ($dirty). All pairs clear WCAG AA on the paper sidebar (#f2eee3) and stay
-# above 4:1 on the rose active row (#f0d6de).
+# colored active row. Light-palette scale, top to bottom: burnt orange #a14916
+# (Claude topic line, bold), blue #004f99 (agent name), gray #5f5f5f (state),
+# #656565 (workspace), blue #0f54d6 (branch), amber #826a00 ($dirty). All pairs
+# clear WCAG AA on both the gray sidebar (#f7f7f7) and the blue active row
+# (#e5f3ff).
 #
 # The dark-palette values these replaced (sky #89dceb, yellow #f9e2af, maroon
 # #eba0ac, rose-gray #cfbfc5, warm subtext #b4a5aa, peach #fab387) are in the
 # dotfiles history; `fg` is fixed hex and cannot follow theme.auto_switch.
 
 # Space rows: name, then branch · ahead/behind · uncommitted changes.
-# The branch is the one cool-toned cue in the panel with `dim = false`, so it
-# reads as "which branch" at a glance instead of blending into the grays.
+# The branch keeps `dim = false` so it reads as "which branch" at a glance
+# instead of blending into the grays.
 # $dirty is reported by status.sh as "±<tracked changes> ?<untracked>" and
 # disappears when the tree is clean (or when the reporter stops: 30s TTL).
 [ui.sidebar.spaces]
 row_gap = 1
 rows = [
   ["state_icon", "workspace"],
-  [{ token = "branch", fg = "#2b62a0", dim = false }, "git_status", { token = "$dirty", fg = "#8f6318" }],
+  [{ token = "branch", fg = "#0f54d6", dim = false }, "git_status", { token = "$dirty", fg = "#826a00" }],
 ]
 
 # Agent rows: one status line per agent, workspace in a softer tone for
@@ -151,7 +154,7 @@ rows = [
 [ui.sidebar.agents]
 row_gap = 1
 rows = [
-  ["state_icon", { token = "agent", fg = "#9e3d5a", bold = true }, { token = "state_text", fg = "#6e6268" }, { token = "workspace", fg = "#716569" }],
+  ["state_icon", { token = "agent", fg = "#004f99", bold = true }, { token = "state_text", fg = "#5f5f5f" }, { token = "workspace", fg = "#656565" }],
 ]
 
 # Claude Code writes its conversation topic to the terminal title
@@ -165,8 +168,8 @@ rows = [
 # blending the color toward the background, which washes the line out).
 [ui.sidebar.agents.rows_by_agent]
 claude = [
-  ["state_icon", { token = "agent", fg = "#9e3d5a", bold = true }, { token = "state_text", fg = "#6e6268" }, { token = "workspace", fg = "#716569" }],
-  [{ token = "terminal_title_stripped", fg = "#a3581a", bold = true, dim = false }],
+  ["state_icon", { token = "agent", fg = "#004f99", bold = true }, { token = "state_text", fg = "#5f5f5f" }, { token = "workspace", fg = "#656565" }],
+  [{ token = "terminal_title_stripped", fg = "#a14916", bold = true, dim = false }],
 ]
 
 # ── Keys ──────────────────────────────────────────────────────────────────

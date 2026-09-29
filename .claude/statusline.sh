@@ -40,37 +40,38 @@ else
     fi
     case "$claude_theme" in
         light*)
-            # Light palette, matched to the Ghostty warm-paper setup (background
-            # #FEFCF3). Each hue matches or darkens the corresponding ANSI color
-            # so it clears 4.5:1 on the paper.
-            mauve='\033[38;2;122;92;158m'     # project name (violet)
-            sapphire='\033[38;2;43;98;160m'   # model name (deep blue)
-            red='\033[38;2;168;63;75m'        # git dirty / context bar
-            teal='\033[38;2;58;126;128m'      # rate limit icon
-            green='\033[38;2;63;127;82m'      # git clean branch
-            gray='\033[38;2;99;106;121m'      # sub text (ANSI bright black)
-            black='\033[38;2;168;161;150m'    # separators (warm faint)
-            yellow='\033[38;2;143;99;24m'     # folder icon (amber)
-            peach='\033[38;2;163;88;26m'      # worktree info (burnt orange)
-            lavender='\033[38;2;94;99;168m'   # style info (indigo)
+            # Codex light palette: the one hue is the blue accent on the model
+            # name and meters, red and orange appear only when something needs
+            # attention, and everything else is ink or gray. Every color but the
+            # separator clears 4.5:1 on the white Ghostty background.
+            project_color='\033[38;2;26;28;31m'     # Codex ink #1a1c1f
+            model_color='\033[38;2;1;105;204m'      # blue-500 #0169cc
+            ctx_bar_color='\033[38;2;1;105;204m'    # blue-500
+            branch_color='\033[38;2;93;93;93m'      # gray-500 #5d5d5d
+            worktree_color='\033[38;2;93;93;93m'    # gray-500
+            style_color='\033[38;2;93;93;93m'       # gray-500
+            rate_icon_color='\033[38;2;93;93;93m'   # gray-500
+            subtext_color='\033[38;2;93;93;93m'     # gray-500
+            separator_color='\033[38;2;175;175;175m' # gray-300 #afafaf
+            alert_color='\033[38;2;186;38;35m'      # red-600 #ba2623
 
-            rate_low='\033[38;2;58;126;128m'  # Teal (safe)
-            rate_mid='\033[38;2;143;99;24m'   # Amber (warm)
-            rate_high='\033[38;2;163;88;26m'  # Burnt orange
-            rate_crit='\033[38;2;168;63;75m'  # Red (critical)
+            rate_low='\033[38;2;1;105;204m'   # blue-500
+            rate_mid='\033[38;2;0;79;153m'    # blue-600 #004f99
+            rate_high='\033[38;2;185;72;13m'  # orange-600 #b9480d
+            rate_crit='\033[38;2;186;38;35m'  # red-600
             ;;
         *)
             # Colorful palette: Catppuccin Mocha vivid
-            mauve='\033[38;2;203;166;247m'     # project name (Mocha Mauve)
-            sapphire='\033[38;2;116;199;236m'  # model name (Mocha Sapphire)
-            red='\033[38;2;243;139;168m'       # git dirty / context bar (Mocha Red)
-            teal='\033[38;2;148;226;213m'      # rate limit icon (Mocha Teal)
-            green='\033[38;2;166;227;161m'     # git clean branch (Mocha Green)
-            gray='\033[38;2;186;194;222m'      # sub text (Mocha Subtext1)
-            black='\033[38;2;127;132;156m'     # separators (Mocha Overlay1)
-            yellow='\033[38;2;249;226;175m'    # folder icon (Mocha Yellow)
-            peach='\033[38;2;250;179;135m'     # worktree info (Mocha Peach)
-            lavender='\033[38;2;180;190;254m'  # style info (Mocha Lavender)
+            project_color='\033[38;2;203;166;247m'   # Mocha Mauve
+            model_color='\033[38;2;116;199;236m'     # Mocha Sapphire
+            ctx_bar_color='\033[38;2;243;139;168m'   # Mocha Red
+            branch_color='\033[38;2;166;227;161m'    # Mocha Green
+            worktree_color='\033[38;2;250;179;135m'  # Mocha Peach
+            style_color='\033[38;2;180;190;254m'     # Mocha Lavender
+            rate_icon_color='\033[38;2;148;226;213m' # Mocha Teal
+            subtext_color='\033[38;2;186;194;222m'   # Mocha Subtext1
+            separator_color='\033[38;2;127;132;156m' # Mocha Overlay1
+            alert_color='\033[38;2;243;139;168m'     # Mocha Red
 
             rate_low='\033[38;2;148;226;213m'  # Teal (safe)
             rate_mid='\033[38;2;249;226;175m'  # Yellow (warm)
@@ -79,7 +80,7 @@ else
             ;;
     esac
 
-    sep=" ${black}│${reset} "
+    sep=" ${separator_color}│${reset} "
 fi
 
 # ── Extract JSON data ────────────────────────────────────
@@ -119,14 +120,14 @@ if [ -n "$abs_git_dir" ] && [ "$abs_git_dir" != "$common_dir" ]; then
     if [ "$layout" = "ink" ]; then
         worktree_info=$(printf "${sep}${body}↳ %s${reset}" "$wt_name")
     else
-        worktree_info=$(printf "${sep}${peach}↳ %s${reset}" "$wt_name")
+        worktree_info=$(printf "${sep}${worktree_color}↳ %s${reset}" "$wt_name")
     fi
 elif [ -n "$abs_git_dir" ] && [ -d "$abs_git_dir/worktrees" ] && [ -n "$(ls -A "$abs_git_dir/worktrees" 2>/dev/null)" ]; then
     # main worktree that has linked worktrees: mark as the source
     if [ "$layout" = "ink" ]; then
         worktree_info=$(printf " ${faint}⌂${reset}")
     else
-        worktree_info=$(printf " ${peach}⌂${reset}")
+        worktree_info=$(printf " ${worktree_color}⌂${reset}")
     fi
 fi
 
@@ -138,13 +139,13 @@ if git -C "$cwd" -c core.useBuiltinFSMonitor=false rev-parse --git-dir > /dev/nu
         if [ "$layout" = "ink" ]; then
             git_info=$(printf "${sep}${body}%s${reset} ${alert}±${reset}" "$branch")
         else
-            git_info=$(printf "${sep}${bold}${red}⑃ %s${reset} ${bold}${red}±${reset}" "$branch")
+            git_info=$(printf "${sep}${bold}${alert_color}⑃ %s${reset} ${bold}${alert_color}±${reset}" "$branch")
         fi
     else
         if [ "$layout" = "ink" ]; then
             git_info=$(printf "${sep}${body}%s${reset}" "$branch")
         else
-            git_info=$(printf "${sep}${green}⑃ %s${reset}" "$branch")
+            git_info=$(printf "${sep}${branch_color}⑃ %s${reset}" "$branch")
         fi
     fi
 fi
@@ -164,7 +165,7 @@ if [ "$usage" != "null" ]; then
     if [ "$layout" = "ink" ]; then
         ctx_info=$(printf "${sep}${body}%d%%${reset}" "$pct")
     else
-        ctx_info=$(printf "${sep}${red}%s${reset} ${gray}%d%%${reset}" "$bar" "$pct")
+        ctx_info=$(printf "${sep}${ctx_bar_color}%s${reset} ${subtext_color}%d%%${reset}" "$bar" "$pct")
     fi
 fi
 
@@ -174,7 +175,7 @@ if [ "$style" != "default" ]; then
     if [ "$layout" = "ink" ]; then
         style_info=$(printf "${sep}${body}%s${reset}" "$style")
     else
-        style_info=$(printf "${sep}${lavender}⚙ %s${reset}" "$style")
+        style_info=$(printf "${sep}${style_color}⚙ %s${reset}" "$style")
     fi
 fi
 
@@ -184,9 +185,9 @@ if [ -n "$vim_mode" ]; then
     if [ "$layout" = "ink" ]; then
         vim_info=$(printf "${sep}${alert}%s${reset}" "${vim_mode:0:1}")
     elif [ "$vim_mode" = "NORMAL" ]; then
-        vim_info=$(printf "${sep}${bold}${red}▌N${reset}")
+        vim_info=$(printf "${sep}${bold}${alert_color}▌N${reset}")
     else
-        vim_info=$(printf "${sep}${bold}${red}▌I${reset}")
+        vim_info=$(printf "${sep}${bold}${alert_color}▌I${reset}")
     fi
 fi
 
@@ -302,13 +303,13 @@ if [ -n "$usage_data" ] && echo "$usage_data" | jq -e '.five_hour' >/dev/null 2>
     if [ "$layout" = "ink" ]; then
         rate_info=$(printf "${sep}${faint}5h${reset} ${rate_color}%d%%${reset}" "$five_pct")
     else
-        rate_info=$(printf "${sep}${teal}↻${reset} ${bold}${rate_color}%s${reset}" "$rate_bar")
+        rate_info=$(printf "${sep}${rate_icon_color}↻${reset} ${bold}${rate_color}%s${reset}" "$rate_bar")
     fi
     if [ -n "$reset_time" ]; then
         if [ "$layout" = "ink" ]; then
             rate_info+=$(printf " ${faint}→ %s${reset}" "$reset_time")
         else
-            rate_info+=$(printf " ${gray}→ %s${reset}" "$reset_time")
+            rate_info+=$(printf " ${subtext_color}→ %s${reset}" "$reset_time")
         fi
     fi
 fi
@@ -319,7 +320,7 @@ if [ "$layout" = "ink" ]; then
     printf "${bold}${ink}%s${reset}%s%s" \
         "$real_project" "$worktree_info" "$git_info"
 else
-    printf "${bold}${mauve}✺ \033[4m%s${reset}%s%s" \
+    printf "${bold}${project_color}✺ \033[4m%s${reset}%s%s" \
         "$real_project" "$worktree_info" "$git_info"
 fi
 echo ""
@@ -328,7 +329,7 @@ if [ "$layout" = "ink" ]; then
     printf "${ink}%s${reset}%s%s%s%s" \
         "$model" "$ctx_info" "$rate_info" "$style_info" "$vim_info"
 else
-    printf "${bold}${sapphire}%s${reset}%s%s%s%s" \
+    printf "${bold}${model_color}%s${reset}%s%s%s%s" \
         "$model" "$ctx_info" "$rate_info" "$style_info" "$vim_info"
 fi
 

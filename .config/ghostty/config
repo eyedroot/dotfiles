@@ -7,7 +7,7 @@ font-family = "Sarasa Mono K"
 # font-family = "Geist Mono"
 font-size = 15
 font-thicken = true
-adjust-cell-height = 20%
+adjust-cell-height = 7%
 
 # Theme
 theme = Catppuccin Latte
@@ -22,16 +22,16 @@ window-padding-y = 4
 window-decoration = true
 window-title-font-family = "Sarasa Mono K"
 
-# Background (warm light yellow - easy on the eyes)
-background = #FEFCF3
-foreground = #2E3440
+# Background (white, matching the PhpStorm Rider Melon Light editor)
+background = #FFFFFF
+foreground = #202020
 # Opaque on purpose: windows showing through, even blurred, soften glyph edges.
 background-opacity = 1
 unfocused-split-opacity = 1
-unfocused-split-fill = #F0EDE4
+unfocused-split-fill = #F7F7F7
 
 # Split pane divider
-split-divider-color = #D5CEC0
+split-divider-color = #D8D8D8
 
 # macOS specific
 macos-titlebar-style = native
@@ -39,32 +39,33 @@ macos-option-as-alt = true
 window-save-state = always
 
 # Cursor
-cursor-color = #4A90D9
-cursor-text = #FEFCF3
+cursor-color = #202020
+cursor-text = #FFFFFF
 cursor-style = block
 cursor-style-blink = true
 
 # Selection
-selection-background = #D6EDDF
-selection-foreground = #3B4252
+selection-background = #B8D9FF
+selection-foreground = cell-foreground
 
-# ANSI color overrides (warm yellow + blue + green palette)
-palette = 0=#2E3440
-palette = 1=#A83F4B
-palette = 2=#3A7650
-palette = 3=#8A5D12
-palette = 4=#2B62A0
-palette = 5=#74479A
-palette = 6=#2A7478
-palette = 7=#857E71
-palette = 8=#636A79
-palette = 9=#B4502A
-palette = 10=#2E7F5A
-palette = 11=#9A6A00
-palette = 12=#3572B8
-palette = 13=#8E4A8A
-palette = 14=#22788A
-palette = 15=#A9A294
+# ANSI colors from the Rider Melon Light console palette. 3, 7 and 15 are
+# darkened because the originals fall to 3:1 or less on white.
+palette = 0=#383838
+palette = 1=#D91400
+palette = 2=#248700
+palette = 3=#9A6D00
+palette = 4=#0F54D6
+palette = 5=#941290
+palette = 6=#00855F
+palette = 7=#767676
+palette = 8=#656565
+palette = 9=#AD0F00
+palette = 10=#1B6600
+palette = 11=#826A00
+palette = 12=#0E3E9E
+palette = 13=#61005E
+palette = 14=#005C43
+palette = 15=#ADADAD
 
 # Shell integration
 shell-integration = zsh
