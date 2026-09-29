@@ -66,6 +66,8 @@ Shared global instructions for coding agents. Claude Code imports this file via 
 - Use comments only for information not recoverable from code: rationale and tradeoffs, invariants, external constraints, non-obvious security or performance reasons, and temporary workarounds.
 - Before writing a doc comment, name the one thing a reader would lose if it were absent. If nothing comes to mind, do not write it.
 - Write comments in plain, everyday language, and keep this rule even though comments otherwise follow project conventions rather than response style. Name the actual thing instead of gesturing at it with an abstract or figurative noun, and choose the familiar word over the compact one. In Korean, that means writing 클래스 rather than 골격, 기존 가입 워크스페이스 rather than 기가입, and 담당 범위 rather than 관심사.
+- In documentation as well as comments, say which thing must match which instead of naming an abstract quality. "스킨 version과 저장된 구조가 서로 맞는지" says what "정합성" only gestures at; "값이 어긋난 채 조용히 넘어가는 것을 막음" says what "부정합 차단" hides.
+- Avoid words whose meaning shifts with when the reader reads them, such as 신규, 최근, and 현재 used against the calendar. Name the event they are relative to instead: "워크스페이스 생성 시 초기값", not "신규 디폴트". Words relative to an action the reader performs, such as "새로 작성하는 파일", are fine.
 - For a temporary workaround, include a stable issue link and its removal condition when possible.
 - Keep public API documentation focused on contracts, inputs and outputs, errors, side effects, lifetime, and ownership.
 - Put cross-cutting design decisions in project documentation or ADRs, and verifiable behavior and edge cases in tests.
