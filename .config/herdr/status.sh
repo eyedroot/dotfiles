@@ -8,8 +8,11 @@
 #
 #   status.sh                 agent fleet summary, attention states first
 #                             e.g. "4 agents · 1 blocked · 2 working · 1 idle"
-#   status.sh --report-dirty  prints nothing; reports a $dirty token per Git
-#                             workspace ("±3 ?1") for [ui.sidebar.spaces].
+#   status.sh --report-metadata
+#                             prints nothing; reports a $dirty token per Git
+#                             workspace ("±3 ?1") for [ui.sidebar.spaces], and
+#                             a $rule separator line per workspace and per
+#                             agent pane for both sidebar panels.
 #                             Tokens carry a TTL so they vanish if this stops.
 #   status.sh --dirty <path>  debug: print the $dirty value for one directory.
 set -u
@@ -23,6 +26,13 @@ if [ -z "$HERDR" ] || [ ! -x "$HERDR" ]; then
 fi
 SOURCE="herdr-status"
 TTL_MS=30000
+
+# herdr cuts a token wider than its row and appends "…", and the sidebar width
+# is not readable from the server. 42 fills the indented row when the sidebar
+# is dragged out to sidebar_max_width (48); lower it if the sidebar is kept
+# narrower.
+RULE_WIDTH=42
+RULE="$(printf '%*s' "$RULE_WIDTH" '' | sed 's/ /─/g')"
 
 # "±<tracked changes> ?<untracked>", empty when clean or not a Git work tree.
 dirty_value() {
@@ -41,7 +51,7 @@ dirty_value() {
 
 case "${1:-}" in
   --dirty) dirty_value "${2:-.}"; echo; exit 0 ;;
-  --report-dirty) mode=report ;;
+  --report-metadata) mode=report ;;
   *) mode=summary ;;
 esac
 
@@ -61,11 +71,18 @@ if [ "$mode" = report ]; then
         value="$(dirty_value "$cwd")"
         if [ -n "$value" ]; then
           "$HERDR" workspace report-metadata "$ws" --source "$SOURCE" \
-            --token "dirty=$value" --ttl-ms "$TTL_MS" >/dev/null 2>&1
+            --token "dirty=$value" --token "rule=$RULE" --ttl-ms "$TTL_MS" >/dev/null 2>&1
         else
           "$HERDR" workspace report-metadata "$ws" --source "$SOURCE" \
-            --clear-token dirty >/dev/null 2>&1
+            --clear-token dirty --token "rule=$RULE" --ttl-ms "$TTL_MS" >/dev/null 2>&1
         fi
+      done
+  printf '%s' "$snapshot" \
+    | jq -r '.result.snapshot.agents[].pane_id' \
+    | while read -r pane; do
+        [ -n "$pane" ] || continue
+        "$HERDR" pane report-metadata "$pane" --source "$SOURCE" \
+          --token "rule=$RULE" --ttl-ms "$TTL_MS" >/dev/null 2>&1
       done
   exit 0
 fi
