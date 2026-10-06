@@ -192,6 +192,20 @@ if [ -f "$HOME/.claude/settings.json.dotfiles" ]; then
     fi
 fi
 
+# Check Claude Code mods (read-only: the files arrive with the checkout and CLAUDE_CODE_PLUGIN_DIRS in .zshrc.shared loads them)
+if command -v claude &> /dev/null; then
+    for mod_dir in "$HOME"/.claude/mods/*/; do
+        [ -f "$mod_dir/.claude-plugin/plugin.json" ] || continue
+        if claude plugin validate "$mod_dir" > /dev/null 2>&1; then
+            echo "    Claude Code mod $(basename "$mod_dir") validated."
+        else
+            echo "    [!] Claude Code mod $(basename "$mod_dir") failed validation. Run: claude plugin validate $mod_dir"
+        fi
+    done
+else
+    echo "    [!] claude not found. Skipping Claude Code mod validation."
+fi
+
 # Apply Codex CLI config (if not exists)
 if [ -f "$HOME/.codex/config.toml.dotfiles" ]; then
     if [ ! -f "$HOME/.codex/config.toml" ]; then

@@ -46,6 +46,7 @@ git --git-dir=$HOME/.dotfiles --work-tree=$HOME <command>
 | Package lists | `~/.Brewfile` | Yes | brew formulae & casks |
 | Agent principles | `~/.agents/AGENTS.md` | Yes | shared working principles (single source) |
 | Claude Code | `~/.claude/{settings.json.dotfiles,CLAUDE.md}` | Yes | model, plugins, statusLine; CLAUDE.md imports `~/.agents/AGENTS.md` |
+| Claude Code mods | `~/.claude/mods/*` | Yes | function-hook plugins (dev-dashboard pane). Loaded through `CLAUDE_CODE_PLUGIN_DIRS` in `.zshrc.shared` and the settings `env` block; `.claude-plugin/types/` is engine output, ignored |
 | Codex CLI | `~/.codex/{AGENTS.md,config.toml.dotfiles}` | Yes | AGENTS.md is a symlink to `~/.agents/AGENTS.md`; config template |
 | Codex local | `~/.codex/config.toml` | No | machine-specific (trusted projects, hooks.state, marketplaces) |
 | Codex state | `~/.codex/{auth.json,*.sqlite,sessions/,logs/}` | No | auth tokens, runtime state |

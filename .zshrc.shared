@@ -5,6 +5,9 @@
 # Claude Code native binary path
 export PATH="$HOME/.local/bin:$PATH"
 
+# Claude Code mods (function-hook plugins). Desktop app sessions get no shell env, so settings.json env repeats this key
+export CLAUDE_CODE_PLUGIN_DIRS="$HOME/.claude/mods/dev-dashboard"
+
 # PostgreSQL client tools (libpq)
 export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
 

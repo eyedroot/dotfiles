@@ -56,7 +56,8 @@
   },
   "extraKnownMarketplaces": {},
   "env": {
-    "CLAUDE_CODE_NO_FLICKER": "1"
+    "CLAUDE_CODE_NO_FLICKER": "1",
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/.claude/mods/dev-dashboard"
   },
   "language": "korean",
   "outputStyle": "default",

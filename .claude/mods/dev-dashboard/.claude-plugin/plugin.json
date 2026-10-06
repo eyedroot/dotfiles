@@ -1,0 +1,53 @@
+{
+  "name": "dev-dashboard",
+  "version": "0.1.0",
+  "description": "Docked pane showing the project, branch, upstream, worktrees, recent commits, the last turn's recap and the session's context fill.",
+  "author": { "name": "eyedroot", "url": "https://github.com/eyedroot" },
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "art": {
+      "type": "string",
+      "title": "Pane artwork",
+      "description": "flower draws the six-petal flower above the banner as colored cells (terminal only); none draws nothing.",
+      "default": "flower",
+      "options": ["flower", "none"]
+    },
+    "banner": {
+      "type": "string",
+      "title": "Banner text",
+      "description": "Drawn as block letters at the top of the pane (letters, digits, - and .). Empty draws none; one too wide for the pane is skipped.",
+      "default": "DEV DASH"
+    },
+    "commits": {
+      "type": "number",
+      "title": "Commits shown",
+      "description": "How many recent commits the pane lists.",
+      "default": 8
+    },
+    "autoOpen": {
+      "type": "boolean",
+      "title": "Open at session start",
+      "description": "Open the pane by itself when the terminal is fullscreen and wide enough. /dashboard opens it at any width.",
+      "default": true
+    },
+    "pollSeconds": {
+      "type": "number",
+      "title": "Git poll interval (seconds)",
+      "description": "How often the git facts are re-read while the session idles, for commits made outside the session. 0 turns polling off.",
+      "default": 30
+    },
+    "recapLines": {
+      "type": "number",
+      "title": "Recap lines",
+      "description": "How many lines of the last answer the recap keeps.",
+      "default": 4
+    },
+    "theme": {
+      "type": "string",
+      "title": "Pane colors",
+      "description": "auto follows Claude Code's theme setting; light and dark force a palette.",
+      "default": "auto",
+      "options": ["auto", "light", "dark"]
+    }
+  }
+}
