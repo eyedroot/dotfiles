@@ -258,8 +258,8 @@ export const register: Register = (on, options) => {
           {heading(label)}
           <Text color={palette.muted}>{fit(summary.join(' · '), width)}</Text>
           {recap.lines.map((line, index) => (
-            <Text key={`${label}:${index}`} color={palette.text} wrap="truncate-end">
-              {fit(line, width)}
+            <Text key={`${label}:${index}`} color={palette.text} wrap="wrap">
+              {line}
             </Text>
           ))}
         </Box>

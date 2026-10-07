@@ -10,7 +10,7 @@ export function recapKey(repoRoot: string): string {
 export function firstLines(answer: string, count: number): string[] {
   return answer
     .split('\n')
-    .map(line => line.replace(/^\s*(?:#{1,6}\s+|[-*]\s+|\d+\.\s+|>\s*)/, '').replace(/[`*_]/g, '').trim())
+    .map(line => line.replace(/^\s*(?:#{1,6}\s+|[-*]\s+|\d+\.\s+|>\s*)/, '').replace(/[`*]/g, '').trim())
     .filter(line => line !== '' && !/^[-=]{3,}$/.test(line))
     .slice(0, count)
 }

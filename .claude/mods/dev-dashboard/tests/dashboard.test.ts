@@ -147,6 +147,7 @@ test('the palette follows the theme setting unless the option forces one', () =>
 
 test('recap lines drop markdown marks and empty lines, and the root list stays bounded', () => {
   expect(firstLines('# Title\n\n- **done** the thing\n```\ncode\n```\n---\nnext line', 3)).toEqual(['Title', 'done the thing', 'code'])
+  expect(firstLines('`CLAUDE_CODE_PLUGIN_DIRS` 를 settings_json 에 넣습니다', 1)).toEqual(['CLAUDE_CODE_PLUGIN_DIRS 를 settings_json 에 넣습니다'])
   expect(rememberRoot(['/a', '/b'], '/b')).toEqual(['/b', '/a'])
   expect(rememberRoot(Array.from({ length: 20 }, (_, index) => `/r${index}`), '/new')).toHaveLength(20)
 })
@@ -199,7 +200,7 @@ test('a finished turn becomes the recap and is kept for the next session in that
 
   expect(await ui.find({ type: 'Text', text: /Last turn/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /0 tools · 1.2k out/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /^Renamed the helper and added a test\.$/ })).toBeDefined()
+  expect((await ui.find({ type: 'Text', text: /^Renamed the helper and added a test\.$/ }))?.props).toMatchObject({ wrap: 'wrap' })
   expect(await ui.find({ type: 'Text', text: /Previous session/ })).toBeUndefined()
   await ui.unmount()
 
