@@ -4,7 +4,7 @@ onboarding = false
 # herdr reads the host background (OSC 11 / DEC 2031) and picks the light or
 # dark name, so flipping the Ghostty theme flips the sidebar chrome with it.
 # Sidebar row `fg` values further down are fixed hex and do not follow this
-# switch; they are tuned for the light palette and need a manual swap.
+# switch; they are tuned for the dark palette and need a manual swap.
 [theme]
 name = "catppuccin"
 auto_switch = true
@@ -126,21 +126,21 @@ tab_bar_right_separator = " · "
 delivery = "terminal"
 
 # Sidebar rows. Every token that is not the bold workspace name carries an
-# explicit foreground instead of `dim`, because dimmed text disappears on the
-# colored active row. Light-palette scale, top to bottom: burnt orange #a14916
-# (Claude topic line, bold), blue #004f99 (agent name), gray #5f5f5f (state),
-# #656565 (workspace), blue #0f54d6 (branch), amber #826a00 ($dirty). All pairs
-# clear WCAG AA on both the gray sidebar (#f7f7f7) and the blue active row
-# (#e5f3ff). The $rule separator (#d5d5d5) is a line, not text, so it is kept
-# faint on purpose.
+# explicit light foreground instead of `dim`, because dimmed text disappears
+# on the colored active row. Warm scale, top to bottom: peach #fab387 (Claude
+# topic line, bold), maroon #eba0ac (agent name), rose-gray #cfbfc5 (state),
+# warm subtext #b4a5aa (workspace), sky #89dceb (branch), yellow #f9e2af
+# ($dirty). All pairs clear WCAG AA on both the mantle sidebar (#181825) and
+# the burgundy active row (#4a1a2c). The $rule separator (#585b70, the
+# selection surface) is a line, not text, so it is kept faint on purpose.
 #
 # herdr has no border option between sidebar entries; `row_gap` only adds
 # blank rows. Each entry instead ends with a $rule row, a line of "─" that
 # status.sh reports per workspace and per agent pane, which is why `row_gap`
 # stays 0 below.
 #
-# The dark-palette values these replaced (sky #89dceb, yellow #f9e2af, maroon
-# #eba0ac, rose-gray #cfbfc5, warm subtext #b4a5aa, peach #fab387) are in the
+# The light-palette values these replaced (burnt orange #a14916, blue #004f99,
+# gray #5f5f5f, #656565, blue #0f54d6, amber #826a00, rule #d5d5d5) are in the
 # dotfiles history; `fg` is fixed hex and cannot follow theme.auto_switch.
 
 # Space rows: name, then branch · ahead/behind · uncommitted changes.
@@ -152,8 +152,8 @@ delivery = "terminal"
 row_gap = 0
 rows = [
   ["state_icon", "workspace"],
-  [{ token = "branch", fg = "#0f54d6", dim = false }, "git_status", { token = "$dirty", fg = "#826a00" }],
-  [{ token = "$rule", fg = "#d5d5d5" }],
+  [{ token = "branch", fg = "#89dceb", dim = false }, "git_status", { token = "$dirty", fg = "#f9e2af" }],
+  [{ token = "$rule", fg = "#585b70" }],
 ]
 
 # Agent rows: one status line per agent, workspace in a softer tone for
@@ -161,8 +161,8 @@ rows = [
 [ui.sidebar.agents]
 row_gap = 0
 rows = [
-  ["state_icon", { token = "agent", fg = "#004f99", bold = true }, { token = "state_text", fg = "#5f5f5f" }, { token = "workspace", fg = "#656565" }],
-  [{ token = "$rule", fg = "#d5d5d5" }],
+  ["state_icon", { token = "agent", fg = "#eba0ac", bold = true }, { token = "state_text", fg = "#cfbfc5" }, { token = "workspace", fg = "#b4a5aa" }],
+  [{ token = "$rule", fg = "#585b70" }],
 ]
 
 # Claude Code writes its conversation topic to the terminal title
@@ -176,9 +176,9 @@ rows = [
 # blending the color toward the background, which washes the line out).
 [ui.sidebar.agents.rows_by_agent]
 claude = [
-  ["state_icon", { token = "agent", fg = "#004f99", bold = true }, { token = "state_text", fg = "#5f5f5f" }, { token = "workspace", fg = "#656565" }],
-  [{ token = "terminal_title_stripped", fg = "#a14916", bold = true, dim = false }],
-  [{ token = "$rule", fg = "#d5d5d5" }],
+  ["state_icon", { token = "agent", fg = "#eba0ac", bold = true }, { token = "state_text", fg = "#cfbfc5" }, { token = "workspace", fg = "#b4a5aa" }],
+  [{ token = "terminal_title_stripped", fg = "#fab387", bold = true, dim = false }],
+  [{ token = "$rule", fg = "#585b70" }],
 ]
 
 # ── Keys ──────────────────────────────────────────────────────────────────

@@ -10,11 +10,11 @@ font-thicken = true
 adjust-cell-height = 7%
 
 # Theme
-theme = Catppuccin Latte
+# theme = Catppuccin Latte
 # theme = Bluloco Light
 # theme = Catppuccin Frappe
 # theme = 0x96f
-# theme = Catppuccin Mocha
+theme = Catppuccin Mocha
 
 # Window settings
 window-padding-x = 16
@@ -22,16 +22,14 @@ window-padding-y = 4
 window-decoration = true
 window-title-font-family = "Sarasa Mono K"
 
-# Background (white, matching the PhpStorm Rider Melon Light editor)
-background = #FFFFFF
-foreground = #202020
-# Opaque on purpose: windows showing through, even blurred, soften glyph edges.
-background-opacity = 1
+# Background (modern glassmorphic style)
+background-opacity = 0.9
+background-blur-radius = 20
 unfocused-split-opacity = 1
-unfocused-split-fill = #F7F7F7
+unfocused-split-fill = #94E2D5
 
 # Split pane divider
-split-divider-color = #D8D8D8
+split-divider-color = #cba6f7
 
 # macOS specific
 macos-titlebar-style = native
@@ -39,33 +37,8 @@ macos-option-as-alt = true
 window-save-state = always
 
 # Cursor
-cursor-color = #202020
-cursor-text = #FFFFFF
 cursor-style = block
 cursor-style-blink = true
-
-# Selection
-selection-background = #B8D9FF
-selection-foreground = cell-foreground
-
-# ANSI colors from the Rider Melon Light console palette. 3, 7 and 15 are
-# darkened because the originals fall to 3:1 or less on white.
-palette = 0=#383838
-palette = 1=#D91400
-palette = 2=#248700
-palette = 3=#9A6D00
-palette = 4=#0F54D6
-palette = 5=#941290
-palette = 6=#00855F
-palette = 7=#767676
-palette = 8=#656565
-palette = 9=#AD0F00
-palette = 10=#1B6600
-palette = 11=#826A00
-palette = 12=#0E3E9E
-palette = 13=#61005E
-palette = 14=#005C43
-palette = 15=#ADADAD
 
 # Shell integration
 shell-integration = zsh

@@ -13,9 +13,13 @@ bold='\033[1m'
 dim='\033[2m'
 reset='\033[0m'
 
-if [ "$TERM_PROGRAM" = "Unpeel" ]; then
+# Unpeel paints its panes from its own appearance setting, not the Ghostty
+# theme, and keeps the resolved value (light or dark) in app-appearance.
+unpeel_appearance=$(cat "$HOME/.unpeel/app-appearance" 2>/dev/null)
+
+if [ "$TERM_PROGRAM" = "Unpeel" ] && [ "$unpeel_appearance" = "light" ]; then
     layout="ink"
-    # Unpeel runs on a light background. Hue is reserved for what needs attention;
+    # On Unpeel's light background hue is reserved for what needs attention;
     # everything else separates by value alone. slate-300 measures 1.5:1 against
     # white, too faint to see, so the recessive tone is slate-400 instead.
     ink='\033[38;2;15;23;42m'      # project and model name (slate 900)

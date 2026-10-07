@@ -61,16 +61,22 @@ fi
 
 # Starship prompt
 if command -v starship &> /dev/null; then
-  # Starship's palette key is static, so Unpeel (light background) gets a generated
-  # copy of the shared config with only the palette line swapped.
-  if [ "$TERM_PROGRAM" = "Unpeel" ]; then
-    starship_daylight_config="${XDG_CACHE_HOME:-$HOME/.cache}/starship/starship.daylight.toml"
+  # Starship's palette key is static, so an Unpeel session on Unpeel's light
+  # appearance (kept in app-appearance) gets a generated copy of the shared
+  # config with only the palette line swapped. The file is read once here, so
+  # an appearance change reaches Starship in the next shell.
+  starship_daylight_config="${XDG_CACHE_HOME:-$HOME/.cache}/starship/starship.daylight.toml"
+  if [ "$TERM_PROGRAM" = "Unpeel" ] && [ "$(cat "$HOME/.unpeel/app-appearance" 2>/dev/null)" = "light" ]; then
     mkdir -p "$(dirname "$starship_daylight_config")"
-    sed "s/^palette = 'm365princess'$/palette = 'm365princess_daylight'/" \
+    sed "s/^palette = 'm365princess'$/palette = 'codex_light'/" \
       "$HOME/.config/starship.toml" > "$starship_daylight_config"
     export STARSHIP_CONFIG="$starship_daylight_config"
-    unset starship_daylight_config
+  elif [ "$STARSHIP_CONFIG" = "$starship_daylight_config" ]; then
+    # exec zsh and child shells inherit the export above from a shell that
+    # started on the light appearance; drop it so the shared config applies.
+    unset STARSHIP_CONFIG
   fi
+  unset starship_daylight_config
   eval "$(starship init zsh)"
 fi
 

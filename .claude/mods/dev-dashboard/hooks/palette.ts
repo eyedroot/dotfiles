@@ -23,14 +23,14 @@ export const PALETTES: Record<ThemeName, Palette> = {
     error: '#b91c1c',
   },
   dark: {
-    background: '#1e293b',
-    accent: '#60a5fa',
-    text: '#e2e8f0',
-    muted: '#94a3b8',
-    hash: '#cbd5e1',
-    ok: '#4ade80',
-    warning: '#fbbf24',
-    error: '#f87171',
+    background: '#181825',
+    accent: '#cba6f7',
+    text: '#cdd6f4',
+    muted: '#a6adc8',
+    hash: '#b4befe',
+    ok: '#a6e3a1',
+    warning: '#fab387',
+    error: '#f38ba8',
   },
 }
 
