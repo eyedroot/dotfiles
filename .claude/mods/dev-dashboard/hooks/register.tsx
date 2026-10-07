@@ -124,7 +124,10 @@ export const register: Register = (on, options) => {
   const recapLines = Math.max(1, Math.floor(toNumber(options.recapLines, 4)))
   const pollSeconds = Math.max(0, toNumber(options.pollSeconds, 30))
   const autoOpen = options.autoOpen !== false
-  const banner = renderBanner(typeof options.banner === 'string' ? options.banner : '')
+  const bannerText = typeof options.banner === 'string' ? options.banner : ''
+  const wideBanner = renderBanner(bannerText, 2)
+  const narrowBanner = renderBanner(bannerText, 1)
+  const bannerFor = (columns: number) => [wideBanner, narrowBanner].find(rows => rows.length > 0 && bannerWidth(rows) <= columns) ?? null
   const artwork = options.art === 'none' ? null : FLOWER
 
   let theme: ThemeName = 'dark'
@@ -274,26 +277,30 @@ export const register: Register = (on, options) => {
 
       return <Raster key="flower" columns={artworkCells.columns} rows={artworkCells.rows} cells={artworkCells.cells} />
     }
-    const title = (snapshot: GitSnapshot, titleWidth: number) => (
-      <Box flexDirection="column">
-        {banner.length > 0 && bannerWidth(banner) <= titleWidth && (
-          <Box flexDirection="column" marginBottom={1}>
-            {banner.map((bannerRow, index) => (
-              <Text key={`banner:${index}`} color={palette.accent} bold>
-                {bannerRow}
-              </Text>
-            ))}
-          </Box>
-        )}
-        <Text color={palette.accent} bold>
-          {fit(snapshot.projectName, titleWidth)}
-        </Text>
-        {snapshot.remoteName !== null && <Text color={palette.muted}>{fit(snapshot.remoteName, titleWidth)}</Text>}
-      </Box>
-    )
+    const title = (snapshot: GitSnapshot, titleWidth: number) => {
+      const banner = bannerFor(titleWidth)
+
+      return (
+        <Box flexDirection="column">
+          {banner !== null && (
+            <Box flexDirection="column" marginBottom={1}>
+              {banner.map((bannerRow, index) => (
+                <Text key={`banner:${index}`} color={palette.accent} bold>
+                  {bannerRow}
+                </Text>
+              ))}
+            </Box>
+          )}
+          <Text color={palette.accent} bold>
+            {fit(snapshot.projectName, titleWidth)}
+          </Text>
+          {snapshot.remoteName !== null && <Text color={palette.muted}>{fit(snapshot.remoteName, titleWidth)}</Text>}
+        </Box>
+      )
+    }
     const header = (snapshot: GitSnapshot) => {
       const artColumns = artworkCells === null ? 0 : artworkCells.columns + 2
-      const isSideBySide = artworkCells !== null && artColumns + Math.max(bannerWidth(banner), snapshot.projectName.length) <= width
+      const isSideBySide = artworkCells !== null && artColumns + Math.max(bannerWidth(narrowBanner), snapshot.projectName.length) <= width
 
       if (isSideBySide) {
         return (
@@ -332,6 +339,12 @@ export const register: Register = (on, options) => {
     return frame(
       <Box flexDirection="column">
         {header(snapshot)}
+        {sessionLine !== null && (
+          <Box flexDirection="column">
+            {heading('Session')}
+            <Text color={palette.muted}>{fit(sessionLine, width)}</Text>
+          </Box>
+        )}
         {!snapshot.isRepo && <Text color={palette.muted}>not a git repository</Text>}
         {snapshot.isRepo && (
           <Box flexDirection="column">
@@ -350,17 +363,6 @@ export const register: Register = (on, options) => {
               `↑${snapshot.ahead} ↓${snapshot.behind}  ${snapshot.dirty === 0 ? 'clean' : `${snapshot.dirty} changed`}`,
               snapshot.dirty === 0 && snapshot.ahead === 0 && snapshot.behind === 0 ? palette.ok : palette.text,
             )}
-            {heading('Commits')}
-            {snapshot.commits.length === 0 && <Text color={palette.muted}>no commits yet</Text>}
-            {snapshot.commits.map(commit => (
-              <Box key={`c:${commit.hash}`}>
-                <Text color={palette.hash}>{commit.hash.slice(0, 8)} </Text>
-                <Text color={palette.muted}>{commit.age.replace(/ ago$/, '').replace(/ (\w)\w+$/, '$1').padEnd(3)} </Text>
-                <Text color={palette.text} wrap="truncate-end">
-                  {fit(commit.subject, width - 13)}
-                </Text>
-              </Box>
-            ))}
             {otherWorktrees.length > 0 && (
               <Box flexDirection="column">
                 {heading(`Worktrees (${otherWorktrees.length})`)}
@@ -380,10 +382,19 @@ export const register: Register = (on, options) => {
         )}
         {recapBlock('Last turn', turn)}
         {prior !== null && (turn === null || prior.endedAt !== turn.endedAt) && recapBlock('Previous session', prior)}
-        {sessionLine !== null && (
+        {snapshot.isRepo && (
           <Box flexDirection="column">
-            {heading('Session')}
-            <Text color={palette.muted}>{fit(sessionLine, width)}</Text>
+            {heading('Commits')}
+            {snapshot.commits.length === 0 && <Text color={palette.muted}>no commits yet</Text>}
+            {snapshot.commits.map(commit => (
+              <Box key={`c:${commit.hash}`}>
+                <Text color={palette.hash}>{commit.hash.slice(0, 8)} </Text>
+                <Text color={palette.muted}>{commit.age.replace(/ ago$/, '').replace(/ (\w)\w+$/, '$1').padEnd(3)} </Text>
+                <Text color={palette.text} wrap="truncate-end">
+                  {fit(commit.subject, width - 13)}
+                </Text>
+              </Box>
+            ))}
           </Box>
         )}
         <Box marginTop={1}>

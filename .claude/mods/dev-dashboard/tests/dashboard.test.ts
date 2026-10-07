@@ -9,6 +9,9 @@ import { encodeBase64, makeHalfBlockCells } from '../hooks/raster'
 import { firstLines, rememberRoot } from '../hooks/recap'
 
 const MAIN_ROOT = '/home/dev/repo'
+
+const headings = async (ui: { findAll: (query: { type: string; text: RegExp }) => Promise<{ text?: string }[]> }) =>
+  (await ui.findAll({ type: 'Text', text: /^── / })).map(found => found.text?.replace(/^── (.*?) ─*$/, '$1'))
 const WORKTREE = `${MAIN_ROOT}/.claude/worktrees/NX-1_feature`
 
 const REFS = [
@@ -118,8 +121,8 @@ test('the banner is three rows of block letters, case-insensitive, and skips cha
   const rows = renderBanner('dev dash')
 
   expect(rows).toHaveLength(3)
-  expect(bannerWidth(rows)).toBe(30)
-  expect(rows[0]).toBe('█▀▄ █▀▀ █ █    █▀▄ ▄▀▄ ▄▀▀ █ █')
+  expect(bannerWidth(rows)).toBe(53)
+  expect(rows[0]).toBe('██▀▀▄▄ ██▀▀▀▀ ██  ██      ██▀▀▄▄ ▄▄▀▀▄▄ ▄▄▀▀▀▀ ██  ██')
   expect(renderBanner('@#')).toEqual([])
   expect(renderBanner('')).toEqual([])
 })
@@ -130,9 +133,9 @@ test('the flower becomes half-block cells with its black surround painted in the
   expect(encodeBase64(new Uint8Array([77, 97]))).toBe('TWE=')
 
   const { columns, rows, cells } = makeHalfBlockCells(FLOWER, '#e6ebf3')
-  expect(columns).toBe(20)
-  expect(rows).toBe(10)
-  expect(cells).toHaveLength(Math.ceil((20 * 10 * 12) / 3) * 4)
+  expect(columns).toBe(14)
+  expect(rows).toBe(7)
+  expect(cells).toHaveLength(Math.ceil((14 * 7 * 12) / 3) * 4)
   expect(cells.startsWith(encodeBase64(new Uint8Array(Uint32Array.of(0x2580, 0xe6ebf3, 0xe6ebf3).buffer)))).toBe(true)
 })
 
@@ -152,7 +155,7 @@ test('recap lines drop markdown marks and empty lines, and the root list stays b
   expect(rememberRoot(Array.from({ length: 20 }, (_, index) => `/r${index}`), '/new')).toHaveLength(20)
 })
 
-test('the pane shows the worktree, the mismatched upstream and the commits on every docking surface', async ($, on) => {
+test('the pane shows the worktree, the mismatched upstream and the commits on every docking surface, and widens the banner with the pane', async ($, on) => {
   mockWorld(on)
   await $.session.start({ cwd: WORKTREE, surface: 'terminal', isInteractive: true })
 
@@ -174,14 +177,19 @@ test('the pane shows the worktree, the mismatched upstream and the commits on ev
     await shows(/^NX-2_other$/)
     await shows(/^ {2}→ origin\/feature\/NX-2_other$/)
     await shows(/Fable 5.1 · 3 turns · ctx 18%/)
+    expect(await headings(ui), `${surface}: section order`).toEqual(['Session', 'Git', 'Worktrees (2)', 'Commits'])
     expect(await ui.find({ type: 'Text', text: /Last turn/ }), `${surface}: no recap yet`).toBeUndefined()
     expect((await ui.find({ type: 'Box' }))?.props, `${surface}: light background`).toMatchObject({ backgroundColor: '#e6ebf3' })
     expect((await ui.find({ type: 'Raster' }))?.props, `${surface}: flower raster`).toEqual(
-      surface === 'terminal' ? expect.objectContaining({ columns: 20, rows: 10 }) : undefined,
+      surface === 'terminal' ? expect.objectContaining({ columns: 14, rows: 7 }) : undefined,
     )
 
     await ui.unmount()
   }
+
+  const wide = await $.ui.mount({ plugin: 'dev-dashboard', surface: 'terminal', component: 'Pane', requestId: 'dev-dashboard', props: { ...PANE_PROPS, bodyColumns: 80 } })
+  expect(await wide.find({ type: 'Text', text: /^██▀▀▄▄ ██▀▀▀▀ ██  ██ {6}██▀▀▄▄ ▄▄▀▀▄▄ ▄▄▀▀▀▀ ██  ██$/ }), 'wide pane: two columns per pixel').toBeDefined()
+  await wide.unmount()
 })
 
 test('a finished turn becomes the recap and is kept for the next session in that repository', async ($, on) => {
@@ -199,6 +207,7 @@ test('a finished turn becomes the recap and is kept for the next session in that
   const ui = await $.ui.mount({ plugin: 'dev-dashboard', surface: 'terminal', component: 'Pane', requestId: 'dev-dashboard', props: PANE_PROPS })
 
   expect(await ui.find({ type: 'Text', text: /Last turn/ })).toBeDefined()
+  expect(await headings(ui)).toEqual(['Session', 'Git', 'Worktrees (2)', 'Last turn', 'Commits'])
   expect(await ui.find({ type: 'Text', text: /0 tools · 1.2k out/ })).toBeDefined()
   expect((await ui.find({ type: 'Text', text: /^Renamed the helper and added a test\.$/ }))?.props).toMatchObject({ wrap: 'wrap' })
   expect(await ui.find({ type: 'Text', text: /Previous session/ })).toBeUndefined()
