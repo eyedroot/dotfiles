@@ -1,21 +1,19 @@
 onboarding = false
 
 # ── Theme ─────────────────────────────────────────────────────────────────
-# herdr reads the host background (OSC 11 / DEC 2031) and picks the light or
-# dark name, so flipping the Ghostty theme flips the sidebar chrome with it.
-# Sidebar row `fg` values further down are fixed hex and do not follow this
-# switch; they are tuned for the dark palette and need a manual swap.
+# Fixed to the dark theme instead of theme.auto_switch: Ghostty 1.3.1 answers
+# the light/dark query (CSI ? 996 n) from the macOS system appearance, not
+# from the terminal background, so with macOS in light mode auto_switch lays
+# the light palette over a dark terminal. The light palette and the matching
+# sidebar row colors are in the dotfiles history.
 [theme]
 name = "catppuccin"
-auto_switch = true
-dark_name = "catppuccin"
-light_name = "catppuccin-latte"
 
 # Catppuccin Mocha base with a burgundy accent family. Rule of thumb for every
 # override: text that can land on a colored row must stay light, and the
 # colored rows must stay dark, so contrast holds on both the mantle sidebar
 # and the active row.
-[theme.custom.dark]
+[theme.custom]
 # Wine-rose accent for the tab pill, borders, dots and navigation UI. herdr
 # paints dark text on the accent (tab number), so it cannot go as deep as a
 # true #800020 without losing that digit (#cc6480 vs #1e1e2e = 4.6:1, AA);
@@ -53,43 +51,6 @@ mauve = "#f5c2e7"
 subtext0 = "#b4a5aa"
 overlay1 = "#8c7c82"
 overlay0 = "#75666c"
-
-# Light counterpart, matched to the Ghostty setup (white background, foreground
-# #202020, Rider Melon Light ANSI palette from PhpStorm). The accent family is
-# the Codex app's blue scale: blue-50 rows, blue-100 border, blue-500 accent,
-# blue-600 agent names. Codex's own accent (#339cff, blue-300) is only 2.9:1
-# against the light tab number herdr draws on the pill, so the pill takes
-# blue-500 instead.
-[theme.custom.light]
-accent = "#0169cc"
-
-# A shade under the pane background so the rail still reads as a panel
-# without a hard edge against the pane area.
-sidebar_bg = "#f7f7f7"
-active_row_bg = "#e5f3ff"
-selection_bg = "#e3e3e3"
-surface_dim = "#99ceff"
-
-# Catppuccin Latte's surfaces are blue-gray (#ccd0da, #bcc0cc); these neutral
-# grays match the PhpStorm tool windows. surface0 is the inactive tab pill
-# behind the overlay0 tab number.
-surface0 = "#ececec"
-surface1 = "#d5d5d5"
-
-# ANSI-palette hues from the Ghostty config, so sidebar icons and the
-# terminal text inside the panes share one set of colors.
-red = "#d91400"
-green = "#248700"
-yellow = "#9a6d00"
-blue = "#0f54d6"
-mauve = "#941290"
-teal = "#00855f"
-peach = "#a14916"
-
-text = "#202020"
-subtext0 = "#656565"
-overlay1 = "#5f5f5f"
-overlay0 = "#727272"
 
 # ── UI ────────────────────────────────────────────────────────────────────
 [ui]
@@ -141,7 +102,7 @@ delivery = "terminal"
 #
 # The light-palette values these replaced (burnt orange #a14916, blue #004f99,
 # gray #5f5f5f, #656565, blue #0f54d6, amber #826a00, rule #d5d5d5) are in the
-# dotfiles history; `fg` is fixed hex and cannot follow theme.auto_switch.
+# dotfiles history.
 
 # Space rows: name, then branch · ahead/behind · uncommitted changes.
 # The branch keeps `dim = false` so it reads as "which branch" at a glance
