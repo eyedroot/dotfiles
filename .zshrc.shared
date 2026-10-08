@@ -68,7 +68,7 @@ if command -v starship &> /dev/null; then
   starship_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/starship"
   if [ "$TERM_PROGRAM" = "Unpeel" ] && [ "$(cat "$HOME/.unpeel/app-appearance" 2>/dev/null)" = "dark" ]; then
     mkdir -p "$starship_cache_dir"
-    sed "s/^palette = 'gruvbox_light'$/palette = 'gruvbox_dark'/" \
+    sed "s/^palette = 'phpstorm_light'$/palette = 'phpstorm_dark'/" \
       "$HOME/.config/starship.toml" > "$starship_cache_dir/starship.dark.toml"
     export STARSHIP_CONFIG="$starship_cache_dir/starship.dark.toml"
   elif [[ "$STARSHIP_CONFIG" == "$starship_cache_dir/"* ]]; then

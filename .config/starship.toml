@@ -28,7 +28,7 @@ $kotlin\
 $cmd_duration\
 $time"""
 
-palette = 'gruvbox_light'
+palette = 'phpstorm_light'
 
 [username]
 show_always = true
@@ -118,42 +118,43 @@ vimcmd_replace_one_symbol = '[❮](bold fg:vim_replace)'
 vimcmd_replace_symbol = '[❮](bold fg:vim_replace)'
 vimcmd_visual_symbol = '[❮](bold fg:vim_visual)'
 
-# Gruvbox Light Hard, matched to the Ghostty theme. Purple carries the mark,
-# name and prompt character as iris does in the reference; text colors are
-# the Gruvbox "bright" (dark) variants, green and aqua darkened further to
-# clear 4.5:1 on the cream (#f9f5d7). The pill is solid aqua with fg0 text.
-[palettes.gruvbox_light]
-prompt_mark = "#8f3f71"   # purple (bright)
-user_name = "#8f3f71"     # purple (bright)
-heart = "#cc241d"         # red; a glyph, so the stock tone stays
-dir_pill = "#689d6a"      # aqua
-dir_text = "#282828"      # fg0
-git = "#076678"           # blue (bright)
-git_status = "#85570e"    # yellow, darkened
-lang = "#396b4c"          # aqua, darkened
-duration = "#665c54"      # fg3
-time = "#665c54"          # fg3
-prompt_ok = "#8f3f71"     # purple (bright)
-prompt_error = "#9d0006"  # red (bright)
-vim_normal = "#076678"    # blue (bright)
-vim_replace = "#9d0006"   # red (bright)
-vim_visual = "#8f3f71"    # purple (bright)
+# PhpStorm's Rider Melon Light, matched to the Ghostty colors. Mark and
+# prompt character take the keyword blue, the name the function purple, the
+# heart the number pink; the directory pill is the editor selection blue with
+# the editor text color on it. Text colors are the scheme's darker console
+# variants where the syntax color falls short of 4.5:1 on white.
+[palettes.phpstorm_light]
+prompt_mark = "#0F54D6"   # keyword blue
+user_name = "#6B2FBA"      # function purple
+heart = "#AB2F6B"            # number pink
+dir_pill = "#B8D9FF"          # editor selection blue
+dir_text = "#202020"         # editor text
+git = "#1B6600"           # console green, bright
+git_status = "#786200"        # console yellow, bright
+lang = "#0E3E9E"           # console blue, bright
+duration = "#606060"           # gray
+time = "#606060"               # gray
+prompt_ok = "#0F54D6"     # keyword blue
+prompt_error = "#AD0F00"    # console red, bright
+vim_normal = "#0F54D6"    # keyword blue
+vim_replace = "#AD0F00"     # console red, bright
+vim_visual = "#6B2FBA"     # function purple
 
-# Gruvbox Dark, used by the Unpeel dark appearance through the swap in
-# .zshrc.shared. Dark text on the aqua pill as in the reference setup.
-[palettes.gruvbox_dark]
-prompt_mark = "#d3869b"   # purple (bright)
-user_name = "#d3869b"     # purple (bright)
-heart = "#fb4934"         # red (bright)
-dir_pill = "#8ec07c"      # aqua (bright)
-dir_text = "#282828"      # bg0
-git = "#83a598"           # blue (bright)
-git_status = "#fabd2f"    # yellow (bright)
-lang = "#8ec07c"          # aqua (bright)
-duration = "#a89984"      # gray
-time = "#a89984"          # gray
-prompt_ok = "#d3869b"     # purple (bright)
-prompt_error = "#fb4934"  # red (bright)
-vim_normal = "#83a598"    # blue (bright)
-vim_replace = "#fb4934"   # red (bright)
-vim_visual = "#d3869b"    # purple (bright)
+# PhpStorm's Rider Melon Dark, used by the Unpeel dark appearance through the
+# swap in .zshrc.shared. Dark text on the blue pill as in the reference setup.
+[palettes.phpstorm_dark]
+prompt_mark = "#6C95EB"   # keyword blue
+user_name = "#C191FF"     # function purple
+heart = "#ED94C0"         # number pink
+dir_pill = "#6C95EB"      # keyword blue
+dir_text = "#262626"      # editor background
+git = "#85C46C"           # constant green
+git_status = "#D9B72B"    # console yellow
+lang = "#66C3CC"          # string teal
+duration = "#909090"      # comment gray
+time = "#909090"          # comment gray
+prompt_ok = "#6C95EB"     # keyword blue
+prompt_error = "#FF5647"  # console red
+vim_normal = "#6C95EB"    # keyword blue
+vim_replace = "#FF5647"   # console red
+vim_visual = "#C191FF"    # function purple

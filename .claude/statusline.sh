@@ -56,25 +56,25 @@ else
     fi
     case "$claude_theme" in
         light*)
-            # Gruvbox Light Hard palette, the same roles as the Mocha block
-            # below: orange accent on the project name, blue model name, red
-            # context meter. Every color but the separator clears 4.5:1 on the
-            # cream Ghostty background (#f9f5d7).
-            project_color='\033[38;2;175;58;3m'     # orange (bright) #af3a03
-            model_color='\033[38;2;7;102;120m'       # blue (bright) #076678
-            ctx_bar_color='\033[38;2;157;0;6m'      # red (bright) #9d0006
-            branch_color='\033[38;2;104;99;12m'      # green, darkened #68630c
-            worktree_color='\033[38;2;57;107;76m'     # aqua, darkened #396b4c
-            style_color='\033[38;2;143;63;113m'      # purple (bright) #8f3f71
-            rate_icon_color='\033[38;2;57;107;76m'    # aqua, darkened
-            subtext_color='\033[38;2;102;92;84m'     # fg3 #665c54
-            separator_color='\033[38;2;168;153;132m'  # bg4 #a89984
-            alert_color='\033[38;2;157;0;6m'        # red (bright)
+            # PhpStorm Rider Melon Light palette, the same roles as the Mocha
+            # block below: function purple on the project name, keyword blue on
+            # the model name, console red on the context meter. Every color but
+            # the separator clears 4.5:1 on the white Ghostty background.
+            project_color='\033[38;2;107;47;186m'    # function purple #6B2FBA
+            model_color='\033[38;2;15;84;214m'      # keyword blue #0F54D6
+            ctx_bar_color='\033[38;2;173;15;0m'    # console red, bright #AD0F00
+            branch_color='\033[38;2;27;102;0m'      # console green, bright #1B6600
+            worktree_color='\033[38;2;0;92;67m'      # console cyan, bright #005C43
+            style_color='\033[38;2;107;47;186m'      # function purple
+            rate_icon_color='\033[38;2;0;92;67m'   # console cyan, bright
+            subtext_color='\033[38;2;96;96;96m'     # gray #606060
+            separator_color='\033[38;2;173;173;173m' # gray #ADADAD
+            alert_color='\033[38;2;173;15;0m'      # console red, bright
 
-            rate_low='\033[38;2;57;107;76m'    # aqua
-            rate_mid='\033[38;2;133;87;14m'   # yellow, darkened #85570e
-            rate_high='\033[38;2;175;58;3m'   # orange
-            rate_crit='\033[38;2;157;0;6m'    # red
+            rate_low='\033[38;2;0;92;67m'    # console cyan, bright
+            rate_mid='\033[38;2;130;106;0m'    # console yellow, bright #826A00
+            rate_high='\033[38;2;161;73;22m'   # orange #A14916
+            rate_crit='\033[38;2;173;15;0m'    # console red, bright
             ;;
         *)
             # Colorful palette: Catppuccin Mocha vivid

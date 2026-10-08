@@ -10,8 +10,9 @@ font-thicken = true
 adjust-cell-height = 7%
 
 # Theme
-theme = Gruvbox Light Hard
+# Colors follow PhpStorm's Rider Melon Light below, so no built-in theme is set.
 # theme = Catppuccin Mocha
+# theme = Gruvbox Light Hard
 
 # Window settings. Equal padding on every side, the leftover space the cell
 # grid cannot fill spread evenly, and the padding painted in the nearest
@@ -26,14 +27,17 @@ window-padding-color = extend
 window-decoration = true
 window-title-font-family = "Sarasa Mono K"
 
-# Background: the theme's cream (#f9f5d7) as is. Opaque on purpose: windows
-# showing through, even blurred, soften glyph edges on a light background.
+# Background: PhpStorm's editor white and text color. Opaque on purpose:
+# windows showing through, even blurred, soften glyph edges on a light
+# background.
+background = #FFFFFF
+foreground = #202020
 background-opacity = 1
 unfocused-split-opacity = 1
-unfocused-split-fill = #ebdbb2
+unfocused-split-fill = #F7F7F7
 
-# Split pane divider (Gruvbox bg2)
-split-divider-color = #d5c4a1
+# Split pane divider (PhpStorm tool window separator)
+split-divider-color = #CCCCCC
 
 # macOS specific
 macos-titlebar-style = native
@@ -41,8 +45,33 @@ macos-option-as-alt = true
 window-save-state = always
 
 # Cursor
+cursor-color = #202020
+cursor-text = #FFFFFF
 cursor-style = block
 cursor-style-blink = true
+
+# Selection (PhpStorm editor selection)
+selection-background = #B8D9FF
+selection-foreground = cell-foreground
+
+# ANSI colors from the Rider Melon Light console palette. 3, 7 and 15 are
+# darkened because the originals fall to 3:1 or less on white.
+palette = 0=#383838
+palette = 1=#D91400
+palette = 2=#248700
+palette = 3=#9A6D00
+palette = 4=#0F54D6
+palette = 5=#941290
+palette = 6=#00855F
+palette = 7=#767676
+palette = 8=#656565
+palette = 9=#AD0F00
+palette = 10=#1B6600
+palette = 11=#826A00
+palette = 12=#0E3E9E
+palette = 13=#61005E
+palette = 14=#005C43
+palette = 15=#ADADAD
 
 # Shell integration
 shell-integration = zsh
