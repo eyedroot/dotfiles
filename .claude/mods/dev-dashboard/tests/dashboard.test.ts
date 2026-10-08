@@ -4,7 +4,7 @@ import type { On } from 'claude-code'
 import { judgeUpstream, parseRemoteName, parseRefs, parseTrack, parseWorktrees } from '../hooks/git'
 import { bannerWidth, renderBanner } from '../hooks/banner'
 import { FLOWER } from '../hooks/flower'
-import { resolveTheme } from '../hooks/palette'
+import { customThemeSlug, resolveTheme } from '../hooks/palette'
 import { encodeBase64, makeHalfBlockCells } from '../hooks/raster'
 import { firstLines, rememberRoot } from '../hooks/recap'
 
@@ -57,7 +57,7 @@ function gitAnswer(argv: readonly string[]): { exitCode: number; stdout: string 
   return { exitCode: 1, stdout: '' }
 }
 
-function mockWorld(on: On): Map<string, unknown> {
+function mockWorld(on: On, settings: Record<string, unknown> = { theme: 'light' }): Map<string, unknown> {
   const store = new Map<string, unknown>()
 
   mock.clock(on, { now: 1_000_000 })
@@ -77,7 +77,7 @@ function mockWorld(on: On): Map<string, unknown> {
   on('process.run', (_, e) => ({
     value: { ...gitAnswer(e.argv), stderr: '', isStdoutTruncated: false, isStderrTruncated: false },
   }))
-  on('settings.read', () => ({ value: { theme: 'light' } }))
+  on('settings.read', () => ({ value: settings }))
   on('session.cwd', () => ({ value: WORKTREE }))
   on('session.model', () => ({ value: 'Fable 5.1' }))
   on('session.turns', () => ({ value: 3 }))
@@ -132,11 +132,11 @@ test('the flower becomes half-block cells with its black surround painted in the
   expect(encodeBase64(new Uint8Array([77, 97, 110]))).toBe('TWFu')
   expect(encodeBase64(new Uint8Array([77, 97]))).toBe('TWE=')
 
-  const { columns, rows, cells } = makeHalfBlockCells(FLOWER, '#e6ebf3')
+  const { columns, rows, cells } = makeHalfBlockCells(FLOWER, '#f2e9e1')
   expect(columns).toBe(14)
   expect(rows).toBe(7)
   expect(cells).toHaveLength(Math.ceil((14 * 7 * 12) / 3) * 4)
-  expect(cells.startsWith(encodeBase64(new Uint8Array(Uint32Array.of(0x2580, 0xe6ebf3, 0xe6ebf3).buffer)))).toBe(true)
+  expect(cells.startsWith(encodeBase64(new Uint8Array(Uint32Array.of(0x2580, 0xf2e9e1, 0xf2e9e1).buffer)))).toBe(true)
 })
 
 test('the palette follows the theme setting unless the option forces one', () => {
@@ -146,6 +146,20 @@ test('the palette follows the theme setting unless the option forces one', () =>
   expect(resolveTheme('auto', undefined)).toBe('dark')
   expect(resolveTheme('dark', 'light')).toBe('dark')
   expect(resolveTheme('light', 'dark')).toBe('light')
+  expect(customThemeSlug('custom:gruvbox-light')).toBe('gruvbox-light')
+  expect(customThemeSlug('custom:../escape')).toBeNull()
+  expect(customThemeSlug('light')).toBeNull()
+})
+
+test('a custom theme is read as the preset it is based on', async ($, on) => {
+  mockWorld(on, { theme: 'custom:paper' })
+  on('env.get', () => ({ value: '/home/dev' }))
+  on('fs.read', (_, e) => ({ value: e.path === '/home/dev/.claude/themes/paper.json' ? '{"base":"light"}' : '{}' }))
+  await $.session.start({ cwd: WORKTREE, surface: 'terminal', isInteractive: true })
+
+  const ui = await $.ui.mount({ plugin: 'dev-dashboard', surface: 'terminal', component: 'Pane', requestId: 'dev-dashboard', props: PANE_PROPS })
+  expect((await ui.find({ type: 'Box' }))?.props, 'light base of the custom theme').toMatchObject({ backgroundColor: '#f2e9e1' })
+  await ui.unmount()
 })
 
 test('recap lines drop markdown marks and empty lines, and the root list stays bounded', () => {
@@ -179,7 +193,7 @@ test('the pane shows the worktree, the mismatched upstream and the commits on ev
     await shows(/Fable 5.1 · 3 turns · ctx 18%/)
     expect(await headings(ui), `${surface}: section order`).toEqual(['Session', 'Git', 'Worktrees (2)', 'Commits'])
     expect(await ui.find({ type: 'Text', text: /Last turn/ }), `${surface}: no recap yet`).toBeUndefined()
-    expect((await ui.find({ type: 'Box' }))?.props, `${surface}: light background`).toMatchObject({ backgroundColor: '#e6ebf3' })
+    expect((await ui.find({ type: 'Box' }))?.props, `${surface}: light background`).toMatchObject({ backgroundColor: '#f2e9e1' })
     expect((await ui.find({ type: 'Raster' }))?.props, `${surface}: flower raster`).toEqual(
       surface === 'terminal' ? expect.objectContaining({ columns: 14, rows: 7 }) : undefined,
     )

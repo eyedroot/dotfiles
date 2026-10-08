@@ -10,26 +10,30 @@ font-thicken = true
 adjust-cell-height = 7%
 
 # Theme
-# theme = Catppuccin Latte
-# theme = Bluloco Light
-# theme = Catppuccin Frappe
-# theme = 0x96f
-theme = Catppuccin Mocha
+theme = Rose Pine Dawn
+# theme = Catppuccin Mocha
 
-# Window settings
-window-padding-x = 16
-window-padding-y = 4
+# Window settings. Equal padding on every side, the leftover space the cell
+# grid cannot fill spread evenly, and the padding painted in the nearest
+# cell's background so herdr's sidebar and a docked pane run to the window
+# edge instead of stopping at a cream frame. (`extend` leaves the bottom
+# padding in the default background while the last row has any default-
+# background cell; `extend-always` would paint it per column.)
+window-padding-x = 8
+window-padding-y = 8
+window-padding-balance = true
+window-padding-color = extend
 window-decoration = true
 window-title-font-family = "Sarasa Mono K"
 
-# Background (modern glassmorphic style)
-background-opacity = 0.9
-background-blur-radius = 20
+# Background: the theme's base (#faf4ed) as is. Opaque on purpose: windows
+# showing through, even blurred, soften glyph edges on a light background.
+background-opacity = 1
 unfocused-split-opacity = 1
-unfocused-split-fill = #94E2D5
+unfocused-split-fill = #f2e9e1
 
-# Split pane divider
-split-divider-color = #cba6f7
+# Split pane divider (Rose Pine highlight med)
+split-divider-color = #dfdad9
 
 # macOS specific
 macos-titlebar-style = native

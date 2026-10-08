@@ -1,74 +1,43 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
-# M365Princess Theme for Starship
-# Inspired by oh-my-posh M365Princess theme
-# Using rounded powerline glyphs (U+E0B4)
+# Rose Pine prompt after KatieUmbra/rose-pine-dots: a mark, the user name, a
+# heart, the directory in a pill and the prompt character on the left; git,
+# language versions, command time and the clock on the right.
 
 command_timeout = 1000
 
 format = """
-[](fg:segment_user)\
-$os\
+[](fg:prompt_mark) \
 $username\
-[](bg:segment_dir fg:segment_user)\
+[󰣐](fg:heart) \
+[](fg:dir_pill)\
 $directory\
-[](bg:segment_git fg:segment_dir)\
-$git_branch\
-$git_status\
-[](fg:segment_git bg:segment_lang)\
-$c\
-$rust\
-$golang\
-$nodejs\
-$php\
-$java\
-$kotlin\
-$haskell\
-$python\
-[](fg:segment_lang bg:segment_time)\
-$conda\
-$time\
-[ ](fg:segment_time)\
-$cmd_duration\
-$line_break\
+[](fg:dir_pill) \
 $character"""
 
-palette = 'm365princess'
+right_format = """
+$git_branch\
+$git_status\
+$nodejs\
+$php\
+$python\
+$golang\
+$rust\
+$java\
+$kotlin\
+$cmd_duration\
+$time"""
 
-[os]
-disabled = false
-style = "bg:segment_user fg:text_user"
-
-[os.symbols]
-Windows = ""
-Ubuntu = "󰕈"
-SUSE = ""
-Raspbian = "󰐿"
-Mint = "󰣭"
-Macos = "󰀵"
-Manjaro = ""
-Linux = "󰌽"
-Gentoo = "󰣨"
-Fedora = "󰣛"
-Alpine = ""
-Amazon = ""
-Android = ""
-AOSC = ""
-Arch = "󰣇"
-Artix = "󰣇"
-CentOS = ""
-Debian = "󰣚"
-Redhat = "󱄛"
-RedHatEnterprise = "󱄛"
+palette = 'rose_pine_dawn'
 
 [username]
 show_always = true
-style_user = "bg:segment_user fg:text_user"
-style_root = "bg:segment_user fg:text_user"
-format = '[ $user]($style)'
+style_user = "italic fg:user_name"
+style_root = "bold fg:prompt_error"
+format = '[$user]($style) '
 
 [directory]
-style = "bg:segment_dir fg:text_dir"
+style = "bg:dir_pill fg:dir_text"
 format = "[ $path ]($style)"
 truncation_length = 3
 truncation_symbol = "…/"
@@ -81,75 +50,61 @@ truncation_symbol = "…/"
 "Developer" = "󰲋 "
 
 [git_branch]
-symbol = ""
-style = "bg:segment_git"
-format = '[[ $symbol $branch ](fg:text_git bg:segment_git)]($style)'
+symbol = "󰊢"
+style = "fg:git"
+format = '[$symbol $branch(:$remote_branch)]($style) '
 
 [git_status]
-style = "bg:segment_git"
-format = '[[($all_status$ahead_behind )](fg:text_git bg:segment_git)]($style)'
+style = "fg:git_status"
+format = '([$all_status$ahead_behind]($style) )'
 
 [nodejs]
 symbol = ""
-style = "bg:segment_lang"
-format = '[[ $symbol( $version) ](fg:text_lang bg:segment_lang)]($style)'
-
-[c]
-symbol = " "
-style = "bg:segment_lang"
-format = '[[ $symbol( $version) ](fg:text_lang bg:segment_lang)]($style)'
-
-[rust]
-symbol = ""
-style = "bg:segment_lang"
-format = '[[ $symbol( $version) ](fg:text_lang bg:segment_lang)]($style)'
-
-[golang]
-symbol = ""
-style = "bg:segment_lang"
-format = '[[ $symbol( $version) ](fg:text_lang bg:segment_lang)]($style)'
+style = "fg:lang"
+format = '[$symbol ($version)]($style) '
 
 [php]
 symbol = ""
-style = "bg:segment_lang"
-format = '[[ $symbol( $version) ](fg:text_lang bg:segment_lang)]($style)'
-
-[java]
-symbol = " "
-style = "bg:segment_lang"
-format = '[[ $symbol( $version) ](fg:text_lang bg:segment_lang)]($style)'
-
-[kotlin]
-symbol = ""
-style = "bg:segment_lang"
-format = '[[ $symbol( $version) ](fg:text_lang bg:segment_lang)]($style)'
-
-[haskell]
-symbol = ""
-style = "bg:segment_lang"
-format = '[[ $symbol( $version) ](fg:text_lang bg:segment_lang)]($style)'
+style = "fg:lang"
+format = '[$symbol ($version)]($style) '
 
 [python]
 symbol = ""
-style = "bg:segment_lang"
-format = '[[ $symbol( $version)(\(#$virtualenv\)) ](fg:text_lang bg:segment_lang)]($style)'
+style = "fg:lang"
+format = '[$symbol ($version)(\(#$virtualenv\))]($style) '
 
-[docker_context]
+[golang]
 symbol = ""
-style = "bg:segment_time"
-format = '[[ $symbol( $context) ](fg:text_time bg:segment_time)]($style)'
+style = "fg:lang"
+format = '[$symbol ($version)]($style) '
 
-[conda]
-symbol = "  "
-style = "fg:text_time bg:segment_time"
-format = '[$symbol$environment ]($style)'
-ignore_base = false
+[rust]
+symbol = ""
+style = "fg:lang"
+format = '[$symbol ($version)]($style) '
+
+[java]
+symbol = ""
+style = "fg:lang"
+format = '[$symbol ($version)]($style) '
+
+[kotlin]
+symbol = ""
+style = "fg:lang"
+format = '[$symbol ($version)]($style) '
+
+[cmd_duration]
+show_milliseconds = true
+style = "fg:duration"
+format = '[ $duration]($style) '
+show_notifications = true
+min_time_to_notify = 45000
 
 [time]
 disabled = false
 time_format = "%R"
-style = "bg:segment_time"
-format = '[[  $time ](fg:text_time bg:segment_time)]($style)'
+style = "fg:time"
+format = '[ $time]($style)'
 
 [line_break]
 disabled = true
@@ -163,51 +118,41 @@ vimcmd_replace_one_symbol = '[❮](bold fg:vim_replace)'
 vimcmd_replace_symbol = '[❮](bold fg:vim_replace)'
 vimcmd_visual_symbol = '[❮](bold fg:vim_visual)'
 
-[cmd_duration]
-show_milliseconds = true
-format = " in $duration "
-style = "fg:duration"
-disabled = false
-show_notifications = true
-min_time_to_notify = 45000
+# Rose Pine Dawn, matched to the Ghostty theme. Accents used as text are the
+# Dawn colors darkened to 4.5:1 on the base (#faf4ed); the pill is foam
+# tinted into the base so the text color stays readable on it.
+[palettes.rose_pine_dawn]
+prompt_mark = "#6b5b7e"   # iris, darkened
+user_name = "#6b5b7e"     # iris, darkened
+heart = "#b4637a"         # love; a glyph, so the stock tone stays
+dir_pill = "#bcd0cf"      # foam tint
+dir_text = "#575279"      # text
+git = "#286983"           # pine, darkened
+git_status = "#85591d"    # gold, darkened
+lang = "#3d6970"          # foam, darkened
+duration = "#635f78"    # subtle, darkened
+time = "#635f78"        # subtle, darkened
+prompt_ok = "#6b5b7e"     # iris, darkened
+prompt_error = "#8f4f61"  # love, darkened
+vim_normal = "#286983"    # pine, darkened
+vim_replace = "#8f4f61"   # love, darkened
+vim_visual = "#6b5b7e"    # iris, darkened
 
-# M365Princess Color Palette (Dark)
-[palettes.m365princess]
-segment_user = "#9B4F96"
-segment_dir = "#D67BA6"
-segment_git = "#E8899E"
-segment_lang = "#74C2E1"
-segment_time = "#3B8EA5"
-text_user = "#FFFFFF"
-text_dir = "#FFFFFF"
-text_git = "#FFFFFF"
-text_lang = "#FFFFFF"
-text_time = "#FFFFFF"
-prompt_ok = "#E8899E"
-prompt_error = "#E06C75"
-vim_normal = "#9B4F96"
-vim_replace = "#D67BA6"
-vim_visual = "#74C2E1"
-duration = "#3B8EA5"
-
-# Codex light palette, taken from the Codex app's color scale. The user segment
-# is the one solid accent with white text; the rest are pale surfaces with dark
-# text, the same split as the herdr tab bar. Every text color clears 4.5:1 on
-# its segment and on the white Ghostty background.
-[palettes.codex_light]
-segment_user = "#0169cc"  # blue-500
-segment_dir = "#e5f3ff"   # blue-50
-segment_git = "#f3f3f3"   # gray-75
-segment_lang = "#ececec"  # gray-100
-segment_time = "#e3e3e3"  # gray-200
-text_user = "#ffffff"
-text_dir = "#004f99"      # blue-600
-text_git = "#1a1c1f"      # Codex ink
-text_lang = "#5d5d5d"     # gray-500
-text_time = "#5d5d5d"     # gray-500
-prompt_ok = "#0169cc"     # blue-500
-prompt_error = "#ba2623"  # red-600
-vim_normal = "#004f99"    # blue-600
-vim_replace = "#b9480d"   # orange-600
-vim_visual = "#5d5d5d"    # gray-500
-duration = "#5d5d5d"      # gray-500
+# Rose Pine (dark), used by the Unpeel dark appearance through the swap in
+# .zshrc.shared. Dark text on the foam pill as in the reference setup.
+[palettes.rose_pine]
+prompt_mark = "#c4a7e7"   # iris
+user_name = "#9ccfd8"     # foam
+heart = "#eb6f92"         # love
+dir_pill = "#9ccfd8"      # foam
+dir_text = "#191724"      # base
+git = "#31748f"           # pine
+git_status = "#f6c177"    # gold
+lang = "#9ccfd8"          # foam
+duration = "#908caa"      # subtle
+time = "#908caa"          # subtle
+prompt_ok = "#c4a7e7"     # iris
+prompt_error = "#eb6f92"  # love
+vim_normal = "#31748f"    # pine
+vim_replace = "#eb6f92"   # love
+vim_visual = "#c4a7e7"    # iris

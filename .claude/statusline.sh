@@ -33,8 +33,20 @@ else
     # The status line cannot query the terminal background, so Claude Code's
     # own theme setting is the light/dark switch; the UI around the status
     # line already follows that value. "auto" follows the macOS appearance,
-    # which is what Claude Code itself resolves it to.
-    claude_theme=$(jq -r '.theme // "dark"' "$HOME/.claude/settings.json" 2>/dev/null)
+    # which is what Claude Code itself resolves it to. An Unpeel pane on the
+    # dark appearance keeps the dark palette whatever the setting says.
+    if [ "$TERM_PROGRAM" = "Unpeel" ] && [ "$unpeel_appearance" = "dark" ]; then
+        claude_theme="dark"
+    else
+        claude_theme=$(jq -r '.theme // "dark"' "$HOME/.claude/settings.json" 2>/dev/null)
+    fi
+    # A custom theme (custom:<slug>) is a preset plus overrides; its file names
+    # the preset under "base".
+    case "$claude_theme" in
+        custom:*)
+            claude_theme=$(jq -r '.base // "dark"' "$HOME/.claude/themes/${claude_theme#custom:}.json" 2>/dev/null)
+            ;;
+    esac
     if [ "$claude_theme" = "auto" ]; then
         if [ "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" = "Dark" ]; then
             claude_theme="dark"
@@ -44,25 +56,25 @@ else
     fi
     case "$claude_theme" in
         light*)
-            # Codex light palette: the one hue is the blue accent on the model
-            # name and meters, red and orange appear only when something needs
-            # attention, and everything else is ink or gray. Every color but the
-            # separator clears 4.5:1 on the white Ghostty background.
-            project_color='\033[38;2;26;28;31m'     # Codex ink #1a1c1f
-            model_color='\033[38;2;1;105;204m'      # blue-500 #0169cc
-            ctx_bar_color='\033[38;2;1;105;204m'    # blue-500
-            branch_color='\033[38;2;93;93;93m'      # gray-500 #5d5d5d
-            worktree_color='\033[38;2;93;93;93m'    # gray-500
-            style_color='\033[38;2;93;93;93m'       # gray-500
-            rate_icon_color='\033[38;2;93;93;93m'   # gray-500
-            subtext_color='\033[38;2;93;93;93m'     # gray-500
-            separator_color='\033[38;2;175;175;175m' # gray-300 #afafaf
-            alert_color='\033[38;2;186;38;35m'      # red-600 #ba2623
+            # Rose Pine Dawn palette, the same roles as the Mocha block below:
+            # iris accent on the project name, pine model name, love context
+            # meter. Accents are the Dawn colors darkened so every color but
+            # the separator clears 4.5:1 on the base (#faf4ed).
+            project_color='\033[38;2;107;91;126m'    # iris, darkened #6b5b7e
+            model_color='\033[38;2;40;105;131m'      # pine #286983
+            ctx_bar_color='\033[38;2;143;79;97m'    # love, darkened #8f4f61
+            branch_color='\033[38;2;61;105;112m'     # foam, darkened #3d6970
+            worktree_color='\033[38;2;137;83;80m'   # rose, darkened #895350
+            style_color='\033[38;2;107;91;126m'      # iris, darkened
+            rate_icon_color='\033[38;2;61;105;112m'  # foam, darkened
+            subtext_color='\033[38;2;99;95;120m'    # subtle, darkened #635f78
+            separator_color='\033[38;2;152;147;165m' # muted #9893a5
+            alert_color='\033[38;2;143;79;97m'      # love, darkened
 
-            rate_low='\033[38;2;1;105;204m'   # blue-500
-            rate_mid='\033[38;2;0;79;153m'    # blue-600 #004f99
-            rate_high='\033[38;2;185;72;13m'  # orange-600 #b9480d
-            rate_crit='\033[38;2;186;38;35m'  # red-600
+            rate_low='\033[38;2;61;105;112m'    # foam
+            rate_mid='\033[38;2;133;89;29m'    # gold, darkened #85591d
+            rate_high='\033[38;2;137;83;80m'   # rose, darkened
+            rate_crit='\033[38;2;143;79;97m'   # love, darkened
             ;;
         *)
             # Colorful palette: Catppuccin Mocha vivid

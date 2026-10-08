@@ -13,14 +13,14 @@ export type Palette = {
 
 export const PALETTES: Record<ThemeName, Palette> = {
   light: {
-    background: '#e6ebf3',
-    accent: '#2563eb',
-    text: '#0f172a',
-    muted: '#64748b',
-    hash: '#475569',
-    ok: '#15803d',
-    warning: '#b45309',
-    error: '#b91c1c',
+    background: '#f2e9e1',
+    accent: '#6b5b7e',
+    text: '#575279',
+    muted: '#635f78',
+    hash: '#286983',
+    ok: '#3d6970',
+    warning: '#85591d',
+    error: '#8f4f61',
   },
   dark: {
     background: '#181825',
@@ -38,4 +38,14 @@ export function resolveTheme(option: unknown, settingsTheme: unknown): ThemeName
   if (option === 'light' || option === 'dark') return option
 
   return typeof settingsTheme === 'string' && settingsTheme.startsWith('light') ? 'light' : 'dark'
+}
+
+// A custom theme is stored as custom:<slug> and is a preset plus overrides;
+// the slug names ~/.claude/themes/<slug>.json, whose "base" is that preset.
+export function customThemeSlug(settingsTheme: unknown): string | null {
+  if (typeof settingsTheme !== 'string' || !settingsTheme.startsWith('custom:')) return null
+
+  const slug = settingsTheme.slice('custom:'.length)
+
+  return /^[A-Za-z0-9_-]+$/.test(slug) ? slug : null
 }

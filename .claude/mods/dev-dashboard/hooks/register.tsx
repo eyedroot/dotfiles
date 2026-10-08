@@ -5,7 +5,7 @@ import type { GitSnapshot, SessionFacts, TurnRecap, UpstreamStatus } from '../ty
 import { bannerWidth, renderBanner } from './banner'
 import { FLOWER } from './flower'
 import { readGitSnapshot } from './git'
-import { PALETTES, resolveTheme } from './palette'
+import { PALETTES, customThemeSlug, resolveTheme } from './palette'
 import type { Palette, ThemeName } from './palette'
 import { makeHalfBlockCells } from './raster'
 import { RECAP_ROOTS_KEY, formatDuration, formatTokens, makeRecap, recapKey, relativeAge, rememberRoot } from './recap'
@@ -109,10 +109,22 @@ async function persistRecap($: EngineInterface, recap: TurnRecap): Promise<void>
   await $.store.set(RECAP_ROOTS_KEY, kept)
 }
 
+async function customThemeBase($: EngineInterface, slug: string): Promise<unknown> {
+  try {
+    const home = await $.env.get('HOME')
+    const theme = JSON.parse(await $.fs.read(`${home}/.claude/themes/${slug}.json`)) as { base?: unknown }
+
+    return theme.base ?? 'dark'
+  } catch {
+    return 'dark'
+  }
+}
+
 async function readTheme($: EngineInterface, option: unknown): Promise<ThemeName> {
   const settings = await $.settings.read()
+  const slug = customThemeSlug(settings.theme)
 
-  return resolveTheme(option, settings.theme)
+  return resolveTheme(option, slug === null ? settings.theme : await customThemeBase($, slug))
 }
 
 function openPane($: EngineInterface) {
