@@ -132,11 +132,11 @@ test('the flower becomes half-block cells with its black surround painted in the
   expect(encodeBase64(new Uint8Array([77, 97, 110]))).toBe('TWFu')
   expect(encodeBase64(new Uint8Array([77, 97]))).toBe('TWE=')
 
-  const { columns, rows, cells } = makeHalfBlockCells(FLOWER, '#f2e9e1')
+  const { columns, rows, cells } = makeHalfBlockCells(FLOWER, '#f2e5bc')
   expect(columns).toBe(14)
   expect(rows).toBe(7)
   expect(cells).toHaveLength(Math.ceil((14 * 7 * 12) / 3) * 4)
-  expect(cells.startsWith(encodeBase64(new Uint8Array(Uint32Array.of(0x2580, 0xf2e9e1, 0xf2e9e1).buffer)))).toBe(true)
+  expect(cells.startsWith(encodeBase64(new Uint8Array(Uint32Array.of(0x2580, 0xf2e5bc, 0xf2e5bc).buffer)))).toBe(true)
 })
 
 test('the palette follows the theme setting unless the option forces one', () => {
@@ -158,7 +158,7 @@ test('a custom theme is read as the preset it is based on', async ($, on) => {
   await $.session.start({ cwd: WORKTREE, surface: 'terminal', isInteractive: true })
 
   const ui = await $.ui.mount({ plugin: 'dev-dashboard', surface: 'terminal', component: 'Pane', requestId: 'dev-dashboard', props: PANE_PROPS })
-  expect((await ui.find({ type: 'Box' }))?.props, 'light base of the custom theme').toMatchObject({ backgroundColor: '#f2e9e1' })
+  expect((await ui.find({ type: 'Box' }))?.props, 'light base of the custom theme').toMatchObject({ backgroundColor: '#f2e5bc' })
   await ui.unmount()
 })
 
@@ -193,7 +193,7 @@ test('the pane shows the worktree, the mismatched upstream and the commits on ev
     await shows(/Fable 5.1 · 3 turns · ctx 18%/)
     expect(await headings(ui), `${surface}: section order`).toEqual(['Session', 'Git', 'Worktrees (2)', 'Commits'])
     expect(await ui.find({ type: 'Text', text: /Last turn/ }), `${surface}: no recap yet`).toBeUndefined()
-    expect((await ui.find({ type: 'Box' }))?.props, `${surface}: light background`).toMatchObject({ backgroundColor: '#f2e9e1' })
+    expect((await ui.find({ type: 'Box' }))?.props, `${surface}: light background`).toMatchObject({ backgroundColor: '#f2e5bc' })
     expect((await ui.find({ type: 'Raster' }))?.props, `${surface}: flower raster`).toEqual(
       surface === 'terminal' ? expect.objectContaining({ columns: 14, rows: 7 }) : undefined,
     )

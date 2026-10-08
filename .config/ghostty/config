@@ -10,7 +10,7 @@ font-thicken = true
 adjust-cell-height = 7%
 
 # Theme
-theme = Rose Pine Dawn
+theme = Gruvbox Light Hard
 # theme = Catppuccin Mocha
 
 # Window settings. Equal padding on every side, the leftover space the cell
@@ -26,14 +26,14 @@ window-padding-color = extend
 window-decoration = true
 window-title-font-family = "Sarasa Mono K"
 
-# Background: the theme's base (#faf4ed) as is. Opaque on purpose: windows
+# Background: the theme's cream (#f9f5d7) as is. Opaque on purpose: windows
 # showing through, even blurred, soften glyph edges on a light background.
 background-opacity = 1
 unfocused-split-opacity = 1
-unfocused-split-fill = #f2e9e1
+unfocused-split-fill = #ebdbb2
 
-# Split pane divider (Rose Pine highlight med)
-split-divider-color = #dfdad9
+# Split pane divider (Gruvbox bg2)
+split-divider-color = #d5c4a1
 
 # macOS specific
 macos-titlebar-style = native

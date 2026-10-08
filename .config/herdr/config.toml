@@ -1,47 +1,54 @@
 onboarding = false
 
 # ── Theme ─────────────────────────────────────────────────────────────────
-# Fixed to rose-pine-dawn instead of theme.auto_switch: Ghostty 1.3.1 answers
+# Fixed to gruvbox-light instead of theme.auto_switch: Ghostty 1.3.1 answers
 # the light/dark query (CSI ? 996 n) from the macOS system appearance, not
 # from the terminal background, so auto_switch would follow the OS setting
-# rather than the terminal. The Catppuccin Mocha and Gruvbox Light setups
-# this replaced are in the dotfiles history.
+# rather than the terminal. The Catppuccin Mocha setup this replaced is in the
+# dotfiles history.
 [theme]
-name = "rose-pine-dawn"
+name = "gruvbox-light"
 
-# Rose Pine Dawn (Ghostty) with the sidebar on the overlay surface. The Dawn
-# accents are mid-tones that stop between 2:1 and 4:1 on its surfaces, so
-# every accent used as text is darkened until it clears 4.5:1 on the base
-# (#faf4ed), the overlay sidebar (#f2e9e1) and the iris-tinted active row
-# (#e5dcdf); only glyph-sized uses keep the stock tone.
+# Gruvbox Light Hard (Ghostty) with the sidebar one shade down. Rule of thumb
+# for every override: text stays at or above 4.5:1 on the soft sidebar
+# (#f2e5bc) and on the tan active row (#ebdbb2), so the Gruvbox "bright" hues
+# (the dark variants in slots 9-14) are used for text, and green, yellow and
+# aqua are darkened further because their bright variants fall short.
 [theme.custom]
-# Iris, Rose Pine's purple, for the tab pill, borders, dots and navigation
-# UI, darkened so the light tab number herdr draws on the pill reads.
-accent = "#7b6891"
+# Dark orange, the Gruvbox signature, for the tab pill, borders, dots and
+# navigation UI; herdr draws light text on the pill in light themes, and this
+# shade clears 5.4:1 under cream text.
+accent = "#af3a03"
 
-# Overlay, one step under the base, so the rail reads as a panel without a
-# hard edge.
-sidebar_bg = "#f2e9e1"
+# Gruvbox bg0_soft, one step under the pane cream, so the rail reads as a
+# panel without a hard edge.
+sidebar_bg = "#f2e5bc"
 
-# Active row on an iris tint, the navigate cursor on highlight high so the
-# two never look alike, highlight med for the sidebar border.
-active_row_bg = "#e5dcdf"
-selection_bg = "#cecacd"
-surface_dim = "#dfdad9"
+# Active row on bg1 (tan), the navigate cursor on bg2 so the two never look
+# alike. surface_dim draws the sidebar's right edge, the spaces/agents
+# divider and the agents header rule; the bg shades vanish there (under 2:1
+# on the cream), so it takes fg4, 4.4:1, and the panel boundary reads at a
+# glance. surface0 is the inactive tab pill behind the overlay0 tab number.
+active_row_bg = "#ebdbb2"
+selection_bg = "#d5c4a1"
+surface_dim = "#7c6f64"
+surface0 = "#ebdbb2"
+surface1 = "#d5c4a1"
 
-# State colors: the Dawn accents darkened as above.
-red = "#8f4f61"
-green = "#286983"
-yellow = "#85591d"
-blue = "#3d6970"
-mauve = "#6b5b7e"
-teal = "#3d6970"
-peach = "#895350"
+# State colors: Gruvbox light "bright" red, blue and purple as is; green,
+# yellow and aqua darkened to clear 4.5:1 on the active row.
+red = "#9d0006"
+green = "#68630c"
+yellow = "#85570e"
+blue = "#076678"
+mauve = "#8f3f71"
+teal = "#396b4c"
+peach = "#af3a03"
 
-text = "#575279"
-subtext0 = "#635f78"
-overlay1 = "#635f78"
-overlay0 = "#635f78"
+text = "#3c3836"
+subtext0 = "#665c54"
+overlay1 = "#504945"
+overlay0 = "#6a5f55"
 
 # ── UI ────────────────────────────────────────────────────────────────────
 [ui]
@@ -79,21 +86,22 @@ delivery = "terminal"
 
 # Sidebar rows. Every token that is not the bold workspace name carries an
 # explicit foreground instead of `dim`, because dimmed text disappears on the
-# colored active row. Dawn scale, top to bottom: love #8f4f61 (Claude
-# topic line, bold), iris #6b5b7e (agent name), subtle #635f78
-# (state and workspace), pine #286983 (branch), gold #85591d
-# ($dirty), each the Dawn accent darkened to clear WCAG AA on the overlay
-# sidebar (#f2e9e1) and the iris-tinted active row (#e5dcdf). The
-# $rule separator (#dfdad9, highlight med) is a line, not text, so it
-# is kept faint on purpose.
+# colored active row. Gruvbox scale, top to bottom: orange #af3a03 (Claude
+# topic line, bold), purple #8f3f71 (agent name), fg2 #504945 (state), fg3
+# #665c54 (workspace), blue #076678 (branch), darkened yellow #85570e
+# ($dirty). All pairs clear WCAG AA on both the soft sidebar (#f2e5bc) and
+# the tan active row (#ebdbb2). The $rule separator is a line, not text:
+# gray (#928374, 2.9:1 on the sidebar) keeps it visible between entries while
+# lighter than the panel edge above.
 #
 # herdr has no border option between sidebar entries; `row_gap` only adds
 # blank rows. Each entry instead ends with a $rule row, a line of "─" that
 # status.sh reports per workspace and per agent pane, which is why `row_gap`
 # stays 0 below.
 #
-# The Catppuccin Mocha and Gruvbox Light values these replaced are in the
-# dotfiles history.
+# The Catppuccin Mocha values these replaced (sky #89dceb, yellow #f9e2af,
+# maroon #eba0ac, rose-gray #cfbfc5, warm subtext #b4a5aa, peach #fab387, rule
+# #585b70) are in the dotfiles history.
 
 # Space rows: name, then branch · ahead/behind · uncommitted changes.
 # The branch keeps `dim = false` so it reads as "which branch" at a glance
@@ -104,8 +112,8 @@ delivery = "terminal"
 row_gap = 0
 rows = [
   ["state_icon", "workspace"],
-  [{ token = "branch", fg = "#286983", dim = false }, "git_status", { token = "$dirty", fg = "#85591d" }],
-  [{ token = "$rule", fg = "#dfdad9" }],
+  [{ token = "branch", fg = "#076678", dim = false }, "git_status", { token = "$dirty", fg = "#85570e" }],
+  [{ token = "$rule", fg = "#928374" }],
 ]
 
 # Agent rows: one status line per agent, workspace in a softer tone for
@@ -113,8 +121,8 @@ rows = [
 [ui.sidebar.agents]
 row_gap = 0
 rows = [
-  ["state_icon", { token = "agent", fg = "#6b5b7e", bold = true }, { token = "state_text", fg = "#635f78" }, { token = "workspace", fg = "#635f78" }],
-  [{ token = "$rule", fg = "#dfdad9" }],
+  ["state_icon", { token = "agent", fg = "#8f3f71", bold = true }, { token = "state_text", fg = "#504945" }, { token = "workspace", fg = "#665c54" }],
+  [{ token = "$rule", fg = "#928374" }],
 ]
 
 # Claude Code writes its conversation topic to the terminal title
@@ -128,9 +136,9 @@ rows = [
 # blending the color toward the background, which washes the line out).
 [ui.sidebar.agents.rows_by_agent]
 claude = [
-  ["state_icon", { token = "agent", fg = "#6b5b7e", bold = true }, { token = "state_text", fg = "#635f78" }, { token = "workspace", fg = "#635f78" }],
-  [{ token = "terminal_title_stripped", fg = "#8f4f61", bold = true, dim = false }],
-  [{ token = "$rule", fg = "#dfdad9" }],
+  ["state_icon", { token = "agent", fg = "#8f3f71", bold = true }, { token = "state_text", fg = "#504945" }, { token = "workspace", fg = "#665c54" }],
+  [{ token = "terminal_title_stripped", fg = "#af3a03", bold = true, dim = false }],
+  [{ token = "$rule", fg = "#928374" }],
 ]
 
 # ── Keys ──────────────────────────────────────────────────────────────────

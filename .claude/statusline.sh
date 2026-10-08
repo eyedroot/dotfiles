@@ -56,25 +56,25 @@ else
     fi
     case "$claude_theme" in
         light*)
-            # Rose Pine Dawn palette, the same roles as the Mocha block below:
-            # iris accent on the project name, pine model name, love context
-            # meter. Accents are the Dawn colors darkened so every color but
-            # the separator clears 4.5:1 on the base (#faf4ed).
-            project_color='\033[38;2;107;91;126m'    # iris, darkened #6b5b7e
-            model_color='\033[38;2;40;105;131m'      # pine #286983
-            ctx_bar_color='\033[38;2;143;79;97m'    # love, darkened #8f4f61
-            branch_color='\033[38;2;61;105;112m'     # foam, darkened #3d6970
-            worktree_color='\033[38;2;137;83;80m'   # rose, darkened #895350
-            style_color='\033[38;2;107;91;126m'      # iris, darkened
-            rate_icon_color='\033[38;2;61;105;112m'  # foam, darkened
-            subtext_color='\033[38;2;99;95;120m'    # subtle, darkened #635f78
-            separator_color='\033[38;2;152;147;165m' # muted #9893a5
-            alert_color='\033[38;2;143;79;97m'      # love, darkened
+            # Gruvbox Light Hard palette, the same roles as the Mocha block
+            # below: orange accent on the project name, blue model name, red
+            # context meter. Every color but the separator clears 4.5:1 on the
+            # cream Ghostty background (#f9f5d7).
+            project_color='\033[38;2;175;58;3m'     # orange (bright) #af3a03
+            model_color='\033[38;2;7;102;120m'       # blue (bright) #076678
+            ctx_bar_color='\033[38;2;157;0;6m'      # red (bright) #9d0006
+            branch_color='\033[38;2;104;99;12m'      # green, darkened #68630c
+            worktree_color='\033[38;2;57;107;76m'     # aqua, darkened #396b4c
+            style_color='\033[38;2;143;63;113m'      # purple (bright) #8f3f71
+            rate_icon_color='\033[38;2;57;107;76m'    # aqua, darkened
+            subtext_color='\033[38;2;102;92;84m'     # fg3 #665c54
+            separator_color='\033[38;2;168;153;132m'  # bg4 #a89984
+            alert_color='\033[38;2;157;0;6m'        # red (bright)
 
-            rate_low='\033[38;2;61;105;112m'    # foam
-            rate_mid='\033[38;2;133;89;29m'    # gold, darkened #85591d
-            rate_high='\033[38;2;137;83;80m'   # rose, darkened
-            rate_crit='\033[38;2;143;79;97m'   # love, darkened
+            rate_low='\033[38;2;57;107;76m'    # aqua
+            rate_mid='\033[38;2;133;87;14m'   # yellow, darkened #85570e
+            rate_high='\033[38;2;175;58;3m'   # orange
+            rate_crit='\033[38;2;157;0;6m'    # red
             ;;
         *)
             # Colorful palette: Catppuccin Mocha vivid

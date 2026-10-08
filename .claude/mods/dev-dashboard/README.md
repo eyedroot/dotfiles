@@ -14,7 +14,7 @@ A Claude Code mod (function-hooks plugin) that docks a pane beside the transcrip
 
 The pane opens by itself when the terminal runs the fullscreen layout and is at least 144 columns wide. `/dashboard` opens or closes it at any width. `r` refreshes, `h` hides.
 
-Colors follow Claude Code's `theme` setting, a custom theme counting as the preset it is based on: a light theme gets the Rose Pine Dawn overlay with an iris accent, a dark theme the Catppuccin Mocha mantle with a mauve accent, each matching the Ghostty theme of that mode. The `theme` option forces one.
+Colors follow Claude Code's `theme` setting, a custom theme counting as the preset it is based on: a light theme gets the Gruvbox soft paper with an orange accent, a dark theme the Catppuccin Mocha mantle with a mauve accent, each matching the Ghostty theme of that mode. The `theme` option forces one.
 
 For a session started from a terminal, name the folder in `CLAUDE_CODE_PLUGIN_DIRS`:
 

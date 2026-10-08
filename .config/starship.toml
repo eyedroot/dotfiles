@@ -1,6 +1,6 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
-# Rose Pine prompt after KatieUmbra/rose-pine-dots: a mark, the user name, a
+# Prompt layout after KatieUmbra/rose-pine-dots: a mark, the user name, a
 # heart, the directory in a pill and the prompt character on the left; git,
 # language versions, command time and the clock on the right.
 
@@ -28,7 +28,7 @@ $kotlin\
 $cmd_duration\
 $time"""
 
-palette = 'rose_pine_dawn'
+palette = 'gruvbox_light'
 
 [username]
 show_always = true
@@ -118,41 +118,42 @@ vimcmd_replace_one_symbol = '[❮](bold fg:vim_replace)'
 vimcmd_replace_symbol = '[❮](bold fg:vim_replace)'
 vimcmd_visual_symbol = '[❮](bold fg:vim_visual)'
 
-# Rose Pine Dawn, matched to the Ghostty theme. Accents used as text are the
-# Dawn colors darkened to 4.5:1 on the base (#faf4ed); the pill is foam
-# tinted into the base so the text color stays readable on it.
-[palettes.rose_pine_dawn]
-prompt_mark = "#6b5b7e"   # iris, darkened
-user_name = "#6b5b7e"     # iris, darkened
-heart = "#b4637a"         # love; a glyph, so the stock tone stays
-dir_pill = "#bcd0cf"      # foam tint
-dir_text = "#575279"      # text
-git = "#286983"           # pine, darkened
-git_status = "#85591d"    # gold, darkened
-lang = "#3d6970"          # foam, darkened
-duration = "#635f78"    # subtle, darkened
-time = "#635f78"        # subtle, darkened
-prompt_ok = "#6b5b7e"     # iris, darkened
-prompt_error = "#8f4f61"  # love, darkened
-vim_normal = "#286983"    # pine, darkened
-vim_replace = "#8f4f61"   # love, darkened
-vim_visual = "#6b5b7e"    # iris, darkened
+# Gruvbox Light Hard, matched to the Ghostty theme. Purple carries the mark,
+# name and prompt character as iris does in the reference; text colors are
+# the Gruvbox "bright" (dark) variants, green and aqua darkened further to
+# clear 4.5:1 on the cream (#f9f5d7). The pill is solid aqua with fg0 text.
+[palettes.gruvbox_light]
+prompt_mark = "#8f3f71"   # purple (bright)
+user_name = "#8f3f71"     # purple (bright)
+heart = "#cc241d"         # red; a glyph, so the stock tone stays
+dir_pill = "#689d6a"      # aqua
+dir_text = "#282828"      # fg0
+git = "#076678"           # blue (bright)
+git_status = "#85570e"    # yellow, darkened
+lang = "#396b4c"          # aqua, darkened
+duration = "#665c54"      # fg3
+time = "#665c54"          # fg3
+prompt_ok = "#8f3f71"     # purple (bright)
+prompt_error = "#9d0006"  # red (bright)
+vim_normal = "#076678"    # blue (bright)
+vim_replace = "#9d0006"   # red (bright)
+vim_visual = "#8f3f71"    # purple (bright)
 
-# Rose Pine (dark), used by the Unpeel dark appearance through the swap in
-# .zshrc.shared. Dark text on the foam pill as in the reference setup.
-[palettes.rose_pine]
-prompt_mark = "#c4a7e7"   # iris
-user_name = "#9ccfd8"     # foam
-heart = "#eb6f92"         # love
-dir_pill = "#9ccfd8"      # foam
-dir_text = "#191724"      # base
-git = "#31748f"           # pine
-git_status = "#f6c177"    # gold
-lang = "#9ccfd8"          # foam
-duration = "#908caa"      # subtle
-time = "#908caa"          # subtle
-prompt_ok = "#c4a7e7"     # iris
-prompt_error = "#eb6f92"  # love
-vim_normal = "#31748f"    # pine
-vim_replace = "#eb6f92"   # love
-vim_visual = "#c4a7e7"    # iris
+# Gruvbox Dark, used by the Unpeel dark appearance through the swap in
+# .zshrc.shared. Dark text on the aqua pill as in the reference setup.
+[palettes.gruvbox_dark]
+prompt_mark = "#d3869b"   # purple (bright)
+user_name = "#d3869b"     # purple (bright)
+heart = "#fb4934"         # red (bright)
+dir_pill = "#8ec07c"      # aqua (bright)
+dir_text = "#282828"      # bg0
+git = "#83a598"           # blue (bright)
+git_status = "#fabd2f"    # yellow (bright)
+lang = "#8ec07c"          # aqua (bright)
+duration = "#a89984"      # gray
+time = "#a89984"          # gray
+prompt_ok = "#d3869b"     # purple (bright)
+prompt_error = "#fb4934"  # red (bright)
+vim_normal = "#83a598"    # blue (bright)
+vim_replace = "#fb4934"   # red (bright)
+vim_visual = "#d3869b"    # purple (bright)

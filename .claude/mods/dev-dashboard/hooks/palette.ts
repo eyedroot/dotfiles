@@ -13,14 +13,14 @@ export type Palette = {
 
 export const PALETTES: Record<ThemeName, Palette> = {
   light: {
-    background: '#f2e9e1',
-    accent: '#6b5b7e',
-    text: '#575279',
-    muted: '#635f78',
-    hash: '#286983',
-    ok: '#3d6970',
-    warning: '#85591d',
-    error: '#8f4f61',
+    background: '#f2e5bc',
+    accent: '#af3a03',
+    text: '#3c3836',
+    muted: '#665c54',
+    hash: '#504945',
+    ok: '#68630c',
+    warning: '#85570e',
+    error: '#9d0006',
   },
   dark: {
     background: '#181825',
