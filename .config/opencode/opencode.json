@@ -17,5 +17,67 @@
       }
     }
   },
-  "model": "ollama/gemma3:4b"
+  "model": "ollama/gemma3:4b",
+  "mcp": {
+    "open-computer-use": {
+      "type": "local",
+      "command": [
+        "open-computer-use",
+        "mcp"
+      ]
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true
+    },
+    "ref-tools": {
+      "type": "remote",
+      "url": "https://server.smithery.ai/@ref-tools/ref-tools-mcp/mcp",
+      "enabled": true
+    },
+    "expo": {
+      "type": "remote",
+      "url": "https://mcp.expo.dev/mcp",
+      "enabled": true
+    },
+    "sentry": {
+      "type": "remote",
+      "url": "https://mcp.sentry.dev/mcp",
+      "oauth": {},
+      "enabled": true
+    },
+    "ios-simulator": {
+      "type": "local",
+      "command": [
+        "uv",
+        "run",
+        "--directory",
+        "/Users/eyedroot/.local/share/ios-simulator-mcp",
+        "ios-simulator-mcp"
+      ],
+      "enabled": true,
+      "timeout": 30000
+    },
+    "obsidian": {
+      "type": "local",
+      "command": [
+        "npx",
+        "@mauricio.wolff/mcp-obsidian@latest",
+        "/Users/eyedroot/obsidian-vault"
+      ],
+      "enabled": true,
+      "timeout": 30000
+    },
+    "figma": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@vkhanhqui/figma-mcp-go"
+      ],
+      "enabled": true,
+      "timeout": 30000
+    }
+  }
 }
