@@ -85,6 +85,18 @@ Shared global instructions for coding agents. Claude Code imports this file via 
 - When claiming something is unsafe or broken, show the path the request actually takes. An assertion without a traceable path is a classification, not an explanation.
 - The same applies when disagreeing with the user. Do not restate the conclusion louder; replay their reasoning against a concrete case and show where the case diverges from it.
 
+## Code Exploration
+
+- In Codex and Claude Code, delegate codebase exploration to the `code_explorer` custom subagent when the task requires tracing execution across files, locating feature ownership, or assessing dependencies and change impact.
+- Give the subagent a concrete question, repository path, relevant symptoms or entry points, and the evidence needed to proceed. Provide relevant working-tree changes when the subagent cannot inspect Git state itself.
+- Direct reads of an identified file, inspecting a diff, and verifying reported findings may be performed by the primary agent.
+- Avoid duplicating the same exploration while the subagent is working. Continue independent work when useful.
+- The primary agent owns planning, implementation decisions, and final verification. Check decisive source references before relying on conclusions.
+- When delegating code exploration in Claude Code, explicitly select `code_explorer` rather than relying on automatic selection of a built-in agent.
+- Verify the delegation result identifies `code_explorer`. Confirm the effective model from runtime metadata when available; distinguish the configured model from an observed model and do not infer the model from the agent's self-report.
+- `code_explorer` must not delegate exploration to another subagent.
+- If the custom agent is unavailable or delegation fails, report the limitation and continue with available tools without claiming that delegation succeeded.
+
 ## Git Commits
 
 - Never append `Co-Authored-By:` trailers to commit messages. This applies to every repository and every commit, including amends, squashes, and rebases.
