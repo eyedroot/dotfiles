@@ -240,6 +240,9 @@ else
     echo "        Install Node.js and run: npx skills add vercel-labs/skills --skill find-skills -g -y"
 fi
 
+# The pinned checkout keeps upstream instruction changes out of routine dotfiles installs.
+bash "$HOME/.agents/install-humanize-korean.sh"
+
 # 5. Create secrets template if not exists
 if [ ! -f "$HOME/.zshrc.secrets" ]; then
     echo "[5/9] Creating .zshrc.secrets template..."

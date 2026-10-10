@@ -42,6 +42,14 @@ Shared global instructions for coding agents. Claude Code imports this file via 
 - Use one consistent name per entity throughout the response or document. Define an alias explicitly if needed, and do not repeat its explanation unless clarification is necessary.
 - Prefer names that read naturally in Korean prose. Established developer terms such as access token and PR are fine; avoid invented English labels and unnecessary language switching.
 
+## Korean Writing
+
+- Apply these writing principles to Korean replies and prose by default: use natural Korean word order, concrete subjects and verbs, and varied sentence rhythm. Remove translationese, inflated praise, redundant modifiers, formulaic openings and conclusions, and repetitive transitions.
+- Preserve facts, numbers, dates, names, quotations, technical terms, uncertainty, and the requested register. Keep headings, lists, tables, and explanations when they help the reader; do not remove useful structure merely to make the text look less like AI output.
+- When drafting Korean articles, blog posts, captions, announcements, or other substantial prose, review the draft with the installed `humanize-korean` skill before delivery. Invoke it automatically for requests to polish Korean prose or remove AI writing patterns. Follow any user-specified scope or output format.
+- For ordinary conversation, short technical answers, code, commands, logs, and structured data, apply the writing principles directly without running the skill's file-producing workflow. Translation and simple spelling corrections do not require the workflow.
+- If the skill is unavailable, apply these principles directly and disclose the missing verification when the task requires a full prose review. Never claim that the skill ran when it did not.
+
 ## Naming Identifiers
 
 - Names carry more weight than comments: the reader meets a name on every line and a comment once. When a doc comment exists only to say what a parameter holds, rename the parameter and delete the comment.

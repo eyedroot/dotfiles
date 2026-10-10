@@ -5,6 +5,10 @@
 # Claude Code native binary path
 export PATH="$HOME/.local/bin:$PATH"
 
+if [ -f "$HOME/.agents/humanize-shell.sh" ]; then
+  . "$HOME/.agents/humanize-shell.sh"
+fi
+
 # Claude Code mods (function-hook plugins). Desktop app sessions get no shell env, so settings.json env repeats this key
 export CLAUDE_CODE_PLUGIN_DIRS="$HOME/.claude/mods/dev-dashboard"
 
@@ -49,10 +53,13 @@ if command -v zoxide &> /dev/null; then
   eval "$(zoxide init zsh)"
 fi
 
-# Fastfetch - show system info on terminal start
-if command -v fastfetch &> /dev/null; then
-  fastfetch
-fi
+case "$-" in
+  *i*)
+    if command -v python3 >/dev/null 2>&1 && [ -f "$HOME/.agents/shell-flower.py" ]; then
+      command python3 "$HOME/.agents/shell-flower.py"
+    fi
+    ;;
+esac
 
 # mise - runtime version manager
 if command -v mise &> /dev/null; then
