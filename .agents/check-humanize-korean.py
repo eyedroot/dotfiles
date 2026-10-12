@@ -21,9 +21,26 @@ def write_atomically(path, contents):
             os.unlink(temporary_path)
 
 
+def read_subtree_split(dotfiles_git_dir, subtree_prefix):
+    # The vendored checkout has no .git of its own; the upstream revision lives in
+    # the trailer of the latest "git subtree ... --squash" commit for this prefix.
+    squash_message = subprocess.run(
+        ["git", f"--git-dir={dotfiles_git_dir}", "log", "-1", "--format=%B", "--fixed-strings",
+         f"--grep=git-subtree-dir: {subtree_prefix}"],
+        check=True, capture_output=True, text=True, timeout=5,
+    ).stdout
+    trailers = dict(re.findall(r"^(git-subtree-dir|git-subtree-split): (\S+)$", squash_message, re.MULTILINE))
+    if trailers.get("git-subtree-dir") != subtree_prefix:
+        raise ValueError("No squash commit found for the subtree prefix")
+    if not re.fullmatch(r"[0-9a-f]{40}", trailers.get("git-subtree-split", "")):
+        raise ValueError("Invalid git-subtree-split trailer")
+    return trailers["git-subtree-split"]
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repository-dir", type=Path, default=Path.home() / ".local/share/agent-skills/im-not-ai")
+    parser.add_argument("--dotfiles-git-dir", type=Path, default=Path.home() / ".dotfiles")
+    parser.add_argument("--subtree-prefix", default=".local/share/agent-skills/im-not-ai")
     parser.add_argument("--cache-dir", type=Path, default=Path(os.environ.get("XDG_CACHE_HOME", str(Path.home() / ".cache"))) / "humanize-korean")
     parser.add_argument("--remote-url", default="https://api.github.com/repos/epoko77-ai/im-not-ai/commits/main")
     arguments = parser.parse_args()
@@ -31,10 +48,7 @@ def main():
     status = {"checked_at": datetime.datetime.now(datetime.timezone.utc).isoformat()}
     notice = ""
     try:
-        installed_revision = subprocess.run(
-            ["git", "-C", str(arguments.repository_dir), "rev-parse", "HEAD"],
-            check=True, capture_output=True, text=True, timeout=5,
-        ).stdout.strip()
+        installed_revision = read_subtree_split(arguments.dotfiles_git_dir, arguments.subtree_prefix)
         status["installed_revision"] = installed_revision
         request = urllib.request.Request(arguments.remote_url, headers={"User-Agent": "dotfiles-humanize-korean", "Accept": "application/vnd.github+json"})
         with urllib.request.urlopen(request, timeout=5) as response:

@@ -14,7 +14,7 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.dotfiles-install.sh` - Installation script
 - `~/.Brewfile` - Homebrew packages (formulae & casks)
 - `~/.agents/AGENTS.md` - Shared agent working principles (single source for Claude Code and Codex CLI)
-- `~/.agents/install-humanize-korean.sh` - Installs a pinned [im-not-ai](https://github.com/epoko77-ai/im-not-ai) checkout for Claude Code and Codex. Shared instructions apply its writing principles to Korean replies and run the full skill for prose drafting and polishing.
+- `~/.local/share/agent-skills/im-not-ai/` - Vendored copy of [im-not-ai](https://github.com/epoko77-ai/im-not-ai) (`git subtree`, squashed) that provides the `humanize-korean` skill for Claude Code and Codex. Shared instructions apply its writing principles to Korean replies and run the full skill for prose drafting and polishing.
 - `~/.claude/settings.json.dotfiles` - Claude Code settings (model, plugins, status line)
 - `~/.claude/CLAUDE.md` - Claude Code global memory (imports `~/.agents/AGENTS.md`)
 - `~/.codex/AGENTS.md` - Codex CLI agent instructions (symlink to `~/.agents/AGENTS.md`)
@@ -34,9 +34,15 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.local/bin/serve-sim-viewer.js` - Local MJPEG wrapper for `serve-sim`
 - `~/Library/LaunchAgents/com.eyedroot.serve-sim-viewer.plist` - Keeps the simulator viewer running
 
-The installer stores the upstream checkout in `$HOME/.local/share/agent-skills/im-not-ai` and links its tool-specific skills into the global Claude Code and Codex skill directories. To install or repair only these links, run `bash "$HOME/.agents/install-humanize-korean.sh"`. The revision is fixed in that script; updates require reviewing and changing the pin. Existing checkouts at another revision or with local changes are preserved and rejected. New sessions load the updated shared instructions. Explicit invocation remains available as `/humanize-korean` in Claude Code and `$humanize-korean` in Codex.
+The upstream repository is vendored into `$HOME/.local/share/agent-skills/im-not-ai` with `git subtree --squash`, so a plain checkout of the dotfiles already contains the skill. Its tool-specific entries are tracked as relative symlinks: `~/.claude/skills/{humanize,humanize-korean,humanize-redo,humanize-scan}`, `~/.claude/agents/{humanize-diagnostician,humanize-finalizer,humanize-monolith,korean-ai-tell-taxonomist}.md`, and `~/.codex/skills/humanize-korean`. The vendored revision is recorded in the `git-subtree-split` trailer of the latest squash commit. To update, review the upstream changes and run:
 
-Interactive bash and zsh sessions start a background check of the upstream `main` revision. The check does not fetch into the installed checkout or install updates. Its result is stored in `${XDG_CACHE_HOME:-$HOME/.cache}/humanize-korean/status.json`; an update or failed-check notice from the preceding check is shown at the next shell startup. Non-interactive shells skip the check. Run `python3 "$HOME/.agents/check-humanize-korean.py"` for a foreground check. Git and HTTP operations each have a five-second timeout.
+```bash
+dotfiles subtree pull --prefix=.local/share/agent-skills/im-not-ai https://github.com/epoko77-ai/im-not-ai.git main --squash
+```
+
+Explicit invocation remains available as `/humanize-korean` in Claude Code and `$humanize-korean` in Codex.
+
+Interactive bash and zsh sessions start a background check that compares the vendored revision with upstream `main`. The check does not pull or install updates. Its result is stored in `${XDG_CACHE_HOME:-$HOME/.cache}/humanize-korean/status.json`; an update or failed-check notice from the preceding check is shown at the next shell startup. Non-interactive shells skip the check. Run `python3 "$HOME/.agents/check-humanize-korean.py"` for a foreground check. Git and HTTP operations each have a five-second timeout.
 
 Interactive bash and zsh sessions display only the flower from the Claude Code dev-dashboard mod as their startup artwork. `$HOME/.agents/shell-flower.py` reads the mod's `hooks/flower.ts` pixel data and renders it with terminal colors; it does not collect system information. Non-interactive sessions skip the artwork.
 
