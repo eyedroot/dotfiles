@@ -19,6 +19,7 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.claude/CLAUDE.md` - Claude Code global memory (imports `~/.agents/AGENTS.md`)
 - `~/.codex/AGENTS.md` - Codex CLI agent instructions (symlink to `~/.agents/AGENTS.md`)
 - `~/.codex/config.toml.dotfiles` - Codex CLI config template (model, MCP servers, plugins)
+- `~/.codex/skills/confluence-page-editing/` - Shared skill for editing Confluence pages through the Atlassian MCP without losing highlights, underlines, column widths, or captions (reads and writes ADF, verifies after upload). Claude Code loads it through the tracked symlink `~/.claude/skills/confluence-page-editing -> ../../.codex/skills/confluence-page-editing`; a new shared skill needs the same pair committed together
 - `~/.tmux.conf` - tmux configuration (Catppuccin Mocha theme, TPM)
 - `~/.config/intelephense/settings.json` - Intelephense PHP LSP settings
 - `~/.config/opencode/opencode.json` - opencode CLI configuration (Ollama provider)
