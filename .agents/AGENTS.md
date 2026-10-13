@@ -21,6 +21,12 @@ Shared global instructions for coding agents. Claude Code imports this file via 
 - Do not write to external services unless explicitly requested.
 - Complete authorized work and its necessary verification without asking for the same approval again. Ask only when an unresolved choice materially changes the result or an action exceeds the authorized scope.
 
+## Kubernetes Cluster Commands
+
+- Before running or proposing any kubectl, helm, or kustomize command, load the installed `kubectl-guard` skill (`~/.codex/skills/kubectl-guard/SKILL.md`, linked from `~/.claude/skills/kubectl-guard`) and follow it. Load it even when the request never mentions kubectl, as soon as the work would touch a Kubernetes cluster: restarting pods, scaling or deploying workloads, changing manifests or config, or inspecting cluster state.
+- The skill exists because kubectl silently targets whatever context the local kubeconfig points at, and the same command is harmless on a dev cluster and an outage on a production one. It requires explicit user approval for every command that changes cluster state, lets read-only commands run without asking, and makes the agent ask the user whenever the context name does not reveal whether the cluster is production.
+- If the skill is unavailable, apply the same rules directly: confirm the current context first, show the exact command with `--context` and `-n` before any state-changing command and wait for approval, and never assume a cluster is non-production because its name lacks a production marker.
+
 ## Sensitive Information
 
 - Inspect only the configuration fields and log excerpts needed for the task. Do not expose API keys, access tokens, passwords, or unrelated personal information in responses, logs, or commits; redact sensitive values when needed.
