@@ -42,6 +42,25 @@ python3 "$SKILL_DIR/scripts/adf_tools.py" diff --before before.json --after veri
 2. `scripts/adf_tools.py strip-textcolor --in broken.json --out fixed.json`을 돌린다. 배경색과 같은 색의 `textColor` 마크만 제거한다.
 3. `fixed.json`을 `contentFormat="adf"`로 올리고, 5번 절차대로 다시 읽어 `textColor`가 남아 있지 않은지 확인한다.
 
+## 표 열 너비를 내용에 맞출 때
+
+`markdown`으로 올린 표는 열 너비 정보(`colwidth`)가 없어서 Confluence가 모든 열을 같은 폭으로 그린다. 열이 여섯 개쯤 되면 엔드포인트 경로 같은 긴 값이 글자 단위로 줄바꿈되어 읽기 어렵다. 열 너비는 ADF의 `tableCell`/`tableHeader` `attrs.colwidth`(픽셀 배열)로 정하고, 한 열의 모든 셀이 같은 값을 가져야 적용된다. 표 전체 폭은 `table.attrs.layout`으로 정한다. `default`는 본문 폭(약 760px), `wide`는 약 960px, `full-width`는 화면 폭이다. 열 너비 합이 본문 폭을 넘으면 `full-width`로 둬야 잘리지 않는다.
+
+1. 본문을 `markdown`으로 먼저 올리거나, 기존 페이지를 `adf`로 읽어 `before.json`으로 저장한다.
+2. 표마다 `scripts/adf_tools.py colwidth`를 돌린다. `--table`은 문서 순서의 0부터 시작하는 인덱스, `--widths`는 열 수만큼의 픽셀 값이다.
+3. `contentFormat="adf"`로 올리고 다시 읽어 `colwidth`와 `layout`이 남아 있는지 확인한다.
+
+```bash
+python3 "$SKILL_DIR/scripts/adf_tools.py" colwidth --in before.json --out after.json --table 1 --widths 210,70,420,110,90,420 --layout full-width
+```
+
+- 너비는 그 열에서 가장 긴 값이 한 줄에 들어가는 픽셀 수를 기준으로 잡는다. 한글 본문은 글자당 약 14px, 영문 경로는 약 8px로 어림한다.
+- 열 너비 합이 표가 놓일 폭보다 크면 Confluence가 비율대로 줄여 그린다. 2026-10-13에 `full-width` 표에 합 1,320px을 주니 보기 모드에서 약 1,030px로 줄어 70px짜리 Method 열이 두 줄로 꺾였다. 짧은 머리글 열도 90px 아래로는 주지 않는다. 페이지 폭은 `updateConfluenceContent(contentWidth="wide")`로 넓힐 수 있다.
+- 머리글 행에만 `colwidth`를 넣는 것(`edits`의 `setAttrs` 10건)은 저장은 되지만 렌더링에 반영되지 않았다. 같은 열의 모든 셀에 값이 있어야 하므로 `colwidth` 서브커맨드로 전 행에 넣고 `adf`로 통째로 올린다.
+- `markdown`으로 새로 쓴 페이지라면 ADF 를 다시 읽을 필요 없이, 그 markdown 을 로컬에서 ADF 로 변환해 `colwidth`를 적용하고 올리는 쪽이 빠르다. 본문 44행 표 하나에 ADF 가 약 50KB 였다.
+- Confluence 편집기에서 사용자가 열 너비를 손으로 바꾸면 그 값이 `colwidth`에 저장되므로, 이후 수정 때 `replace`만 쓰면 너비는 그대로 남는다.
+- `html`로 올리면 `data-colwidth`가 살아남지 않는 경우가 있으니 너비를 정한 뒤에는 `adf`로만 올린다.
+
 ## 새 페이지를 만들 때
 
 - 형광펜·글자색·열 너비가 필요 없으면 `createConfluencePage(contentFormat="markdown")`로 충분하다.

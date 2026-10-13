@@ -5,6 +5,7 @@ Subcommands:
   text            print every text node with its path and marks
   replace         apply [old, new] pairs; each old must match exactly once
   strip-textcolor drop textColor marks whose color equals a sibling backgroundColor
+  colwidth        set per-column pixel widths (and optionally layout) on one table
   diff            list changed text nodes and any textColor marks that appeared
 """
 
@@ -109,6 +110,50 @@ def cmd_strip_textcolor(args):
     print(f"wrote {args.outfile}")
 
 
+def tables(node, path=()):
+    if isinstance(node, dict):
+        if node.get("type") == "table":
+            yield path, node
+        for key, value in node.items():
+            yield from tables(value, path + (key,))
+    elif isinstance(node, list):
+        for index, value in enumerate(node):
+            yield from tables(value, path + (index,))
+
+
+def set_colwidths(table, widths, layout=None):
+    # Confluence applies a column width only when every cell in that column
+    # carries the same colwidth; a table without colwidth renders every
+    # column at an equal share of the page width, which is what makes long
+    # endpoint paths wrap on every row.
+    if layout:
+        table.setdefault("attrs", {})["layout"] = layout
+    rows = 0
+    for row in table.get("content", []):
+        if row.get("type") != "tableRow":
+            continue
+        cells = [c for c in row.get("content", []) if c.get("type") in ("tableCell", "tableHeader")]
+        if len(cells) != len(widths):
+            raise SystemExit(f"row has {len(cells)} cells but {len(widths)} widths were given")
+        for cell, width in zip(cells, widths):
+            cell.setdefault("attrs", {})["colwidth"] = [int(width)]
+        rows += 1
+    return rows
+
+
+def cmd_colwidth(args):
+    doc = load(args.infile)
+    found = list(tables(doc))
+    if args.table >= len(found):
+        raise SystemExit(f"table index {args.table} out of range; document has {len(found)} tables")
+    widths = [w.strip() for w in args.widths.split(",")]
+    path, table = found[args.table]
+    rows = set_colwidths(table, widths, args.layout)
+    print(f"table {args.table} at {path_str(path)}: {rows} rows set to colwidth {widths}" + (f", layout={args.layout}" if args.layout else ""))
+    dump(doc, args.outfile)
+    print(f"wrote {args.outfile}")
+
+
 def cmd_diff(args):
     before = {path_str(p): n for p, n in text_nodes(load(args.before))}
     after = {path_str(p): n for p, n in text_nodes(load(args.after))}
@@ -158,6 +203,14 @@ def main():
     p.add_argument("--in", dest="infile", required=True)
     p.add_argument("--out", dest="outfile", required=True)
     p.set_defaults(func=cmd_strip_textcolor)
+
+    p = sub.add_parser("colwidth")
+    p.add_argument("--in", dest="infile", required=True)
+    p.add_argument("--out", dest="outfile", required=True)
+    p.add_argument("--table", type=int, default=0, help="0-based index of the table in document order")
+    p.add_argument("--widths", required=True, help="comma-separated pixel widths, one per column")
+    p.add_argument("--layout", choices=["default", "wide", "full-width"], help="table layout; full-width lets the sum exceed the text column")
+    p.set_defaults(func=cmd_colwidth)
 
     p = sub.add_parser("diff")
     p.add_argument("--before", required=True)
