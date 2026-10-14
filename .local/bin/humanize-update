@@ -1,0 +1,79 @@
+#!/usr/bin/env zsh
+set -u
+
+dotfiles_git_dir="$HOME/.dotfiles"
+subtree_prefix=".local/share/agent-skills/im-not-ai"
+upstream_url="https://github.com/epoko77-ai/im-not-ai.git"
+upstream_branch="main"
+
+dotfiles() { git --git-dir="$dotfiles_git_dir" --work-tree="$HOME" "$@"; }
+fail() { print -u2 -P "%F{red}humanize-update: $1%f"; exit 1; }
+
+# git subtree only works from the top of the work tree.
+cd "$HOME" || fail "홈 디렉터리로 이동하지 못했습니다."
+
+installed_revision="$(dotfiles log -1 --format=%B --fixed-strings --grep="git-subtree-dir: $subtree_prefix" | sed -n 's/^git-subtree-split: //p')"
+[[ -n "$installed_revision" ]] || fail "설치된 버전을 squash 커밋에서 찾지 못했습니다."
+
+print "원격 $upstream_url ($upstream_branch) 확인 중"
+dotfiles fetch --quiet --no-tags "$upstream_url" "$upstream_branch" || fail "원격을 받아오지 못했습니다."
+# Merge by hash so a later fetch overwriting FETCH_HEAD cannot change what gets merged.
+latest_revision="$(dotfiles rev-parse FETCH_HEAD)"
+
+if [[ "$installed_revision" == "$latest_revision" ]]; then
+  print "이미 최신입니다 (${installed_revision[1,7]})."
+  python3 "$HOME/.agents/check-humanize-korean.py" >/dev/null 2>&1
+  exit 0
+fi
+
+print "\n설치 ${installed_revision[1,7]} -> 원격 ${latest_revision[1,7]}\n"
+dotfiles log --oneline --no-decorate "$installed_revision..$latest_revision" 2>/dev/null
+print
+dotfiles diff --stat "$installed_revision" "$latest_revision" 2>/dev/null
+print
+
+dotfiles diff --quiet HEAD -- "$subtree_prefix" \
+  || fail "$subtree_prefix 안의 파일이 수정되어 있습니다. 수정을 되돌린 뒤 다시 실행하세요."
+
+answer=""
+read -r "answer?이 변경을 반영할까요? [y/N] " || true
+[[ "$answer" == [yY] ]] || { print "취소했습니다."; exit 0; }
+
+dotfiles update-index -q --refresh
+stashed=0
+if ! dotfiles diff-index --quiet HEAD --; then
+  # No --include-untracked: the work tree is $HOME, so that would sweep up every untracked file.
+  dotfiles stash push --quiet -m "humanize-update autostash" || fail "수정 중인 파일을 stash하지 못했습니다."
+  stashed=1
+  print "수정 중인 추적 파일을 잠시 stash했습니다."
+fi
+
+merge_message="Update: humanize-korean (im-not-ai) to ${latest_revision[1,7]}
+
+- Upstream ${installed_revision[1,7]}..${latest_revision[1,7]}"
+dotfiles subtree merge --prefix="$subtree_prefix" --squash -m "$merge_message" "$latest_revision"
+merge_status=$?
+
+if (( stashed )); then
+  if [[ -f "$dotfiles_git_dir/MERGE_HEAD" ]]; then
+    print -u2 "merge가 충돌로 멈춰 stash를 복원하지 않았습니다. 'dotfiles merge --abort' 후 'dotfiles stash pop --index'를 실행하세요."
+  elif dotfiles stash pop --quiet --index; then
+    print "stash한 수정을 복원했습니다."
+  else
+    print -u2 "stash 복원에 실패했습니다. 'dotfiles stash list'로 확인하세요."
+  fi
+fi
+
+(( merge_status == 0 )) || fail "subtree merge에 실패했습니다."
+
+broken_links=()
+for link in "$HOME"/.claude/skills/*(N@) "$HOME"/.claude/agents/*(N@) "$HOME"/.codex/skills/*(N@); do
+  [[ "$(readlink "$link")" == *im-not-ai* && ! -e "$link" ]] && broken_links+=("$link")
+done
+if (( ${#broken_links} )); then
+  print -u2 "업스트림 경로가 바뀌어 끊긴 링크가 있습니다:"
+  print -u2 -l -- "${broken_links[@]}"
+fi
+
+python3 "$HOME/.agents/check-humanize-korean.py" >/dev/null 2>&1
+print "\n${latest_revision[1,7]} 버전으로 업데이트했습니다. 'dotfiles push'로 올리세요."

@@ -34,15 +34,17 @@ Personal dotfiles managed with a bare Git repository.
 - `~/.local/bin/serve-sim-viewer.js` - Local MJPEG wrapper for `serve-sim`
 - `~/Library/LaunchAgents/com.eyedroot.serve-sim-viewer.plist` - Keeps the simulator viewer running
 
-The upstream repository is vendored into `$HOME/.local/share/agent-skills/im-not-ai` with `git subtree --squash`, so a plain checkout of the dotfiles already contains the skill. Its tool-specific entries are tracked as relative symlinks: `~/.claude/skills/{humanize,humanize-korean,humanize-redo,humanize-scan}`, `~/.claude/agents/{humanize-diagnostician,humanize-finalizer,humanize-monolith,korean-ai-tell-taxonomist}.md`, and `~/.codex/skills/humanize-korean`. The vendored revision is recorded in the `git-subtree-split` trailer of the latest squash commit. To update, review the upstream changes and run:
+The upstream repository is vendored into `$HOME/.local/share/agent-skills/im-not-ai` with `git subtree --squash`, so a plain checkout of the dotfiles already contains the skill. Its tool-specific entries are tracked as relative symlinks: `~/.claude/skills/{humanize,humanize-korean,humanize-redo,humanize-scan}`, `~/.claude/agents/{humanize-diagnostician,humanize-finalizer,humanize-monolith,korean-ai-tell-taxonomist}.md`, and `~/.codex/skills/humanize-korean`. The vendored revision is recorded in the `git-subtree-split` trailer of the latest squash commit. To update, run:
 
 ```bash
-dotfiles subtree pull --prefix=.local/share/agent-skills/im-not-ai https://github.com/epoko77-ai/im-not-ai.git main --squash
+humanize-update
 ```
+
+`~/.local/bin/humanize-update` fetches upstream `main`, lists the incoming commits and changed files, and asks for confirmation before merging them with `git subtree merge --squash`. Modified tracked files are stashed and restored around the merge. It refuses to run when files inside the vendored directory are modified, reports broken skill symlinks after the merge, and does not push.
 
 Explicit invocation remains available as `/humanize-korean` in Claude Code and `$humanize-korean` in Codex.
 
-Interactive bash and zsh sessions start a background check that compares the vendored revision with upstream `main`. The check does not pull or install updates. Its result is stored in `${XDG_CACHE_HOME:-$HOME/.cache}/humanize-korean/status.json`; an update or failed-check notice from the preceding check is shown at the next shell startup. Non-interactive shells skip the check. Run `python3 "$HOME/.agents/check-humanize-korean.py"` for a foreground check. Git and HTTP operations each have a five-second timeout.
+Interactive bash and zsh sessions start a background check that compares the vendored revision with upstream `main`. The check does not pull or install updates; the notice points to `humanize-update`. Its result is stored in `${XDG_CACHE_HOME:-$HOME/.cache}/humanize-korean/status.json`; an update or failed-check notice from the preceding check is shown at the next shell startup. Non-interactive shells skip the check. Run `python3 "$HOME/.agents/check-humanize-korean.py"` for a foreground check. Git and HTTP operations each have a five-second timeout.
 
 Interactive bash and zsh sessions display only the flower from the Claude Code dev-dashboard mod as their startup artwork. `$HOME/.agents/shell-flower.py` reads the mod's `hooks/flower.ts` pixel data and renders it with terminal colors; it does not collect system information. Non-interactive sessions skip the artwork.
 

@@ -58,7 +58,7 @@ def main():
         status["latest_revision"] = latest_revision
         status["state"] = "up_to_date" if installed_revision == latest_revision else "update_available"
         if status["state"] == "update_available":
-            notice = f"humanize-korean: 업데이트 있음 / 설치 {installed_revision[:7]} → 원격 {latest_revision[:7]}. 자동 설치하지 않습니다.\n"
+            notice = f"humanize-korean: 업데이트 있음 / 설치 {installed_revision[:7]} → 원격 {latest_revision[:7]}. 업데이트하려면 humanize-update 를 실행하세요.\n"
     except (OSError, ValueError, TypeError, KeyError, subprocess.SubprocessError):
         status["state"] = "unavailable"
         notice = "humanize-korean: 버전 확인 실패. 설치된 버전은 그대로 사용합니다.\n"
