@@ -61,6 +61,22 @@ python3 "$SKILL_DIR/scripts/adf_tools.py" colwidth --in before.json --out after.
 - Confluence 편집기에서 사용자가 열 너비를 손으로 바꾸면 그 값이 `colwidth`에 저장되므로, 이후 수정 때 `replace`만 쓰면 너비는 그대로 남는다.
 - `html`로 올리면 `data-colwidth`가 살아남지 않는 경우가 있으니 너비를 정한 뒤에는 `adf`로만 올린다.
 
+## 표 셀을 꾸밀 때 (코드 마크, 상태 라벨, 셀 안 JSON)
+
+`markdown`으로 올린 표는 셀 안 백틱만 인라인 코드가 되고, 상태 라벨(초록/빨강 lozenge)이나 셀 안 코드 블록은 만들 수 없다. 결과표처럼 Endpoint 열 전체를 코드로, Status 열을 색 라벨로 보여 주려면 `scripts/md_to_adf.py`로 markdown을 ADF로 변환해 `adf`로 올린다. 열 너비는 변환 뒤 `colwidth`로 넣는다.
+
+```bash
+python3 "$SKILL_DIR/scripts/md_to_adf.py" --in body.md --out body.json \
+  --code-cols Endpoint --status-cols Status --json-cells
+python3 "$SKILL_DIR/scripts/adf_tools.py" colwidth --in body.json --out after.json --table 1 --widths 210,90,400,110,90,420 --layout full-width
+```
+
+- `--code-cols`: 머리글 이름이 맞는 열의 모든 셀에 `code` 마크를 건다. 머리글 이름은 markdown 표의 첫 행과 글자 그대로 맞아야 한다.
+- `--status-cols`: 셀 값을 `status` 노드(`{"type":"status","attrs":{"text":"200 OK","color":"green"}}`)로 바꾼다. 색은 값으로 정한다. `OK`가 있으면 green, `error`/`fail`이 있으면 red, `미실행`/`skip`/빈 값은 neutral, 그 밖은 yellow. Confluence는 라벨 글자를 대문자로 그리므로 `200 / error 1`은 `200 / ERROR 1`로 보인다.
+- `--json-cells`: 셀과 불릿 안의 `{...}`를 `code` 마크로 감싼다. `--json-block-min`(기본 60자)보다 길면 셀 아래 `json` 코드 블록으로 뺀다. 중첩 중괄호는 잡지 못하므로 긴 응답은 markdown에서 펜스 코드 블록으로 따로 적는다.
+- 지원하는 markdown은 `#` 제목, `- ` 불릿, 파이프 표, 문단, 백틱, `[text](url)`, 맨 URL, 표 밖 펜스 코드 블록뿐이다. 셀 안 `|`는 쓸 수 없다.
+- 2026-10-13 44행 결과표에서 status 43개와 code 마크 52개가 한 번에 반영됐고, 보기 모드에서 라벨 색과 코드 배경이 그대로 나왔다.
+
 ## 새 페이지를 만들 때
 
 - 형광펜·글자색·열 너비가 필요 없으면 `createConfluencePage(contentFormat="markdown")`로 충분하다.
