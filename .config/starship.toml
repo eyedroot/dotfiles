@@ -2,9 +2,9 @@
 
 # Prompt layout after KatieUmbra/rose-pine-dots: a mark, the user name, a
 # heart, the directory in a pill, the git branch and status in a second pill
-# and the prompt character on the left; language versions, command time and
-# the clock on the right. The git pill opens in git_branch and closes in
-# git_status so it only appears inside a repository.
+# and the prompt character, all on the left with nothing on the right. The
+# git pill opens in git_branch and closes in git_status so it only appears
+# inside a repository.
 
 command_timeout = 1000
 
@@ -18,17 +18,6 @@ $directory\
 $git_branch\
 $git_status\
 $character"""
-
-right_format = """
-$nodejs\
-$php\
-$python\
-$golang\
-$rust\
-$java\
-$kotlin\
-$cmd_duration\
-$time"""
 
 palette = 'phpstorm_dark'
 
@@ -72,54 +61,6 @@ ahead = " ⇡${count}"
 behind = " ⇣${count}"
 diverged = " ⇡${ahead_count}⇣${behind_count}"
 
-[nodejs]
-symbol = ""
-style = "fg:lang"
-format = '[$symbol ($version)]($style) '
-
-[php]
-symbol = ""
-style = "fg:lang"
-format = '[$symbol ($version)]($style) '
-
-[python]
-symbol = ""
-style = "fg:lang"
-format = '[$symbol ($version)(\(#$virtualenv\))]($style) '
-
-[golang]
-symbol = ""
-style = "fg:lang"
-format = '[$symbol ($version)]($style) '
-
-[rust]
-symbol = ""
-style = "fg:lang"
-format = '[$symbol ($version)]($style) '
-
-[java]
-symbol = ""
-style = "fg:lang"
-format = '[$symbol ($version)]($style) '
-
-[kotlin]
-symbol = ""
-style = "fg:lang"
-format = '[$symbol ($version)]($style) '
-
-[cmd_duration]
-show_milliseconds = true
-style = "fg:duration"
-format = '[ $duration]($style) '
-show_notifications = true
-min_time_to_notify = 45000
-
-[time]
-disabled = false
-time_format = "%R"
-style = "fg:time"
-format = '[ $time]($style)'
-
 [line_break]
 disabled = true
 
@@ -147,9 +88,6 @@ dir_text = "#202020"         # editor text
 git_pill = "#DCEFD6"         # pale green, 1.2:1 against white so it reads as a pill, not a block
 git = "#1B6600"           # console green, bright
 git_status = "#786200"        # console yellow, bright
-lang = "#0E3E9E"           # console blue, bright
-duration = "#606060"           # gray
-time = "#606060"               # gray
 prompt_ok = "#0F54D6"     # keyword blue
 prompt_error = "#AD0F00"    # console red, bright
 vim_normal = "#0F54D6"    # keyword blue
@@ -167,9 +105,6 @@ dir_text = "#262626"      # editor background
 git_pill = "#3C3F41"      # IDE panel gray; green and yellow stay above 5:1 on it
 git = "#85C46C"           # constant green
 git_status = "#D9B72B"    # console yellow
-lang = "#66C3CC"          # string teal
-duration = "#909090"      # comment gray
-time = "#909090"          # comment gray
 prompt_ok = "#6C95EB"     # keyword blue
 prompt_error = "#FF5647"  # console red
 vim_normal = "#6C95EB"    # keyword blue
