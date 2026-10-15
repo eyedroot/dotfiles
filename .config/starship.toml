@@ -1,8 +1,10 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
 # Prompt layout after KatieUmbra/rose-pine-dots: a mark, the user name, a
-# heart, the directory in a pill and the prompt character on the left; git,
-# language versions, command time and the clock on the right.
+# heart, the directory in a pill, the git branch and status in a second pill
+# and the prompt character on the left; language versions, command time and
+# the clock on the right. The git pill opens in git_branch and closes in
+# git_status so it only appears inside a repository.
 
 command_timeout = 1000
 
@@ -13,11 +15,11 @@ $username\
 [](fg:dir_pill)\
 $directory\
 [](fg:dir_pill) \
+$git_branch\
+$git_status\
 $character"""
 
 right_format = """
-$git_branch\
-$git_status\
 $nodejs\
 $php\
 $python\
@@ -28,7 +30,7 @@ $kotlin\
 $cmd_duration\
 $time"""
 
-palette = 'phpstorm_light'
+palette = 'phpstorm_dark'
 
 [username]
 show_always = true
@@ -51,12 +53,24 @@ truncation_symbol = "…/"
 
 [git_branch]
 symbol = "󰊢"
-style = "fg:git"
-format = '[$symbol $branch(:$remote_branch)]($style) '
+style = "bold bg:git_pill fg:git"
+format = '[](fg:git_pill)[ $symbol $branch(:$remote_branch)]($style)'
+truncation_length = 40
+truncation_symbol = "…"
 
 [git_status]
-style = "fg:git_status"
-format = '([$all_status$ahead_behind]($style) )'
+style = "bold bg:git_pill fg:git_status"
+format = '([$all_status$ahead_behind]($style))[ ](bg:git_pill)[](fg:git_pill) '
+conflicted = " =${count}"
+stashed = " *${count}"
+deleted = " ✘${count}"
+renamed = " »${count}"
+modified = " !${count}"
+staged = " +${count}"
+untracked = " ?${count}"
+ahead = " ⇡${count}"
+behind = " ⇣${count}"
+diverged = " ⇡${ahead_count}⇣${behind_count}"
 
 [nodejs]
 symbol = ""
@@ -118,17 +132,19 @@ vimcmd_replace_one_symbol = '[❮](bold fg:vim_replace)'
 vimcmd_replace_symbol = '[❮](bold fg:vim_replace)'
 vimcmd_visual_symbol = '[❮](bold fg:vim_visual)'
 
-# PhpStorm's Rider Melon Light, matched to the Ghostty colors. Mark and
-# prompt character take the keyword blue, the name the function purple, the
-# heart the number pink; the directory pill is the editor selection blue with
-# the editor text color on it. Text colors are the scheme's darker console
-# variants where the syntax color falls short of 4.5:1 on white.
+# PhpStorm's Rider Melon Light, used by the Unpeel light appearance through
+# the swap in .zshrc.shared. Mark and prompt character take the keyword blue,
+# the name the function purple, the heart the number pink; the directory pill
+# is the editor selection blue with the editor text color on it. Text colors
+# are the scheme's darker console variants where the syntax color falls short
+# of 4.5:1 on white.
 [palettes.phpstorm_light]
 prompt_mark = "#0F54D6"   # keyword blue
 user_name = "#6B2FBA"      # function purple
 heart = "#AB2F6B"            # number pink
 dir_pill = "#B8D9FF"          # editor selection blue
 dir_text = "#202020"         # editor text
+git_pill = "#DCEFD6"         # pale green, 1.2:1 against white so it reads as a pill, not a block
 git = "#1B6600"           # console green, bright
 git_status = "#786200"        # console yellow, bright
 lang = "#0E3E9E"           # console blue, bright
@@ -140,14 +156,15 @@ vim_normal = "#0F54D6"    # keyword blue
 vim_replace = "#AD0F00"     # console red, bright
 vim_visual = "#6B2FBA"     # function purple
 
-# PhpStorm's Rider Melon Dark, used by the Unpeel dark appearance through the
-# swap in .zshrc.shared. Dark text on the blue pill as in the reference setup.
+# PhpStorm's Rider Melon Dark, for the dark Ghostty theme. Dark text on the
+# blue pill as in the reference setup.
 [palettes.phpstorm_dark]
 prompt_mark = "#6C95EB"   # keyword blue
 user_name = "#C191FF"     # function purple
 heart = "#ED94C0"         # number pink
 dir_pill = "#6C95EB"      # keyword blue
 dir_text = "#262626"      # editor background
+git_pill = "#3C3F41"      # IDE panel gray; green and yellow stay above 5:1 on it
 git = "#85C46C"           # constant green
 git_status = "#D9B72B"    # console yellow
 lang = "#66C3CC"          # string teal
