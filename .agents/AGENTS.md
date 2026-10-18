@@ -16,7 +16,9 @@ Shared global instructions for coding agents. Claude Code imports this file via 
 - Do not revert the user's existing changes; modify only within the explicitly requested scope.
 - Choose the simplest implementation that satisfies the required behavior. Keep changes small and focused; avoid speculative abstractions, unnecessary layers or state, and unrequested refactoring or style changes.
 - When the same domain rule, data assumption, or state-coordination logic appears in multiple places, review the data model, ownership, and module boundaries before copying it again or extracting a helper. Similar syntax alone does not justify an abstraction. If the structural fix exceeds the authorized scope, explain the evidence and propose it without expanding the change.
+- If two or more fixes based on the same premise fail the same check, state that premise and test it directly before trying another fix. Let the observation determine whether to keep investigating that cause or look elsewhere.
 - Match verification to the change's impact. Run relevant tests, lint, type checks, or direct checks. For behavior changes, exercise the affected user or caller path when feasible; compilation and agent self-reports alone do not prove behavior. Prefer repeatable commands or scripts, and repeat checks only after new changes, failures, or unresolved concerns.
+- Test behavior observable by a caller, user, or external system. A test should fail when the promised behavior breaks and keep passing when only the internal structure changes. Derive expected results from the requirement, not from the implementation under test; calls or payloads at an external boundary count as behavior when the contract depends on them.
 - Distinguish file changes, successful configuration loading, passing tests, and observed runtime behavior. Claim only the stages verified and briefly state any remaining checks.
 - When the user says "don't modify", "review only", or "reconcile only", do not edit files.
 - Do not write to external services unless explicitly requested.
@@ -62,7 +64,7 @@ Shared global instructions for coding agents. Claude Code imports this file via 
 - Names carry more weight than comments: the reader meets a name on every line and a comment once. When a doc comment exists only to say what a parameter holds, rename the parameter and delete the comment.
 - Say what the value is, not where it sits in an algorithm. Prefer `$prevPosition` / `$nextPosition` over `$lower` / `$upper`, and `$afterPosition` over a bare `$position` that actually means "greater than this".
 - Never let one name count two different things across layers. If the caller passes "items to insert" while the callee also reserves slots for neighbors, split it (`$itemCount` and `$slotCount`).
-- Avoid pronoun-like names such as `$data`, `$all`, `$res`, `$tmp`, `$info`, and single letters. Name the contents instead: `$validated`, `$slotsWithNeighbors`, `$contentA`.
+- Avoid vague names such as `$data`, `$all`, `$res`, `$tmp`, and `$info`; name the contents instead: `$validated`, `$slotsWithNeighbors`, `$contentA`. Keep conventional short names when their meaning is clear in a small scope, such as a loop index or coordinates, and preserve names required by external APIs or protocols.
 - Name collections and counts as nouns, not adjectives or verbs: `$followingItems` not `$following`, `$neighborsToMove` not `$moving`, `$addingCount` not `$adding`.
 - State the work a method does in ordinary words. Latin-root abstractions such as `materialize`, `hydrate`, or `reify` hide it; `renumberPositionsBySort` does not.
 - Spell a config key and the accessor that reads it the same way (`position_step` and `positionStep()`) so one search finds both.
@@ -70,16 +72,13 @@ Shared global instructions for coding agents. Claude Code imports this file via 
 
 ## Code Comments and Documentation
 
-- Do not add comments that restate syntax or narrate what the code plainly does.
-- Do not restate a method, class, or property name in its own docblock. If the sentence is just the name spelled out in prose, delete it.
-- Paraphrase is restatement. "Returns only the ids already registered in the lounge" above `findRegisteredContentIds()` is the name in longer words. Test: if someone who has never seen the body could write the sentence from the signature alone, delete it.
-- A new class, enum, interface, trait, or test gets no docblock by default. What the type is and where it is used ("only used in the editor response", "used when switching to custom order") is caller context that the reader gets from call sites. Write a class docblock only for a constraint no method-level comment can carry.
-- Never open a docblock with a sentence that says what the method does and then add the reason. Start with the reason. In a two-sentence comment the first sentence is almost always the one to delete.
-- An interface method gets prose only when the name and signature cannot carry the contract: a hidden filter, a return shape types cannot express, or a required calling context such as "call only inside the row-locked transaction". Nullable parameters, "including trashed", and "all when null" are already in the signature.
+- Use comments for information not recoverable from code: rationale and tradeoffs, invariants, external constraints, non-obvious security or performance reasons, temporary workarounds, and public API contracts that names and types cannot express. Before writing one, identify what the reader would lose without it; omit it if nothing would be lost.
+- Prefer clear names, types, enums, named constants, and small functions to explanatory comments.
+- Do not restate syntax, names, signatures, or obvious behavior, including in docblocks. Paraphrase is still restatement: "Returns only the ids already registered in the lounge" above `findRegisteredContentIds()` adds nothing. If a reader could write the sentence from the signature alone, delete it.
+- New classes, enums, interfaces, and traits get no docblock by default. Caller context such as "only used in the editor response" belongs at call sites; a type-level docblock needs a constraint no method-level comment can carry. Test classes, fixture traits, and test methods get no summary docblocks; their names are the summary. A comment inside a test is useful only for a setup trick the reader would otherwise take for a mistake.
+- Start a docblock with the reason or contract the code cannot express. Delete an opening sentence that only summarizes the method.
+- An interface method gets prose only for a contract its name and signature cannot carry: a hidden filter, a return shape types cannot express, or a required calling context such as "call only inside the row-locked transaction". Do not repeat nullability or filtering rules already explicit in the signature.
 - Do not leave ephemeral context from prompts, chat, plans, or the editing process in code comments or documentation. Decision dates, ticket numbers, and phrases like "opened to every track on 2026-09-10" belong in the commit message or design note; in code, state only the resulting rule.
-- Prefer clear names, types, enums, named constants, and small functions to comments.
-- Use comments only for information not recoverable from code: rationale and tradeoffs, invariants, external constraints, non-obvious security or performance reasons, and temporary workarounds.
-- Before writing a doc comment, name the one thing a reader would lose if it were absent. If nothing comes to mind, do not write it.
 - Write comments in plain, everyday language, and keep this rule even though comments otherwise follow project conventions rather than response style. Name the actual thing instead of gesturing at it with an abstract or figurative noun, and choose the familiar word over the compact one. In Korean, that means writing 클래스 rather than 골격, 기존 가입 워크스페이스 rather than 기가입, and 담당 범위 rather than 관심사.
 - In documentation as well as comments, say which thing must match which instead of naming an abstract quality. "스킨 version과 저장된 구조가 서로 맞는지" says what "정합성" only gestures at; "값이 어긋난 채 조용히 넘어가는 것을 막음" says what "부정합 차단" hides.
 - Avoid words whose meaning shifts with when the reader reads them, such as 신규, 최근, and 현재 used against the calendar. Name the event they are relative to instead: "워크스페이스 생성 시 초기값", not "신규 디폴트". Words relative to an action the reader performs, such as "새로 작성하는 파일", are fine.
@@ -87,8 +86,7 @@ Shared global instructions for coding agents. Claude Code imports this file via 
 - Keep public API documentation focused on contracts, inputs and outputs, errors, side effects, lifetime, and ownership.
 - Put cross-cutting design decisions in project documentation or ADRs, and verifiable behavior and edge cases in tests.
 - State a fact once. If a config key has a comment, the accessor that reads it gets none; if AGENTS.md or a design note carries the rationale, the code does not repeat it. No file or section banner comments: a rule line with a feature name goes stale first and says nothing the path does not.
-- Test classes, fixture traits, and test methods get no summary docblocks; the method names are the summary. A comment inside a test exists only for a setup trick the reader would otherwise take for a mistake.
-- Before finishing, audit every added or modified comment mechanically: list them with `git diff -U0 | grep -E '^\+\s*(//|\*|/\*)'`, name for each one which category it belongs to (rationale, invariant, external constraint, temporary workaround), and delete every comment that fits none. A principle-level self-check has repeatedly let paraphrases and caller-context summaries through; the list is the check.
+- Before finishing, list every added or modified comment in the requested scope using unstaged and staged diffs and direct inspection of new files. Use searches suited to each language's comment syntax and read doc comments as complete blocks. Check each against the allowed purposes above and delete those that fit none; a general self-check does not replace this inspection.
 - Do not delete existing comments outside the requested scope.
 
 ## Explaining Technical Findings
