@@ -14,8 +14,9 @@ Shared global instructions for coding agents. Claude Code imports this file via 
 
 - Before modifying code or files, check the related files, git state, and existing patterns first.
 - Do not revert the user's existing changes; modify only within the explicitly requested scope.
-- Keep changes small and focused. Avoid unrequested refactoring or style changes.
-- Match verification to the change's impact. Run relevant tests, lint, type checks, or direct checks; repeat them only after new changes, failures, or unresolved concerns.
+- Choose the simplest implementation that satisfies the required behavior. Keep changes small and focused; avoid speculative abstractions, unnecessary layers or state, and unrequested refactoring or style changes.
+- When the same domain rule, data assumption, or state-coordination logic appears in multiple places, review the data model, ownership, and module boundaries before copying it again or extracting a helper. Similar syntax alone does not justify an abstraction. If the structural fix exceeds the authorized scope, explain the evidence and propose it without expanding the change.
+- Match verification to the change's impact. Run relevant tests, lint, type checks, or direct checks. For behavior changes, exercise the affected user or caller path when feasible; compilation and agent self-reports alone do not prove behavior. Prefer repeatable commands or scripts, and repeat checks only after new changes, failures, or unresolved concerns.
 - Distinguish file changes, successful configuration loading, passing tests, and observed runtime behavior. Claim only the stages verified and briefly state any remaining checks.
 - When the user says "don't modify", "review only", or "reconcile only", do not edit files.
 - Do not write to external services unless explicitly requested.
