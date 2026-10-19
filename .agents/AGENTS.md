@@ -24,6 +24,16 @@ Shared global instructions for coding agents. Claude Code imports this file via 
 - Do not write to external services unless explicitly requested.
 - Complete authorized work and its necessary verification without asking for the same approval again. Ask only when an unresolved choice materially changes the result or an action exceeds the authorized scope.
 
+## Resource Management
+
+- Before starting or adding workloads expected to use substantial resources, such as simulators/emulators, native builds, multiple local service stacks, or intensive parallel tests, briefly check CPU load and memory pressure. Inspect existing workloads and reuse suitable instances before starting more.
+- For code reading/editing, ordinary test runs, lint, and other light commands, skip resource checks unless concrete symptoms or known high resource usage justify them.
+- During heavy work, recheck at major workload or concurrency changes, or when responsiveness degrades. Avoid continuous monitoring and fixed-interval polling unless diagnosing a reported resource problem.
+- Run only the devices, services, and builds needed for the verification. When resources are constrained, lower this task's concurrency or run checks sequentially rather than dropping required checks.
+- If pressure rises, stop adding heavy work and pause or normally shut down this task's idle workloads, preserving their data and login state. Resume only what is needed to finish the task.
+- Verify a process's ownership and purpose before stopping it; preserve other tasks' processes and shared services, and leave ambiguous processes running unless the user authorizes stopping them. Do not force-kill apps or delete simulator/emulator data for routine cleanup.
+- After heavy verification, shut down this task's unneeded workloads and retain services still needed for ongoing work. Report resource constraints or cleanup only when they materially affect the task.
+
 ## Kubernetes Cluster Commands
 
 - Before running or proposing any kubectl, helm, or kustomize command, load the installed `kubectl-guard` skill (`~/.codex/skills/kubectl-guard/SKILL.md`, linked from `~/.claude/skills/kubectl-guard`) and follow it. Load it even when the request never mentions kubectl, as soon as the work would touch a Kubernetes cluster: restarting pods, scaling or deploying workloads, changing manifests or config, or inspecting cluster state.
