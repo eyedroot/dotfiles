@@ -14,7 +14,13 @@ A Claude Code mod (function-hooks plugin) that docks a pane beside the transcrip
 
 The pane opens by itself when the terminal runs the fullscreen layout and is at least 144 columns wide. `/dashboard` opens or closes it at any width. `r` refreshes, `h` hides.
 
-Colors follow Claude Code's `theme` setting, a custom theme counting as the preset it is based on: a light theme gets PhpStorm's Rider Melon tool-window gray with a keyword-blue accent, a dark theme the Catppuccin Mocha mantle with a mauve accent, each matching the Ghostty theme of that mode. The `theme` option forces one.
+## Two drawings
+
+The desktop app's sidebar does not say which worktree a session runs in, so on every surface the pane leads with the worktree name (or the project name at the main checkout), its path with `$HOME` as `~`, the project and the branch.
+
+On the desktop app, VS Code and mobile the pane is drawn as SVG in the style of the usage-bar mod: a full-width worktree card, a row of pills (branch, upstream, context fill, model), then cards for git, context, worktrees, the last turn, the previous session and the commits. The SVG restyles itself through `prefers-color-scheme`, and its tints are translucent over the host's own pane background, so the pane follows the app's light or dark appearance without reading a setting. Cards are sized from the pane's cell count at about 6.2 CSS pixels per cell and wrap to one, two or three columns.
+
+In the terminal, where there is no SVG, colors follow Claude Code's `theme` setting, a custom theme counting as the preset it is based on: a light theme gets PhpStorm's Rider Melon tool-window gray with a keyword-blue accent, a dark theme the Catppuccin Mocha mantle with a mauve accent, each matching the Ghostty theme of that mode. The `theme` option forces one. Under the header a row of tinted chips carries the context fill, the branch and the upstream verdict; the sections below keep the label-and-value rows.
 
 For a session started from a terminal, name the folder in `CLAUDE_CODE_PLUGIN_DIRS`:
 
@@ -26,7 +32,7 @@ For sessions the desktop app starts, put the same key in the `env` block of `~/.
 
 Options live under `/config` (or `pluginConfigs.dev-dashboard` in settings): `banner`, `commits`, `autoOpen`, `pollSeconds`, `recapLines`, `theme`.
 
-`art: flower` draws a six-petal flower (14 by 14 pixels, two per cell with `▀`) on the terminal surface, beside the banner and project name when the pane is wide enough for both and above them otherwise; its black surround takes the pane's background color. The pixels live in `hooks/flower.ts`, generated from a photo with pure-Python PNG decoding and box downsampling.
+`art: flower` draws a six-petal flower (14 by 14 pixels, two per cell with `▀`) on the terminal surface, beside the banner and worktree name when the pane is wide enough for both and above them otherwise; its black surround takes the pane's background color. The pixels live in `hooks/flower.ts`, generated from a photo with pure-Python PNG decoding and box downsampling.
 
 The banner is drawn with a built-in 3-row block font (letters, digits, `-`, `.`): 3 by 5 pixel glyphs, two cell columns per pixel so the stems are a full cell wide. Where that form does not fit, the glyphs fall back to one column per pixel; a text still wider than the pane is left out rather than cut.
 

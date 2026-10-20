@@ -18,6 +18,7 @@ export type WorktreeRow = {
 export type GitSnapshot = {
   isRepo: boolean
   cwd: string
+  root: string
   mainRoot: string | null
   projectName: string
   remoteName: string | null
@@ -48,6 +49,8 @@ export type SessionFacts = {
   model: string
   turns: number
   contextPercent: number | null
+  contextTokens: number | null
+  contextWindow: number | null
 }
 
 declare module 'claude-code' {

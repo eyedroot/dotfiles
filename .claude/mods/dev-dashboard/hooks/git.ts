@@ -110,6 +110,7 @@ export async function readGitSnapshot(run: GitRun, cwd: string, commitCount: num
   const empty: GitSnapshot = {
     isRepo: false,
     cwd,
+    root: cwd,
     mainRoot: null,
     projectName: basename(cwd),
     remoteName: null,
@@ -149,6 +150,7 @@ export async function readGitSnapshot(run: GitRun, cwd: string, commitCount: num
   return {
     isRepo: true,
     cwd,
+    root: toplevel,
     mainRoot,
     projectName: basename(mainRoot),
     remoteName: remote.exitCode === 0 ? parseRemoteName(remote.stdout.trim()) : null,

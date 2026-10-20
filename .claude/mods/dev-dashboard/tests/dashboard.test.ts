@@ -7,12 +7,20 @@ import { FLOWER } from '../hooks/flower'
 import { customThemeSlug, resolveTheme } from '../hooks/palette'
 import { encodeBase64, makeHalfBlockCells } from '../hooks/raster'
 import { firstLines, rememberRoot } from '../hooks/recap'
+import { drawCard, drawPill, fitText } from '../hooks/svg'
 
 const MAIN_ROOT = '/home/dev/repo'
-
-const headings = async (ui: { findAll: (query: { type: string; text: RegExp }) => Promise<{ text?: string }[]> }) =>
-  (await ui.findAll({ type: 'Text', text: /^── / })).map(found => found.text?.replace(/^── (.*?) ─*$/, '$1'))
 const WORKTREE = `${MAIN_ROOT}/.claude/worktrees/NX-1_feature`
+
+type Mounted = {
+  find: (query: { type: string; text?: RegExp }) => Promise<{ text?: string; props?: Record<string, unknown> } | undefined>
+  findAll: (query: { type: string; text?: RegExp }) => Promise<{ text?: string; props?: Record<string, unknown> }[]>
+}
+
+const headings = async (ui: Mounted) =>
+  (await ui.findAll({ type: 'Text', text: /^(GIT|WORKTREES \(\d+\)|LAST TURN|PREVIOUS SESSION|COMMITS)$/ })).map(found => found.text)
+
+const svgAlts = async (ui: Mounted) => (await ui.findAll({ type: 'Svg' })).map(found => String(found.props?.alt ?? ''))
 
 const REFS = [
   'develop\torigin/develop\trefs/heads/develop\t\torigin/develop',
@@ -43,6 +51,8 @@ const PANE_PROPS = {
   scroll: { offset: 0, bodyRows: 40 },
   view: {},
 } as const
+
+const DESKTOP_PANE_PROPS = { ...PANE_PROPS, bodyColumns: 100 } as const
 
 function gitAnswer(argv: readonly string[]): { exitCode: number; stdout: string } {
   const [, verb = '', flag = ''] = argv
@@ -78,10 +88,11 @@ function mockWorld(on: On, settings: Record<string, unknown> = { theme: 'light' 
     value: { ...gitAnswer(e.argv), stderr: '', isStdoutTruncated: false, isStderrTruncated: false },
   }))
   on('settings.read', () => ({ value: settings }))
+  on('env.get', (_, e) => ({ value: e.name === 'HOME' ? '/home/dev' : undefined }))
   on('session.cwd', () => ({ value: WORKTREE }))
   on('session.model', () => ({ value: 'Fable 5.1' }))
   on('session.turns', () => ({ value: 3 }))
-  on('session.usage', () => ({ value: { startedAt: 0, context: { window: 200000, percent: 18 }, rateLimits: [] } }))
+  on('session.usage', () => ({ value: { startedAt: 0, context: { window: 200000, percent: 18, tokens: 36000 }, rateLimits: [] } }))
   on('command.register', (_, e) => ({ value: { command: e.name } }))
   on('turn.complete', (_, e) => ({ text: e.answer }))
   on('ui.open', () => ({ value: { isPlaced: true } }))
@@ -151,9 +162,26 @@ test('the palette follows the theme setting unless the option forces one', () =>
   expect(customThemeSlug('light')).toBeNull()
 })
 
+test('pills and cards are self-contained SVG documents that restyle themselves for a dark appearance', () => {
+  const pill = drawPill('blue', [{ label: 'CTX' }, { bar: { percent: 18, tone: 'blue' } }, { value: '18%', cls: 'blue' }])
+  expect(pill.height).toBe(30)
+  expect(pill.source.startsWith('<svg xmlns="http://www.w3.org/2000/svg"')).toBe(true)
+  expect(pill.source).toContain('@media (prefers-color-scheme:dark)')
+  expect(pill.source).toContain('class="pill-blue"')
+  expect(pill.source).toContain('>CTX<')
+
+  const card = drawCard({ width: 300, tone: 'purple', title: 'WORKTREE', blocks: [{ kind: 'big', text: 'NX-1_feature' }, { kind: 'line', text: '~/repo/.claude/worktrees/NX-1_feature' }] })
+  expect(card.width).toBe(300)
+  expect(card.height).toBeGreaterThan(60)
+  expect(card.source).toContain('class="card-purple"')
+  expect(card.source).toContain('>NX-1_feature<')
+  expect(drawCard({ width: 200, tone: null, title: 'A <B> & C', blocks: [] }).source).toContain('A &lt;B&gt; &amp; C')
+  expect(fitText('a very long branch name indeed', 10, 60)).toBe('a very l…')
+  expect(fitText('short', 10, 60)).toBe('short')
+})
+
 test('a custom theme is read as the preset it is based on', async ($, on) => {
   mockWorld(on, { theme: 'custom:paper' })
-  on('env.get', () => ({ value: '/home/dev' }))
   on('fs.read', (_, e) => ({ value: e.path === '/home/dev/.claude/themes/paper.json' ? '{"base":"light"}' : '{}' }))
   await $.session.start({ cwd: WORKTREE, surface: 'terminal', isInteractive: true })
 
@@ -169,41 +197,74 @@ test('recap lines drop markdown marks and empty lines, and the root list stays b
   expect(rememberRoot(Array.from({ length: 20 }, (_, index) => `/r${index}`), '/new')).toHaveLength(20)
 })
 
-test('the pane shows the worktree, the mismatched upstream and the commits on every docking surface, and widens the banner with the pane', async ($, on) => {
+test('the terminal pane leads with the worktree, then chips, the mismatched upstream, the worktrees and the commits on the palette background', async ($, on) => {
   mockWorld(on)
   await $.session.start({ cwd: WORKTREE, surface: 'terminal', isInteractive: true })
 
-  for (const surface of ['terminal', 'desktop'] as const) {
-    const ui = await $.ui.mount({ plugin: 'dev-dashboard', surface, component: 'Pane', requestId: 'dev-dashboard', props: PANE_PROPS })
-    const shows = async (text: RegExp) => expect(await ui.find({ type: 'Text', text }), `${surface}: ${text}`).toBeDefined()
+  const ui = await $.ui.mount({ plugin: 'dev-dashboard', surface: 'terminal', component: 'Pane', requestId: 'dev-dashboard', props: PANE_PROPS })
+  const shows = async (text: RegExp) => expect(await ui.find({ type: 'Text', text }), `terminal: ${text}`).toBeDefined()
 
-    await shows(/^█▀▄ █▀▀ █ █ {4}█▀▄ ▄▀▄ ▄▀▀ █ █$/)
-    await shows(/^repo/)
-    await shows(/eyedroot\/repo/)
-    await shows(/feature\/NX-1_feature/)
-    await shows(/^NX-1_feature/)
-    await shows(/origin\/develop/)
-    await shows(/name differs, git push is refused/)
-    await shows(/↑2 ↓1 {2}2 changed/)
-    await shows(/Add the feature/)
-    await shows(/^repo$/)
-    await shows(/^ {2}→ origin\/develop$/)
-    await shows(/^NX-2_other$/)
-    await shows(/^ {2}→ origin\/feature\/NX-2_other$/)
-    await shows(/Fable 5.1 · 3 turns · ctx 18%/)
-    expect(await headings(ui), `${surface}: section order`).toEqual(['Session', 'Git', 'Worktrees (2)', 'Commits'])
-    expect(await ui.find({ type: 'Text', text: /Last turn/ }), `${surface}: no recap yet`).toBeUndefined()
-    expect((await ui.find({ type: 'Box' }))?.props, `${surface}: light background`).toMatchObject({ backgroundColor: '#f7f7f7' })
-    expect((await ui.find({ type: 'Raster' }))?.props, `${surface}: flower raster`).toEqual(
-      surface === 'terminal' ? expect.objectContaining({ columns: 14, rows: 7 }) : undefined,
-    )
-
-    await ui.unmount()
-  }
+  await shows(/^█▀▄ █▀▀ █ █ {4}█▀▄ ▄▀▄ ▄▀▀ █ █$/)
+  await shows(/^NX-1_feature$/)
+  await shows(/^project repo$/)
+  await shows(/eyedroot\/repo/)
+  await shows(/^~\/repo\/\.claude\/worktrees\/NX-1_feature$/)
+  await shows(/^ ctx $/)
+  await shows(/^ 18% $/)
+  await shows(/^feature\/NX-1_feature$/)
+  await shows(/^mismatch $/)
+  await shows(/^ Fable 5\.1 · 3 turns $/)
+  await shows(/origin\/develop/)
+  await shows(/name differs, git push is refused/)
+  await shows(/↑2 ↓1 {2}2 changed/)
+  await shows(/Add the feature/)
+  await shows(/^repo$/)
+  await shows(/^ {2}→ origin\/develop$/)
+  await shows(/^NX-2_other$/)
+  await shows(/^ {2}→ origin\/feature\/NX-2_other$/)
+  expect(await headings(ui), 'terminal: section order').toEqual(['GIT', 'WORKTREES (2)', 'COMMITS'])
+  expect(await ui.find({ type: 'Text', text: /^── / }), 'terminal: no rule headings').toBeUndefined()
+  expect(await ui.find({ type: 'Text', text: /LAST TURN/ }), 'terminal: no recap yet').toBeUndefined()
+  expect((await ui.find({ type: 'Box' }))?.props, 'terminal: light background').toMatchObject({ backgroundColor: '#f7f7f7' })
+  expect((await ui.find({ type: 'Raster' }))?.props, 'terminal: flower raster').toEqual(expect.objectContaining({ columns: 14, rows: 7 }))
+  await ui.unmount()
 
   const wide = await $.ui.mount({ plugin: 'dev-dashboard', surface: 'terminal', component: 'Pane', requestId: 'dev-dashboard', props: { ...PANE_PROPS, bodyColumns: 80 } })
   expect(await wide.find({ type: 'Text', text: /^██▀▀▄▄ ██▀▀▀▀ ██  ██ {6}██▀▀▄▄ ▄▄▀▀▄▄ ▄▄▀▀▀▀ ██  ██$/ }), 'wide pane: two columns per pixel').toBeDefined()
   await wide.unmount()
+})
+
+test('the desktop pane is SVG cards on the host background, the worktree card first, and no raster or palette fill', async ($, on) => {
+  mockWorld(on)
+  await $.session.start({ cwd: WORKTREE, surface: 'desktop', isInteractive: true })
+
+  const ui = await $.ui.mount({ plugin: 'dev-dashboard', surface: 'desktop', component: 'Pane', requestId: 'dev-dashboard', props: DESKTOP_PANE_PROPS })
+  const alts = await svgAlts(ui)
+  const has = (pattern: RegExp) => expect(alts.some(alt => pattern.test(alt)), `desktop: ${pattern}`).toBe(true)
+
+  has(/^worktree NX-1_feature at ~\/repo\/\.claude\/worktrees\/NX-1_feature, project repo, branch feature\/NX-1_feature$/)
+  has(/^branch feature\/NX-1_feature, 2 changed, ↑2 ↓1$/)
+  has(/^upstream origin\/develop mismatch$/)
+  has(/^context 18%$/)
+  has(/^Fable 5\.1, 3 turns$/)
+  has(/^git: branch feature\/NX-1_feature, upstream origin\/develop mismatch, ↑2 ↓1, 2 changed$/)
+  has(/^context 18%, Fable 5\.1, 3 turns$/)
+  has(/^worktrees: repo → origin\/develop ok, NX-2_other → origin\/feature\/NX-2_other ok$/)
+  has(/^commits: bbbb111 Add the feature, aaaa222 Merge develop$/)
+  expect(alts[0], 'desktop: the worktree card comes first').toMatch(/^worktree NX-1_feature at /)
+  expect(alts[1], 'desktop: then the pills').toMatch(/^branch /)
+  expect(alts.findIndex(alt => alt.startsWith('git:')), 'desktop: the cards follow the pills').toBeGreaterThan(alts.findIndex(alt => alt.startsWith('Fable 5.1,')))
+  expect(alts.some(alt => /last turn/.test(alt)), 'desktop: no recap yet').toBe(false)
+
+  const place = (await ui.findAll({ type: 'Svg' })).find(found => String(found.props?.alt).startsWith('worktree NX-1'))
+  expect(String(place?.props?.source)).toContain('@media (prefers-color-scheme:dark)')
+  expect(String(place?.props?.source)).toContain('>WORKTREE<')
+  expect(place?.props?.width, 'desktop: the worktree card spans two columns').toBeGreaterThan(400)
+  expect((await ui.findAll({ type: 'Box' })).some(box => box.props?.backgroundColor !== undefined), 'desktop: no painted background').toBe(false)
+  expect(await ui.find({ type: 'Raster' }), 'desktop: no raster').toBeUndefined()
+  expect(await ui.find({ type: 'Text', text: /^── / }), 'desktop: no rule headings').toBeUndefined()
+  expect(await ui.find({ type: 'Button', text: /Refresh/ }), 'desktop: refresh button').toBeDefined()
+  await ui.unmount()
 })
 
 test('a finished turn becomes the recap and is kept for the next session in that repository', async ($, on) => {
@@ -220,12 +281,17 @@ test('a finished turn becomes the recap and is kept for the next session in that
 
   const ui = await $.ui.mount({ plugin: 'dev-dashboard', surface: 'terminal', component: 'Pane', requestId: 'dev-dashboard', props: PANE_PROPS })
 
-  expect(await ui.find({ type: 'Text', text: /Last turn/ })).toBeDefined()
-  expect(await headings(ui)).toEqual(['Session', 'Git', 'Worktrees (2)', 'Last turn', 'Commits'])
+  expect(await headings(ui)).toEqual(['GIT', 'WORKTREES (2)', 'LAST TURN', 'COMMITS'])
   expect(await ui.find({ type: 'Text', text: /0 tools · 1.2k out/ })).toBeDefined()
   expect((await ui.find({ type: 'Text', text: /^Renamed the helper and added a test\.$/ }))?.props).toMatchObject({ wrap: 'wrap' })
-  expect(await ui.find({ type: 'Text', text: /Previous session/ })).toBeUndefined()
+  expect(await ui.find({ type: 'Text', text: /PREVIOUS SESSION/ })).toBeUndefined()
   await ui.unmount()
+
+  const desktop = await $.ui.mount({ plugin: 'dev-dashboard', surface: 'desktop', component: 'Pane', requestId: 'dev-dashboard', props: DESKTOP_PANE_PROPS })
+  const alts = await svgAlts(desktop)
+  expect(alts.some(alt => /^last turn: just now, 12s, 0 tools, 1.2k out\. Done Renamed the helper and added a test\. Next: run the suite\.$/.test(alt)), alts.join('\n')).toBe(true)
+  expect(alts.some(alt => /^previous session/.test(alt))).toBe(false)
+  await desktop.unmount()
 
   expect(store.get(`recap:${MAIN_ROOT}`)).toMatchObject({ toolCalls: 0, outputTokens: 1234, durationMs: 12000 })
   expect(store.get('recap-roots')).toEqual([MAIN_ROOT])
@@ -246,8 +312,13 @@ test('the previous recap of the repository is shown when a session starts there'
 
   const ui = await $.ui.mount({ plugin: 'dev-dashboard', surface: 'terminal', component: 'Pane', requestId: 'dev-dashboard', props: PANE_PROPS })
 
-  expect(await ui.find({ type: 'Text', text: /Previous session/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /PREVIOUS SESSION/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /3h ago · 1m 5s · 7 tools · 900 out/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /Moved the upstream check/ })).toBeDefined()
   await ui.unmount()
+
+  const desktop = await $.ui.mount({ plugin: 'dev-dashboard', surface: 'desktop', component: 'Pane', requestId: 'dev-dashboard', props: DESKTOP_PANE_PROPS })
+  const alts = await svgAlts(desktop)
+  expect(alts.some(alt => /^previous session: 3h ago, 1m 5s, 7 tools, 900 out\. Moved the upstream check into git\.ts$/.test(alt)), alts.join('\n')).toBe(true)
+  await desktop.unmount()
 })

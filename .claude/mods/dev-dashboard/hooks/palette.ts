@@ -1,5 +1,15 @@
 export type ThemeName = 'light' | 'dark'
 
+export type ChipTone = 'green' | 'yellow' | 'red' | 'blue' | 'purple' | 'cyan' | 'slate'
+
+// tint is the chip's background; text, accent and muted are drawn on it
+export type Chip = {
+  tint: string
+  text: string
+  accent: string
+  muted: string
+}
+
 export type Palette = {
   background: string
   accent: string
@@ -9,6 +19,7 @@ export type Palette = {
   ok: string
   warning: string
   error: string
+  chips: Record<ChipTone, Chip>
 }
 
 export const PALETTES: Record<ThemeName, Palette> = {
@@ -21,6 +32,15 @@ export const PALETTES: Record<ThemeName, Palette> = {
     ok: '#1b6600',
     warning: '#826a00',
     error: '#ad0f00',
+    chips: {
+      green: { tint: '#dcf1e4', text: '#123f28', accent: '#1b7f4b', muted: '#4f7d62' },
+      yellow: { tint: '#f6ebc4', text: '#4a3700', accent: '#9a6b00', muted: '#857449' },
+      red: { tint: '#f9dad6', text: '#5e160d', accent: '#c4402b', muted: '#9a6a65' },
+      blue: { tint: '#dbe5fb', text: '#17295e', accent: '#3563d1', muted: '#6775a3' },
+      purple: { tint: '#e5dffa', text: '#2a2064', accent: '#6a52cc', muted: '#7d76a6' },
+      cyan: { tint: '#d4ecf0', text: '#0d4148', accent: '#167f8c', muted: '#5b8b91' },
+      slate: { tint: '#e5e5e9', text: '#26262c', accent: '#5b5b66', muted: '#787884' },
+    },
   },
   dark: {
     background: '#181825',
@@ -31,6 +51,15 @@ export const PALETTES: Record<ThemeName, Palette> = {
     ok: '#a6e3a1',
     warning: '#fab387',
     error: '#f38ba8',
+    chips: {
+      green: { tint: '#1c3328', text: '#d6f2e1', accent: '#5fcf9a', muted: '#7fa892' },
+      yellow: { tint: '#372f15', text: '#f5e8b8', accent: '#e6b830', muted: '#ad9b62' },
+      red: { tint: '#432020', text: '#fadad4', accent: '#f47563', muted: '#b8837b' },
+      blue: { tint: '#1f2a46', text: '#d9e3fa', accent: '#7b9cf2', muted: '#8190b3' },
+      purple: { tint: '#2b2645', text: '#e0daf8', accent: '#a996ff', muted: '#8f88b3' },
+      cyan: { tint: '#16323a', text: '#d0eef2', accent: '#5cc9d6', muted: '#76a3a9' },
+      slate: { tint: '#29292f', text: '#e2e2e8', accent: '#a3a3b0', muted: '#82828e' },
+    },
   },
 }
 
