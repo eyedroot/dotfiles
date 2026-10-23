@@ -6,13 +6,6 @@
 export type Tone = 'green' | 'yellow' | 'red' | 'blue' | 'purple' | 'cyan'
 export type Cls = Tone | 'fg' | 'mu' | 'lb'
 
-export type PillItem =
-  | { label: string }
-  | { value: string; cls?: Cls }
-  | { aside: string; cls?: Cls }
-  | { bar: { percent: number; tone: Tone } }
-  | { dot: Tone }
-
 export type TextSegment = { text: string; cls?: Cls; weight?: number; size?: number }
 export type Segment = TextSegment | { dot: Tone }
 
@@ -43,11 +36,7 @@ const PALETTE: Record<Cls | 'track', readonly [string, string]> = {
   cyan: ['#167f8c', '#5cc9d6'],
 }
 
-const PILL_HEIGHT = 30
-const PILL_PAD = 10
-const PILL_GAP = 6
-const PILL_BAR_WIDTH = 34
-const SIZE = { label: 9, value: 12, aside: 10.5 }
+
 const LABEL_TRACKING = 0.8
 
 const CARD_PAD = 12
@@ -77,12 +66,10 @@ export function fitText(text: string, size: number, room: number): string {
 
 function styles(mode: 0 | 1): string {
   const fills = (Object.keys(PALETTE) as (keyof typeof PALETTE)[]).map(name => `.${name}{fill:${PALETTE[name][mode]}}`).join('')
-  const pills = TONES.map(tone => `.pill-${tone}{fill:${PALETTE[tone][mode]};fill-opacity:${mode ? 0.17 : 0.12};stroke:${PALETTE[tone][mode]};stroke-opacity:${mode ? 0.42 : 0.35}}`).join('')
   const cards = TONES.map(tone => `.card-${tone}{fill:${PALETTE[tone][mode]};fill-opacity:${mode ? 0.07 : 0.05};stroke:${PALETTE[tone][mode]};stroke-opacity:${mode ? 0.2 : 0.18}}`).join('')
-  const neutral = `.pill-none{fill:${PALETTE.fg[mode]};fill-opacity:${mode ? 0.06 : 0.045};stroke:${PALETTE.fg[mode]};stroke-opacity:${mode ? 0.14 : 0.12}}` +
-    `.card-none{fill:${PALETTE.fg[mode]};fill-opacity:${mode ? 0.04 : 0.03};stroke:${PALETTE.fg[mode]};stroke-opacity:${mode ? 0.12 : 0.1}}`
+  const neutral = `.card-none{fill:${PALETTE.fg[mode]};fill-opacity:${mode ? 0.04 : 0.03};stroke:${PALETTE.fg[mode]};stroke-opacity:${mode ? 0.12 : 0.1}}`
 
-  return fills + pills + cards + neutral
+  return fills + cards + neutral
 }
 
 function document(width: number, height: number, body: string): string {
@@ -95,47 +82,6 @@ function text(x: number, baseline: number, content: string, options: { size: num
   const tracking = options.tracking === undefined ? '' : ` letter-spacing="${options.tracking}"`
 
   return `<text class="${options.cls ?? 'fg'}" x="${x.toFixed(1)}" y="${baseline.toFixed(1)}" font-size="${options.size}" font-weight="${options.weight ?? 500}"${anchor}${tracking}>${escapeXml(content)}</text>`
-}
-
-function pillItemWidth(item: PillItem): number {
-  if ('label' in item) return textWidth(item.label, SIZE.label, LABEL_TRACKING)
-  if ('value' in item) return textWidth(item.value, SIZE.value)
-  if ('aside' in item) return textWidth(item.aside, SIZE.aside)
-  if ('bar' in item) return PILL_BAR_WIDTH
-
-  return 7
-}
-
-function pillItem(item: PillItem, x: number, tone: Tone | null): string {
-  const middle = PILL_HEIGHT / 2
-
-  if ('label' in item) return text(x, middle + SIZE.label * 0.36, item.label, { size: SIZE.label, weight: 700, cls: tone ?? 'lb', tracking: LABEL_TRACKING })
-  if ('value' in item) return text(x, middle + SIZE.value * 0.36, item.value, { size: SIZE.value, weight: 650, cls: item.cls ?? 'fg' })
-  if ('aside' in item) return text(x, middle + SIZE.aside * 0.36, item.aside, { size: SIZE.aside, cls: item.cls ?? 'mu' })
-  if ('dot' in item) return `<circle class="${item.dot}" cx="${x + 3.5}" cy="${middle}" r="3.5"/>`
-
-  const y = middle - 2
-  const fill = item.bar.percent > 0 ? Math.max(4, (item.bar.percent / 100) * PILL_BAR_WIDTH) : 0
-  const track = `<rect class="track" x="${x}" y="${y}" width="${PILL_BAR_WIDTH}" height="4" rx="2"/>`
-
-  return fill === 0 ? track : `${track}<rect class="${item.bar.tone}" x="${x}" y="${y}" width="${fill.toFixed(1)}" height="4" rx="2"/>`
-}
-
-export function drawPill(tone: Tone | null, items: readonly PillItem[]): Drawing {
-  let x = PILL_PAD
-  let body = ''
-
-  items.forEach((item, index) => {
-    if (index > 0) x += PILL_GAP
-    body += pillItem(item, x, tone)
-    x += pillItemWidth(item)
-  })
-
-  const width = Math.ceil(x + PILL_PAD)
-  const inner = PILL_HEIGHT - 7
-  const frame = `<rect class="pill-${tone ?? 'none'}" x=".5" y="3.5" width="${width - 1}" height="${inner}" rx="${inner / 2}" stroke-width="1"/>`
-
-  return { source: document(width, PILL_HEIGHT, frame + body), width, height: PILL_HEIGHT }
 }
 
 function segmentWidth(segment: Segment): number {
@@ -241,11 +187,4 @@ export function drawCard(options: {
   const frame = `<rect class="card-${options.tone ?? 'none'}" x=".5" y=".5" width="${width - 1}" height="${height - 1}" rx="${CARD_RADIUS}"/>`
 
   return { source: document(width, height, frame + body), width, height }
-}
-
-export function contextTone(percent: number): Tone {
-  if (percent < 50) return 'blue'
-  if (percent < 75) return 'yellow'
-
-  return 'red'
 }

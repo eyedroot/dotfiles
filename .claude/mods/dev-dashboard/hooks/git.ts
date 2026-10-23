@@ -1,6 +1,18 @@
-import type { Commit, GitSnapshot, UpstreamStatus, WorktreeRow } from '../types'
+import type { Commit, GitOperation, GitSnapshot, UpstreamStatus, WorktreeRow } from '../types'
 
 export type GitRun = (args: readonly string[]) => Promise<{ exitCode: number; stdout: string }>
+export type PathExists = (path: string) => Promise<boolean>
+
+const CONFLICT_CODES = new Set(['DD', 'AU', 'UD', 'UA', 'DU', 'AA', 'UU'])
+
+// Rebase comes first: a rebase that replays a merge commit writes MERGE_HEAD too.
+const OPERATION_MARKERS: readonly (readonly [GitOperation, string])[] = [
+  ['rebase', 'rebase-merge'],
+  ['rebase', 'rebase-apply'],
+  ['merge', 'MERGE_HEAD'],
+  ['cherry-pick', 'CHERRY_PICK_HEAD'],
+  ['revert', 'REVERT_HEAD'],
+]
 
 type RefRow = {
   branch: string
@@ -47,6 +59,25 @@ export function parseCommits(stdout: string): Commit[] {
 
       return { hash, age, subject: subject.join('\t') }
     })
+}
+
+export function countConflicts(porcelain: string): number {
+  return porcelain.split('\n').filter(line => CONFLICT_CODES.has(line.slice(0, 2))).length
+}
+
+export function parseShortstat(stdout: string): { insertions: number; deletions: number } {
+  return {
+    insertions: Number(/(\d+) insertions?\(\+\)/.exec(stdout)?.[1] ?? 0),
+    deletions: Number(/(\d+) deletions?\(-\)/.exec(stdout)?.[1] ?? 0),
+  }
+}
+
+async function readOperation(exists: PathExists, gitDir: string): Promise<GitOperation | null> {
+  for (const [operation, marker] of OPERATION_MARKERS) {
+    if (await exists(`${gitDir}/${marker}`)) return operation
+  }
+
+  return null
 }
 
 export function parseRefs(stdout: string): Map<string, RefRow> {
@@ -106,7 +137,7 @@ export function parseWorktrees(stdout: string, refs: Map<string, RefRow>, curren
   return rows
 }
 
-export async function readGitSnapshot(run: GitRun, cwd: string, commitCount: number, readAt: number): Promise<GitSnapshot> {
+export async function readGitSnapshot(run: GitRun, exists: PathExists, cwd: string, commitCount: number, readAt: number): Promise<GitSnapshot> {
   const empty: GitSnapshot = {
     isRepo: false,
     cwd,
@@ -122,24 +153,30 @@ export async function readGitSnapshot(run: GitRun, cwd: string, commitCount: num
     ahead: 0,
     behind: 0,
     dirty: 0,
+    conflicts: 0,
+    insertions: 0,
+    deletions: 0,
+    operation: null,
     commits: [],
     worktrees: [],
     readAt,
   }
 
-  const layout = await run(['rev-parse', '--path-format=absolute', '--show-toplevel', '--git-common-dir', '--abbrev-ref', 'HEAD'])
+  const layout = await run(['rev-parse', '--path-format=absolute', '--show-toplevel', '--git-common-dir', '--git-dir', '--abbrev-ref', 'HEAD'])
   if (layout.exitCode !== 0) return empty
 
-  const [toplevel = '', commonDir = '', head = ''] = layout.stdout.split('\n')
+  const [toplevel = '', commonDir = '', gitDir = '', head = ''] = layout.stdout.split('\n')
   const mainRoot = commonDir.endsWith('/.git') ? commonDir.slice(0, -'/.git'.length) : toplevel
   const branch = head === '' || head === 'HEAD' ? null : head
 
-  const [remote, refs, status, log, worktrees] = await Promise.all([
+  const [remote, refs, status, log, worktrees, shortstat, operation] = await Promise.all([
     run(['config', '--get', 'remote.origin.url']),
     run(['for-each-ref', '--format=%(refname:short)%09%(upstream:short)%09%(upstream:remoteref)%09%(upstream:track)%09%(push:short)', 'refs/heads/']),
     run(['status', '--porcelain']),
     run(['log', `--format=%h%x09%ar%x09%s`, '-n', String(commitCount)]),
     run(['worktree', 'list', '--porcelain']),
+    run(['diff', '--shortstat', 'HEAD']),
+    readOperation(exists, gitDir),
   ])
 
   const refRows = parseRefs(refs.stdout)
@@ -162,6 +199,9 @@ export async function readGitSnapshot(run: GitRun, cwd: string, commitCount: num
     ahead,
     behind,
     dirty: status.stdout.split('\n').filter(line => line !== '').length,
+    conflicts: countConflicts(status.stdout),
+    ...parseShortstat(shortstat.stdout),
+    operation,
     commits: log.exitCode === 0 ? parseCommits(log.stdout) : [],
     worktrees: parseWorktrees(worktrees.stdout, refRows, toplevel),
     readAt,

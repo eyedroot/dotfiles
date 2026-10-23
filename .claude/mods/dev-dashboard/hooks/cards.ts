@@ -1,105 +1,15 @@
-import type { GitSnapshot, SessionFacts, TurnRecap, UpstreamStatus } from '../types'
-import type { ChipTone } from './palette'
-import { formatDuration, formatTokens, relativeAge } from './recap'
-import { contextTone, drawCard } from './svg'
-import type { CardBlock, Drawing, PillItem, Tone } from './svg'
+import type { TurnRecap } from '../types'
+import { dearestTurns, formatUsd, sparkline } from './cost'
+import { formatDuration } from './recap'
+import type { Signal, SignalLevel } from './signals'
+import { drawCard } from './svg'
+import type { CardBlock, Drawing, Tone } from './svg'
+import { CHECK_TONE, JIRA_STATUS_TONE, costSummary, jiraWaitText, UPSTREAM_NOTE, UPSTREAM_TONE, activityLine, changeSummary, checkRows, currentPr, currentTicket, diffStat, isInSync, issueContext, prSummary, recapSummary, relativePath, shortAge, shortenHome, syncText, todoProgress, toolName } from './view'
+import type { PaneFacts } from './view'
 
-export type PaneFacts = {
-  snapshot: GitSnapshot
-  turn: TurnRecap | null
-  prior: TurnRecap | null
-  facts: SessionFacts | null
-  now: number
-  home: string | null
-}
-
-export type Pill = { key: string; tone: Tone | null; items: PillItem[]; alt: string }
 export type Card = Drawing & { alt: string }
 
-export type ChipPart = [text: string, kind: 'label' | 'value' | 'aside' | 'accent' | 'off']
-export type Chip = { key: string; tone: ChipTone; parts: ChipPart[] }
-
-const CHIP_BAR = 6
-
-export const UPSTREAM_NOTE: Record<UpstreamStatus, string | null> = {
-  ok: null,
-  mismatch: 'name differs, git push is refused',
-  gone: 'remote branch was deleted',
-  none: 'no upstream, first push sets it',
-}
-
-export const UPSTREAM_TONE: Record<UpstreamStatus, Tone | null> = {
-  ok: 'green',
-  mismatch: 'red',
-  gone: 'yellow',
-  none: null,
-}
-
-export function fit(text: string, width: number): string {
-  if (width <= 1) return ''
-
-  return text.length > width ? `${text.slice(0, width - 1)}…` : text
-}
-
-export function shortAge(age: string): string {
-  return age.replace(/ ago$/, '').replace(/ (\w)\w+$/, '$1')
-}
-
-export function syncText(snapshot: GitSnapshot): string {
-  return `↑${snapshot.ahead} ↓${snapshot.behind}`
-}
-
-export function isInSync(snapshot: GitSnapshot): boolean {
-  return snapshot.dirty === 0 && snapshot.ahead === 0 && snapshot.behind === 0
-}
-
-export function shortenHome(path: string, home: string | null): string {
-  if (home === null || home === '' || !(path === home || path.startsWith(`${home}/`))) return path
-
-  return `~${path.slice(home.length)}`
-}
-
-export function recapSummary(recap: TurnRecap, now: number): string[] {
-  return [
-    relativeAge(recap.endedAt, now),
-    formatDuration(recap.durationMs),
-    `${recap.toolCalls} tools`,
-    recap.outputTokens === null ? null : `${formatTokens(recap.outputTokens)} out`,
-    recap.reason === 'answer' ? null : recap.reason,
-  ].filter((fact): fact is string => fact !== null)
-}
-
-export function pills(view: PaneFacts): Pill[] {
-  const { snapshot, facts } = view
-  const list: Pill[] = []
-  const status = snapshot.upstreamStatus
-
-  if (snapshot.isRepo) {
-    const branch: PillItem[] = [{ label: 'BRANCH' }, { value: snapshot.branch ?? 'HEAD (detached)', cls: snapshot.branch === null ? 'yellow' : undefined }]
-    if (snapshot.dirty > 0) branch.push({ aside: `±${snapshot.dirty}`, cls: 'yellow' })
-    else branch.push({ aside: 'clean', cls: 'green' })
-    if (snapshot.ahead > 0 || snapshot.behind > 0) branch.push({ aside: syncText(snapshot) })
-    list.push({ key: 'branch', tone: UPSTREAM_TONE[status], items: branch, alt: `branch ${snapshot.branch ?? 'detached'}, ${snapshot.dirty} changed, ${syncText(snapshot)}` })
-
-    const upstream: PillItem[] = [{ label: 'UPSTREAM' }, { value: snapshot.upstream ?? 'none', cls: UPSTREAM_TONE[status] ?? undefined }]
-    if (status !== 'ok') upstream.push({ aside: status, cls: UPSTREAM_TONE[status] ?? undefined })
-    list.push({ key: 'upstream', tone: UPSTREAM_TONE[status], items: upstream, alt: `upstream ${snapshot.upstream ?? 'none'} ${status}` })
-  }
-
-  if (facts !== null && facts.contextPercent !== null) {
-    const percent = Math.round(facts.contextPercent)
-    const tone = contextTone(percent)
-    const context: PillItem[] = [{ label: 'CTX' }, { bar: { percent, tone } }, { value: `${percent}%`, cls: tone }]
-    if (facts.contextTokens !== null && facts.contextWindow !== null) context.push({ aside: `${formatTokens(facts.contextTokens)}/${formatTokens(facts.contextWindow)}` })
-    list.push({ key: 'ctx', tone, items: context, alt: `context ${percent}%` })
-  }
-
-  if (facts !== null) {
-    list.push({ key: 'model', tone: null, items: [{ aside: `${facts.model} · ${facts.turns} turns` }], alt: `${facts.model}, ${facts.turns} turns` })
-  }
-
-  return list
-}
+export const SIGNAL_TONE: Record<SignalLevel, Tone> = { error: 'red', warn: 'yellow', info: 'blue' }
 
 export function placeCard(view: PaneFacts, width: number): Card {
   const { snapshot, home } = view
@@ -148,6 +58,134 @@ export function placeCard(view: PaneFacts, width: number): Card {
   }
 }
 
+export function ticketCard(view: PaneFacts, width: number): Card | null {
+  const ticket = currentTicket(view)
+  if (ticket === null) return null
+
+  const { issue } = ticket
+
+  if (issue === null) {
+    const drawing = drawCard({ width, tone: null, title: ticket.key, blocks: [{ kind: 'line', text: jiraWaitText(ticket.failure) }] })
+
+    return { ...drawing, alt: `jira ${ticket.key}: ${ticket.failure ?? 'reading'}` }
+  }
+
+  const tone = JIRA_STATUS_TONE[issue.statusCategory] ?? null
+  const progress = todoProgress(issue)
+  const context = issueContext(issue)
+  const openTodos = issue.todos.filter(todo => !todo.isDone)
+  const blocks: CardBlock[] = [{ kind: 'big', text: issue.summary, size: issue.summary.length > 24 ? 13 : 16 }]
+
+  if (context !== '') blocks.push({ kind: 'line', text: context })
+  if (progress !== null) {
+    blocks.push({ kind: 'gap', px: 4 }, { kind: 'bar', percent: (progress.done / progress.total) * 100, tone: tone ?? 'blue' })
+    blocks.push(...openTodos.slice(0, 3).map((todo): CardBlock => ({ kind: 'row', segments: [{ text: '□', cls: 'lb' }, { text: todo.text, cls: 'fg' }] })))
+  } else {
+    blocks.push(...issue.excerpt.slice(0, 2).map((line): CardBlock => ({ kind: 'line', text: line })))
+  }
+
+  const drawing = drawCard({
+    width,
+    tone,
+    title: issue.key,
+    titleRight: { text: progress === null ? issue.status : `${issue.status} · ${progress.done}/${progress.total}`, cls: tone ?? 'mu' },
+    blocks,
+  })
+
+  return { ...drawing, alt: `jira ${issue.key} ${issue.status}: ${issue.summary}${progress === null ? '' : `, todo ${progress.done}/${progress.total}`}` }
+}
+
+export function nowCard(view: PaneFacts, signals: readonly Signal[], width: number): Card {
+  const line = activityLine(view)
+  const isAllClear = !signals.some(signal => signal.level !== 'info')
+  const blocks: CardBlock[] = [{ kind: 'big', text: line.state.toLowerCase(), cls: line.isWorking ? 'blue' : 'fg', side: line.detail }]
+
+  for (const running of view.activity.running.slice(0, 4)) {
+    blocks.push({
+      kind: 'row',
+      segments: [{ dot: 'blue' }, { text: toolName(running.tool), cls: 'blue', weight: 650 }, { text: running.label, cls: 'fg' }],
+      right: { text: formatDuration(view.now - running.startedAt) },
+    })
+  }
+
+  if (isAllClear) blocks.push({ kind: 'row', segments: [{ dot: 'green' }, { text: 'all clear', cls: 'green', weight: 650 }] })
+
+  const drawing = drawCard({ width, tone: line.isWorking ? 'blue' : null, title: 'NOW', blocks })
+  const running = view.activity.running.map(tool => `${toolName(tool.tool)} ${tool.label}`.trim())
+
+  return { ...drawing, alt: `now: ${line.state.toLowerCase()}, ${line.detail}${running.length === 0 ? '' : `; running ${running.join(', ')}`}${isAllClear ? '; all clear' : ''}` }
+}
+
+export function signalsCard(signals: readonly Signal[], width: number): Card | null {
+  if (signals.length === 0) return null
+
+  const tone = SIGNAL_TONE[signals[0]?.level ?? 'info']
+  const blocks: CardBlock[] = signals.map((signal): CardBlock => ({
+    kind: 'row',
+    segments: [{ dot: SIGNAL_TONE[signal.level] }, { text: signal.text, cls: signal.level === 'info' ? 'mu' : 'fg', weight: signal.level === 'error' ? 650 : undefined }],
+  }))
+  const drawing = drawCard({ width, tone, title: 'SIGNALS', titleRight: { text: String(signals.length) }, blocks })
+
+  return { ...drawing, alt: `signals: ${signals.map(signal => `${signal.level} ${signal.text}`).join('; ')}` }
+}
+
+export function checksCard(view: PaneFacts, width: number): Card | null {
+  const rows = checkRows(view)
+  if (rows.length === 0) return null
+
+  const blocks: CardBlock[] = rows.map((row): CardBlock => ({
+    kind: 'row',
+    segments: [
+      { dot: CHECK_TONE[row.state] ?? 'purple' },
+      { text: row.kind.toUpperCase().padEnd(5), cls: 'lb', weight: 700, size: 8.5 },
+      { text: row.detail, cls: 'fg' },
+    ],
+    right: { text: `${row.state} · ${row.age}`, cls: CHECK_TONE[row.state] ?? 'mu', weight: 650 },
+  }))
+  const tone = rows.some(row => row.state === 'fail') ? 'red' : rows.some(row => row.state === 'stale') ? 'yellow' : 'green'
+  const drawing = drawCard({ width, tone, title: 'CHECKS', blocks })
+
+  return { ...drawing, alt: `checks: ${rows.map(row => `${row.kind} ${row.state} ${row.detail}`).join(', ')}` }
+}
+
+export function changesCard(view: PaneFacts, width: number, fileCount: number): Card | null {
+  const { snapshot, edits, home } = view
+  if (snapshot.dirty === 0 && edits.length === 0) return null
+
+  const stat = diffStat(snapshot)
+  const blocks: CardBlock[] = [
+    { kind: 'line', text: changeSummary(view) },
+    ...edits.slice(0, fileCount).map((file): CardBlock => ({
+      kind: 'row',
+      segments: [{ text: relativePath(file.path, snapshot.root, home), cls: 'fg' }],
+      right: { text: `×${file.edits}` },
+    })),
+  ]
+  const drawing = drawCard({ width, tone: null, title: 'CHANGES', titleRight: stat === null ? undefined : { text: stat }, blocks })
+
+  return { ...drawing, alt: `changes: ${changeSummary(view)}${stat === null ? '' : `, ${stat}`}` }
+}
+
+export function costCard(view: PaneFacts, width: number, sparkTurns: number, dearestCount: number): Card | null {
+  const total = view.facts?.costUsd ?? null
+  if (total === null) return null
+
+  const { turns } = view.costs
+  const summary = costSummary(view).join(' · ')
+  const blocks: CardBlock[] = [{ kind: 'big', text: formatUsd(total), side: summary }]
+
+  if (turns.length > 1) blocks.push({ kind: 'line', text: sparkline(turns.slice(-sparkTurns).map(turn => turn.usd)), cls: 'purple', size: 12 })
+  blocks.push(...dearestTurns(turns, dearestCount).map((turn): CardBlock => ({
+    kind: 'row',
+    segments: [{ text: formatUsd(turn.usd), cls: 'fg', weight: 650 }, { text: turn.prompt, cls: 'mu' }],
+    right: { text: formatDuration(turn.durationMs) },
+  })))
+
+  const drawing = drawCard({ width, tone: 'purple', title: 'COST', blocks })
+
+  return { ...drawing, alt: `cost ${formatUsd(total)}${summary === '' ? '' : `, ${summary}`}${turns.length === 0 ? '' : `; dearest ${dearestTurns(turns, dearestCount).map(turn => `${formatUsd(turn.usd)} ${turn.prompt}`).join(', ')}`}` }
+}
+
 export function gitCard(view: PaneFacts, width: number): Card {
   const { snapshot } = view
   const status = snapshot.upstreamStatus
@@ -166,8 +204,12 @@ export function gitCard(view: PaneFacts, width: number): Card {
   if (note !== null) blocks.push({ kind: 'line', text: note, cls: tone ?? 'mu' })
   if (snapshot.pushTarget !== null) blocks.push({ kind: 'line', text: `push → ${snapshot.pushTarget}`, cls: 'yellow' })
 
-  const facts = [snapshot.dirty === 0 ? 'clean' : `${snapshot.dirty} changed`, snapshot.worktree === null ? null : `worktree ${snapshot.worktree}`].filter((fact): fact is string => fact !== null)
-  blocks.push({ kind: 'line', text: facts.join(' · '), cls: isInSync(snapshot) ? 'green' : 'mu' })
+  const pr = currentPr(view)
+  const prLine = pr === null ? null : prSummary(pr)
+  if (prLine !== null) blocks.push({ kind: 'row', segments: [{ text: 'PR', cls: 'lb', weight: 700, size: 8.5 }, { text: prLine.text, cls: prLine.tone ?? 'fg', weight: 600 }] })
+
+  const others = snapshot.worktrees.filter(worktree => !worktree.isCurrent).length
+  if (others > 0) blocks.push({ kind: 'line', text: `${others} other worktrees` })
 
   const drawing = drawCard({
     width,
@@ -177,24 +219,7 @@ export function gitCard(view: PaneFacts, width: number): Card {
     blocks,
   })
 
-  return { ...drawing, alt: `git: branch ${snapshot.branch ?? 'detached'}, upstream ${snapshot.upstream ?? 'none'} ${status}, ${syncText(snapshot)}, ${snapshot.dirty} changed` }
-}
-
-export function contextCard(view: PaneFacts, width: number): Card | null {
-  const { facts } = view
-  if (facts === null) return null
-
-  const percent = facts.contextPercent === null ? null : Math.round(facts.contextPercent)
-  const tone = percent === null ? 'blue' : contextTone(percent)
-  const blocks: CardBlock[] = [
-    { kind: 'big', text: percent === null ? '—' : `${percent}%`, cls: tone, side: `${facts.turns} turns` },
-    { kind: 'bar', percent: percent ?? 0, tone },
-    { kind: 'line', text: facts.model },
-  ]
-  const tokens = facts.contextTokens !== null && facts.contextWindow !== null ? `${formatTokens(facts.contextTokens)}/${formatTokens(facts.contextWindow)}` : null
-  const drawing = drawCard({ width, tone: 'blue', title: 'CONTEXT', titleRight: tokens === null ? undefined : { text: tokens }, blocks })
-
-  return { ...drawing, alt: `context ${percent === null ? 'unknown' : `${percent}%`}, ${facts.model}, ${facts.turns} turns` }
+  return { ...drawing, alt: `git: branch ${snapshot.branch ?? 'detached'}, upstream ${snapshot.upstream ?? 'none'} ${status}, ${syncText(snapshot)}${prLine === null ? '' : `, PR ${prLine.text}`}` }
 }
 
 export function recapCard(title: string, recap: TurnRecap, now: number, width: number, tone: Tone | null): Card {
@@ -207,23 +232,6 @@ export function recapCard(title: string, recap: TurnRecap, now: number, width: n
   const drawing = drawCard({ width, tone, title, titleRight: { text: age }, blocks })
 
   return { ...drawing, alt: `${title.toLowerCase()}: ${summary.join(', ')}. ${recap.lines.join(' ')}` }
-}
-
-export function worktreesCard(view: PaneFacts, width: number): Card | null {
-  const others = view.snapshot.worktrees.filter(worktree => !worktree.isCurrent)
-  if (others.length === 0) return null
-
-  const blocks: CardBlock[] = others.flatMap((worktree): CardBlock[] => [
-    {
-      kind: 'row',
-      segments: [{ dot: UPSTREAM_TONE[worktree.status] ?? 'purple' }, { text: worktree.name, cls: 'fg', weight: 650 }],
-      right: worktree.branch === null ? { text: 'detached', cls: 'yellow' } : worktree.status === 'ok' ? undefined : { text: worktree.status, cls: UPSTREAM_TONE[worktree.status] ?? 'mu' },
-    },
-    { kind: 'row', segments: [{ text: '  →', cls: 'lb' }, { text: worktree.upstream ?? 'none', cls: UPSTREAM_TONE[worktree.status] ?? 'mu' }] },
-  ])
-  const drawing = drawCard({ width, tone: 'cyan', title: 'WORKTREES', titleRight: { text: String(others.length) }, blocks })
-
-  return { ...drawing, alt: `worktrees: ${others.map(worktree => `${worktree.name} → ${worktree.upstream ?? 'none'} ${worktree.status}`).join(', ')}` }
 }
 
 export function commitsCard(view: PaneFacts, width: number): Card {
@@ -241,38 +249,4 @@ export function commitsCard(view: PaneFacts, width: number): Card {
   const drawing = drawCard({ width, tone: 'yellow', title: 'COMMITS', titleRight: { text: String(commits.length) }, blocks })
 
   return { ...drawing, alt: `commits: ${commits.map(commit => `${commit.hash.slice(0, 7)} ${commit.subject}`).join(', ')}` }
-}
-
-function chipBar(percent: number, width = CHIP_BAR): ChipPart[] {
-  const filled = Math.round((percent / 100) * width)
-  const parts: ChipPart[] = [
-    ['━'.repeat(filled), 'accent'],
-    ['━'.repeat(width - filled), 'off'],
-  ]
-
-  return parts.filter(part => part[0] !== '')
-}
-
-export function chips(view: PaneFacts): Chip[] {
-  const { snapshot, facts } = view
-  const list: Chip[] = []
-  const status = snapshot.upstreamStatus
-  const statusTone: ChipTone = UPSTREAM_TONE[status] ?? 'slate'
-
-  if (facts !== null && facts.contextPercent !== null) {
-    const percent = Math.round(facts.contextPercent)
-    list.push({ key: 'ctx', tone: contextTone(percent), parts: [['ctx ', 'label'], ...chipBar(percent), [` ${percent}%`, 'value']] })
-  }
-
-  if (snapshot.isRepo) {
-    const parts: ChipPart[] = [['git ', 'label'], [fit(snapshot.branch ?? 'detached', 24), 'value']]
-    if (snapshot.dirty > 0) parts.push([` ±${snapshot.dirty}`, 'accent'])
-    if (snapshot.ahead > 0 || snapshot.behind > 0) parts.push([` ${syncText(snapshot)}`, 'aside'])
-    list.push({ key: 'git', tone: 'cyan', parts })
-    list.push({ key: 'upstream', tone: statusTone, parts: [['up ', 'label'], [status, 'value']] })
-  }
-
-  if (facts !== null) list.push({ key: 'model', tone: 'slate', parts: [[`${facts.model} · ${facts.turns} turns`, 'aside']] })
-
-  return list
 }

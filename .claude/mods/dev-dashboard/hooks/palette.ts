@@ -63,6 +63,33 @@ export const PALETTES: Record<ThemeName, Palette> = {
   },
 }
 
+// The status line's colors (~/.claude/statusline.sh), so the band above the
+// prompt reads as the same family as the lines under it. Change both together.
+export type BandPalette = {
+  separator: string
+  label: string
+  value: string
+  spark: string
+  bars: Record<'low' | 'mid' | 'high' | 'crit' | 'context', string>
+}
+
+export const BAND_PALETTES: Record<ThemeName, BandPalette> = {
+  light: {
+    separator: '#adadad',
+    label: '#606060',
+    value: '#202020',
+    spark: '#6b2fba',
+    bars: { low: '#005c43', mid: '#826a00', high: '#a14916', crit: '#ad0f00', context: '#ad0f00' },
+  },
+  dark: {
+    separator: '#7f849c',
+    label: '#bac2de',
+    value: '#cdd6f4',
+    spark: '#b4befe',
+    bars: { low: '#94e2d5', mid: '#f9e2af', high: '#fab387', crit: '#f38ba8', context: '#f38ba8' },
+  },
+}
+
 export function resolveTheme(option: unknown, settingsTheme: unknown): ThemeName {
   if (option === 'light' || option === 'dark') return option
 
