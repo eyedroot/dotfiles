@@ -1,5 +1,5 @@
-import type { RateLimit, SessionFacts } from '../types'
-import { formatUsd, hourlyCost, sparkline } from './cost'
+import type { RateLimit, SessionFacts, TurnCost } from '../types'
+import { formatUsd, recentSpend, sparkline } from './cost'
 import { formatTokens } from './recap'
 
 export type BandTone = 'ok' | 'warn' | 'crit'
@@ -24,6 +24,9 @@ const WINDOW_MS: Record<string, number> = { five_hour: 5 * 3_600_000, seven_day:
 const LIMIT_LABEL: Record<string, string> = { five_hour: '5h', seven_day: '7d', spend_limit: 'spend' }
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const DAY_MS = 24 * 3_600_000
+// Two bars compare nothing worth a glance and read as a broken glyph.
+export const SPARK_MIN_TURNS = 3
+const SPARK_TURNS = 12
 const BAR_GLYPH: Record<BarCell, string> = { on: '■', off: '□', mark: '▣' }
 
 export function clampPercent(percent: number): number {
@@ -32,12 +35,17 @@ export function clampPercent(percent: number): number {
 
 // Read the way the status line prints a reset: local clock time, with the
 // weekday once the reset is more than a day away.
-export function resetClock(resetsAt: number, now: number): string {
-  const at = new Date(resetsAt)
-  const hours = at.getHours()
-  const time = `${hours % 12 === 0 ? 12 : hours % 12}:${String(at.getMinutes()).padStart(2, '0')}${hours < 12 ? 'am' : 'pm'}`
+export function clockTime(at: number): string {
+  const date = new Date(at)
+  const hours = date.getHours()
 
-  return resetsAt - now < DAY_MS ? time : `${WEEKDAYS[at.getDay()] ?? ''} ${time}`
+  return `${hours % 12 === 0 ? 12 : hours % 12}:${String(date.getMinutes()).padStart(2, '0')}${hours < 12 ? 'am' : 'pm'}`
+}
+
+export function resetClock(resetsAt: number, now: number): string {
+  const time = clockTime(resetsAt)
+
+  return resetsAt - now < DAY_MS ? time : `${WEEKDAYS[new Date(resetsAt).getDay()] ?? ''} ${time}`
 }
 
 export function shortTokens(count: number): string {
@@ -97,7 +105,7 @@ export function barRuns(percent: number, elapsedShare: number | null, width: num
   return runs
 }
 
-export function bandGroups(facts: SessionFacts, now: number, isWide: boolean, turnCosts: readonly number[]): BandGroup[] {
+export function bandGroups(facts: SessionFacts, now: number, isWide: boolean, turns: readonly TurnCost[]): BandGroup[] {
   const groups: BandGroup[] = facts.rateLimits.map(limit => {
     const percent = clampPercent(limit.percentUsed)
     const tone = limitTone(limit, now)
@@ -127,7 +135,7 @@ export function bandGroups(facts: SessionFacts, now: number, isWide: boolean, tu
   }
 
   if (facts.costUsd !== null) {
-    const hourly = hourlyCost(facts, now)
+    const lastHour = recentSpend(turns, now)
 
     groups.push({
       key: 'cost',
@@ -137,8 +145,8 @@ export function bandGroups(facts: SessionFacts, now: number, isWide: boolean, tu
       tone: 'ok',
       barColor: 'low',
       value: formatUsd(facts.costUsd),
-      spark: turnCosts.length < 2 ? null : sparkline(turnCosts),
-      asides: isWide && hourly !== null ? [`${formatUsd(hourly)}/h`] : [],
+      spark: turns.length < SPARK_MIN_TURNS ? null : sparkline(turns.slice(-SPARK_TURNS).map(turn => turn.usd)),
+      asides: isWide && lastHour !== null ? [`1h ${formatUsd(lastHour)}`] : [],
     })
   }
 
