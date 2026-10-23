@@ -8,6 +8,11 @@ export type Commit = {
   subject: string
 }
 
+export type ChangedFile = {
+  code: string
+  path: string
+}
+
 export type WorktreeRow = {
   path: string
   name: string
@@ -32,6 +37,7 @@ export type GitSnapshot = {
   ahead: number
   behind: number
   dirty: number
+  changedFiles: ChangedFile[]
   conflicts: number
   insertions: number
   deletions: number
@@ -79,6 +85,7 @@ export type RunningTool = {
 export type Activity = {
   turnStartedAt: number | null
   toolCalls: number
+  sessionToolCalls: number
   running: RunningTool[]
 }
 

@@ -1,4 +1,4 @@
-import type { Commit, GitOperation, GitSnapshot, UpstreamStatus, WorktreeRow } from '../types'
+import type { ChangedFile, Commit, GitOperation, GitSnapshot, UpstreamStatus, WorktreeRow } from '../types'
 
 export type GitRun = (args: readonly string[]) => Promise<{ exitCode: number; stdout: string }>
 export type PathExists = (path: string) => Promise<boolean>
@@ -58,6 +58,22 @@ export function parseCommits(stdout: string): Commit[] {
       const [hash = '', age = '', ...subject] = line.split('\t')
 
       return { hash, age, subject: subject.join('\t') }
+    })
+}
+
+const CHANGED_FILES_KEPT = 50
+
+// A rename reads `R  old -> new`; the new path is the one on disk.
+export function parseChangedFiles(porcelain: string): ChangedFile[] {
+  return porcelain
+    .split('\n')
+    .filter(line => line.length > 3)
+    .slice(0, CHANGED_FILES_KEPT)
+    .map(line => {
+      const path = line.slice(3)
+      const arrow = path.indexOf(' -> ')
+
+      return { code: line.slice(0, 2).trim(), path: arrow === -1 ? path : path.slice(arrow + 4) }
     })
 }
 
@@ -153,6 +169,7 @@ export async function readGitSnapshot(run: GitRun, exists: PathExists, cwd: stri
     ahead: 0,
     behind: 0,
     dirty: 0,
+    changedFiles: [],
     conflicts: 0,
     insertions: 0,
     deletions: 0,
@@ -199,6 +216,7 @@ export async function readGitSnapshot(run: GitRun, exists: PathExists, cwd: stri
     ahead,
     behind,
     dirty: status.stdout.split('\n').filter(line => line !== '').length,
+    changedFiles: parseChangedFiles(status.stdout),
     conflicts: countConflicts(status.stdout),
     ...parseShortstat(shortstat.stdout),
     operation,

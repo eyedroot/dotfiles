@@ -27,7 +27,7 @@ type Mounted = {
 }
 
 const headings = async (ui: Mounted) =>
-  (await ui.findAll({ type: 'Text', text: /^(SIGNALS|CHECKS|CHANGES|GIT|PREVIOUS SESSION)$/ })).map(found => found.text)
+  (await ui.findAll({ type: 'Text', text: /^(SIGNALS|CHECKS|LAST TURN|CHANGES|COST|GIT|PREVIOUS SESSION)$/ })).map(found => found.text)
 
 const svgAlts = async (ui: Mounted) => (await ui.findAll({ type: 'Svg' })).map(found => String(found.props?.alt ?? ''))
 
@@ -352,7 +352,21 @@ test('the terminal pane leads with the place, then what is going on, then only t
   await shows(/^Sub-task · Dev · ↑ NX-0 Feature epic$/)
   await shows(/^ 1\/2$/)
   await shows(/^□ second item$/)
-  await shows(/^NX-1_feature · feature\/NX-1_feature$/)
+  await shows(/^repo$/)
+  await shows(/^↳ NX-1_feature$/)
+  await shows(/^⑃ feature\/NX-1_feature$/)
+  await shows(/^eyedroot\/repo$/)
+  await shows(/^~\/repo\/\.claude\/worktrees\/NX-1_feature$/)
+  await shows(/^Fable 5\.1 · 3 turns · 0 tools · session 16m 40s$/)
+  await shows(/^M {3}$/)
+  await shows(/^a\.ts$/)
+  await shows(/^new $/)
+  await shows(/^b\.ts$/)
+  await shows(/^origin\/develop {2}\(mismatch\)$/)
+  await shows(/^worktrees \(2\)$/)
+  await shows(/^NX-2_other$/)
+  await shows(/^ gone$/)
+  await shows(/^ ok$/)
   await shows(/^ IDLE $/)
   await shows(/^ no turn yet$/)
   await shows(/^✕ push refused: upstream is origin\/develop$/)
@@ -367,7 +381,7 @@ test('the terminal pane leads with the place, then what is going on, then only t
   await shows(/Add the feature/)
   expect(await headings(ui), 'terminal: section order').toEqual(['SIGNALS', 'CHANGES', 'GIT'])
   expect(await ui.find({ type: 'Text', text: /all clear/ }), 'terminal: signals stand in for all clear').toBeUndefined()
-  expect(await ui.find({ type: 'Text', text: /Fable 5\.1|ctx|18%/ }), 'terminal: the status line already shows the model and context').toBeUndefined()
+  expect(await ui.find({ type: 'Text', text: /ctx|18%/ }), 'terminal: the band above the prompt already shows the context').toBeUndefined()
   expect((await ui.find({ type: 'Box' }))?.props, 'terminal: light background').toMatchObject({ backgroundColor: '#f7f7f7' })
   expect(await ui.find({ type: 'Text', text: /□ first item/ }), 'terminal: a done item stays out').toBeUndefined()
   expect(await ui.find({ type: 'Text', text: /Ship the page/ }), 'terminal: a checklist stands in for the prose').toBeUndefined()
@@ -450,6 +464,8 @@ test('the desktop pane is SVG cards on the host background, the ticket card firs
   has(/^changes: 2 uncommitted, \+12 −3$/)
   has(/^git: branch feature\/NX-1_feature, upstream origin\/develop mismatch, ↑2 ↓1, PR #7 open · ✓1 ✕1 · review required$/)
   has(/^commits: bbbb111 Add the feature, aaaa222 Merge develop$/)
+  has(/^worktrees: repo → origin\/develop ok, NX-2_other → origin\/feature\/NX-2_other gone$/)
+  has(/^changes: 2 uncommitted, \+12 −3$/)
   expect(alts[0], 'desktop: the ticket card comes first').toMatch(/^jira NX-1 /)
   expect(alts[1], 'desktop: then the place').toMatch(/^worktree NX-1_feature at /)
   expect(alts[2], 'desktop: then what is going on').toMatch(/^now: /)
@@ -488,9 +504,15 @@ test('a finished turn becomes the idle line and is kept for the next session in 
 
   const ui = await mountTerminal($)
   expect(await ui.find({ type: 'Text', text: /^ last turn 12s · 0 tools · now$/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /Renamed the helper/ }), 'the transcript already shows the answer').toBeUndefined()
+  expect(await headings(ui)).toContain('LAST TURN')
+  expect(await ui.find({ type: 'Text', text: /^12s · 0 tools · 1\.2k out$/ })).toBeDefined()
+  expect((await ui.find({ type: 'Text', text: /^Renamed the helper and added a test\.$/ }))?.props, 'the recap lines wrap').toMatchObject({ wrap: 'wrap' })
   expect(await ui.find({ type: 'Text', text: /PREVIOUS SESSION/ })).toBeUndefined()
   await ui.unmount()
+
+  const desktop = await mountDesktop($)
+  expect((await svgAlts(desktop)).some(alt => alt.startsWith('last turn: just now, 12s, 0 tools, 1.2k out. Done Renamed the helper')), 'desktop: the last turn card').toBe(true)
+  await desktop.unmount()
 
   expect(store.get(`recap:${MAIN_ROOT}`)).toMatchObject({ toolCalls: 0, outputTokens: 1234, durationMs: 12000, lines: ['Done', 'Renamed the helper and added a test.', 'Next: run the suite.'] })
   expect(store.get('recap-roots')).toEqual([MAIN_ROOT])

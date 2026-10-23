@@ -218,3 +218,42 @@ export function costSummary(view: PaneFacts): string[] {
     average === null ? null : `avg ${formatUsd(average)}/turn`,
   ].filter((part): part is string => part !== null)
 }
+
+export function sessionLine(view: PaneFacts): string {
+  const { facts, activity, now } = view
+  if (facts === null) return ''
+
+  return [
+    facts.model,
+    `${facts.turns} turns`,
+    `${activity.sessionToolCalls ?? 0} tools`,
+    facts.startedAt === null ? null : `session ${formatDuration(now - facts.startedAt)}`,
+  ].filter((part): part is string => part !== null).join(' · ')
+}
+
+export type ChangeRow = { code: string; path: string; edits: number }
+
+// Git's list first, each file marked with how often this session edited it;
+// then the files edited here that git does not list (committed since, or
+// outside the repository).
+export function changeRows(view: PaneFacts): ChangeRow[] {
+  const { snapshot, edits, home } = view
+  const editsByPath = new Map(edits.map(file => [relativePath(file.path, snapshot.root, home), file.edits]))
+  const listed = snapshot.changedFiles.map(file => ({ code: file.code === '??' ? 'new' : file.code, path: file.path, edits: editsByPath.get(file.path) ?? 0 }))
+  const listedPaths = new Set(listed.map(file => file.path))
+  const editedOnly = edits
+    .map(file => ({ code: '·', path: relativePath(file.path, snapshot.root, home), edits: file.edits }))
+    .filter(file => !listedPaths.has(file.path))
+
+  return [...listed, ...editedOnly]
+}
+
+export const FILE_CODE_TONE: Record<string, Tone | null> = {
+  M: 'yellow',
+  MM: 'yellow',
+  A: 'green',
+  new: 'green',
+  D: 'red',
+  R: 'blue',
+  UU: 'red',
+}

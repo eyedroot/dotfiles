@@ -2,7 +2,7 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register, RenderChildren } from 'claude-code'
 
 import type { Activity, CostLedger, GitSnapshot, JiraState, PullRequest, RateLimit, SessionFacts, TurnRecap } from '../types'
-import { SIGNAL_TONE, changesCard, checksCard, commitsCard, costCard, gitCard, nowCard, placeCard, recapCard, signalsCard, ticketCard } from './cards'
+import { SIGNAL_TONE, changesCard, checksCard, commitsCard, costCard, worktreesCard, gitCard, nowCard, placeCard, recapCard, signalsCard, ticketCard } from './cards'
 import type { Card } from './cards'
 import { bandGroups, barRuns } from './band'
 import type { BandGroup } from './band'
@@ -16,7 +16,7 @@ import { PR_FIELDS, parsePullRequest } from './pr'
 import { RECAP_ROOTS_KEY, formatDuration, makeRecap, recapKey, rememberRoot } from './recap'
 import { buildSignals, protectedBranchMatcher } from './signals'
 import type { SignalLevel } from './signals'
-import { CHECK_TONE, JIRA_STATUS_TONE, costSummary, jiraWaitText, activityLine, branchTicketKey, currentTicket, issueContext, todoProgress, changeSummary, checkRows, currentPr, diffStat, fit, isInSync, prSummary, recapSummary, relativePath, shortAge, syncText, toolLabel, toolName } from './view'
+import { CHECK_TONE, FILE_CODE_TONE, JIRA_STATUS_TONE, UPSTREAM_TONE, changeRows, costSummary, jiraWaitText, sessionLine, shortenHome, activityLine, branchTicketKey, currentTicket, issueContext, todoProgress, changeSummary, checkRows, currentPr, diffStat, fit, isInSync, prSummary, recapSummary, shortAge, syncText, toolLabel, toolName } from './view'
 import type { CheckState, PaneFacts } from './view'
 
 const PANE_ID = 'dev-dashboard'
@@ -24,9 +24,9 @@ const PANE_TITLE = 'Dashboard'
 const PANE_COLUMNS = 46
 const GIT_TIMEOUT_MS = 10000
 const GH_TIMEOUT_MS = 20000
-const LABEL_WIDTH = 6
+const LABEL_WIDTH = 7
 const RUNNING_SHOWN = 3
-const EDITED_FILES_SHOWN = 4
+const CHANGED_FILES_SHOWN = 8
 const TICK_MS = 1000
 const TURN_COSTS_KEPT = 48
 const BAND_SPARK_TURNS = 12
@@ -55,12 +55,12 @@ const EDIT_TOOLS = new Set(['Edit', 'MultiEdit', 'Write', 'NotebookEdit'])
 const PUSH_COMMAND = /\b(git\s+push|gh\s+pr)\b/
 const JIRA_WRITE_TOOL = /(transition|edit|addComment|addWorklog|create)\w*Jira/i
 
-const IDLE: Activity = { turnStartedAt: null, toolCalls: 0, running: [] }
+const IDLE: Activity = { turnStartedAt: null, toolCalls: 0, sessionToolCalls: 0, running: [] }
 const NO_COSTS: CostLedger = { turns: [], todayUsd: null, todaySessions: 0, startUsd: null, startPrompt: '' }
 
 // Change a shape tag when that value's fields change: the tag declines what an
 // earlier version stored, which outlives a reload.
-const git = atom({ plugin: 'dev-dashboard', key: 'git' } as const, null, { shape: 'git-2' })
+const git = atom({ plugin: 'dev-dashboard', key: 'git' } as const, null, { shape: 'git-3' })
 const session = atom({ plugin: 'dev-dashboard', key: 'session' } as const, null, { shape: 'session-3' })
 const lastTurn = atom({ plugin: 'dev-dashboard', key: 'lastTurn' } as const, null)
 const previous = atom({ plugin: 'dev-dashboard', key: 'previous' } as const, null)
@@ -323,7 +323,7 @@ function openPane($: EngineInterface) {
 }
 
 export const register: Register = (on, options) => {
-  const commitCount = Math.max(1, Math.floor(toNumber(options.commits, 3)))
+  const commitCount = Math.max(1, Math.floor(toNumber(options.commits, 5)))
   const recapLines = Math.max(1, Math.floor(toNumber(options.recapLines, 4)))
   const pollSeconds = Math.max(0, toNumber(options.pollSeconds, 30))
   const prSeconds = Math.max(0, toNumber(options.prSeconds, 120))
@@ -458,7 +458,7 @@ export const register: Register = (on, options) => {
     if (e.agentId !== undefined) return next(e)
 
     const [startedAt, usage] = await Promise.all([$.clock.now(), $.session.usage()])
-    await update($, activity, () => ({ turnStartedAt: startedAt, toolCalls: 0, running: [] }))
+    await update($, activity, now => ({ ...now, turnStartedAt: startedAt, toolCalls: 0, running: [] }))
     await update($, costs, ledger => ({ ...ledger, startUsd: usage.cost?.usd ?? null, startPrompt: promptLabel(e.text) }))
     startTicking($)
 
@@ -474,7 +474,7 @@ export const register: Register = (on, options) => {
 
     if (isMainLoop) {
       const running = { id: e.tool_use_id, tool: e.tool, label: toolLabel(input), startedAt }
-      await update($, activity, now => ({ ...now, toolCalls: now.toolCalls + 1, running: [...now.running, running] }))
+      await update($, activity, now => ({ ...now, toolCalls: now.toolCalls + 1, sessionToolCalls: (now.sessionToolCalls ?? 0) + 1, running: [...now.running, running] }))
     }
 
     let ran: Awaited<ReturnType<typeof next>>
@@ -589,9 +589,11 @@ export const register: Register = (on, options) => {
             {draw('card:now', nowCard(view, signals, cardWidth))}
             {draw('card:signals', signalsCard(signals, cardWidth))}
             {draw('card:checks', checksCard(view, cardWidth))}
-            {draw('card:changes', changesCard(view, cardWidth, EDITED_FILES_SHOWN))}
+            {turn !== null && draw('card:turn', recapCard('LAST TURN', turn, now, wideWidth, 'purple'))}
+            {draw('card:changes', changesCard(view, cardWidth, CHANGED_FILES_SHOWN))}
             {draw('card:cost', costCard(view, cardWidth, PANE_SPARK_TURNS, DEAREST_TURNS_SHOWN))}
             {view.snapshot.isRepo && draw('card:git', gitCard(view, cardWidth))}
+            {draw('card:worktrees', worktreesCard(view, cardWidth))}
             {showsPrior && draw('card:previous', recapCard('PREVIOUS SESSION', prior, now, wideWidth, null))}
             {view.snapshot.isRepo && draw('card:commits', commitsCard(view, wideWidth))}
             {!view.snapshot.isRepo && <Text dimColor>not a git repository</Text>}
@@ -645,24 +647,35 @@ export const register: Register = (on, options) => {
       </Box>
     )
 
-    const header = (current: GitSnapshot) => {
-      const place = [current.worktree ?? current.projectName, current.isRepo ? current.branch ?? 'HEAD (detached)' : null].filter((part): part is string => part !== null).join(' · ')
-
-      if (ticket === null) {
-        return (
-          <Box flexDirection="column">
-            <Text color={palette.accent} weight="bold" wrap="truncate-end">
-              {current.worktree ?? current.projectName}
+    const placeBlock = (current: GitSnapshot, isLead: boolean) => (
+      <Box flexDirection="column">
+        <Box flexDirection="row" columnGap={1}>
+          <Text color={isLead ? palette.accent : palette.text} weight="bold" wrap="truncate-end">
+            {current.projectName}
+          </Text>
+          {current.worktree !== null && (
+            <Text color={palette.chips.cyan.accent} wrap="truncate-end">
+              {`↳ ${current.worktree}`}
             </Text>
-            {current.worktree !== null && <Text color={palette.muted}>{fit(`project ${current.projectName}`, width)}</Text>}
-            {current.isRepo && (
-              <Text color={current.branch === null ? palette.warning : palette.text} wrap="truncate-end">
-                {current.branch ?? 'HEAD (detached)'}
-              </Text>
-            )}
-          </Box>
-        )
-      }
+          )}
+        </Box>
+        {current.isRepo && (
+          <Text color={current.branch === null ? palette.warning : palette.text} wrap="truncate-end">
+            {`⑃ ${current.branch ?? 'HEAD (detached)'}`}
+          </Text>
+        )}
+        {current.remoteName !== null && (
+          <Text color={palette.muted} wrap="truncate-end">
+            {current.remoteName}
+          </Text>
+        )}
+        <Text color={palette.muted} dimColor wrap="truncate-start">
+          {shortenHome(current.root, home)}
+        </Text>
+      </Box>
+    )
+    const header = (current: GitSnapshot) => {
+      if (ticket === null) return placeBlock(current, true)
 
       const { issue } = ticket
       const progress = issue === null ? null : todoProgress(issue)
@@ -718,11 +731,7 @@ export const register: Register = (on, options) => {
                 ))}
             </Box>
           )}
-          <Box marginTop={1}>
-            <Text color={palette.muted} dimColor wrap="truncate-end">
-              {place}
-            </Text>
-          </Box>
+          <Box marginTop={1}>{placeBlock(current, false)}</Box>
         </Box>
       )
     }
@@ -746,6 +755,9 @@ export const register: Register = (on, options) => {
     const pullShown = currentPr(view)
     const pullLine = pullShown === null ? null : prSummary(pullShown)
     const costParts = costSummary(view)
+    const sessionFacts = sessionLine(view)
+    const changes = changeRows(view)
+    const otherWorktrees = repo.worktrees.filter(worktree => !worktree.isCurrent)
 
     return frame(
       <Box flexDirection="column">
@@ -771,6 +783,11 @@ export const register: Register = (on, options) => {
             ),
           )}
           {doing.running.length > RUNNING_SHOWN && <Text color={palette.muted}>{`  + ${doing.running.length - RUNNING_SHOWN} more`}</Text>}
+          {sessionFacts !== '' && (
+            <Text color={palette.muted} wrap="truncate-end">
+              {sessionFacts}
+            </Text>
+          )}
           {alarms.length === 0 && <Text color={palette.ok}>● all clear</Text>}
         </Box>
 
@@ -809,19 +826,39 @@ export const register: Register = (on, options) => {
           </Box>
         )}
 
-        {(repo.dirty > 0 || edited.length > 0) && (
+        {turn !== null && (
+          <Box flexDirection="column">
+            {heading('Last turn', recapSummary(turn, now)[0] ?? '')}
+            <Text color={palette.muted} wrap="truncate-end">
+              {recapSummary(turn, now).slice(1).join(' · ')}
+            </Text>
+            {turn.lines.map((recapLine, index) => (
+              <Text key={`t:${index}`} color={palette.text} wrap="wrap">
+                {recapLine}
+              </Text>
+            ))}
+          </Box>
+        )}
+
+        {changes.length > 0 && (
           <Box flexDirection="column">
             {heading('Changes', stat ?? '')}
             <Text color={palette.muted}>{fit(changeSummary(view), width)}</Text>
-            {edited.slice(0, EDITED_FILES_SHOWN).map(file =>
+            {changes.slice(0, CHANGED_FILES_SHOWN).map(file =>
               spread(
                 `f:${file.path}`,
-                <Text color={palette.text} wrap="truncate-start">
-                  {relativePath(file.path, repo.root, home)}
-                </Text>,
-                `×${file.edits}`,
+                <Box flexDirection="row">
+                  <Text color={toneColor(FILE_CODE_TONE[file.code] ?? null)} weight="bold">
+                    {file.code.padEnd(4)}
+                  </Text>
+                  <Text color={palette.text} wrap="truncate-start">
+                    {file.path}
+                  </Text>
+                </Box>,
+                file.edits === 0 ? '' : `×${file.edits}`,
               ),
             )}
+            {changes.length > CHANGED_FILES_SHOWN && <Text color={palette.muted}>{`  + ${changes.length - CHANGED_FILES_SHOWN} more`}</Text>}
           </Box>
         )}
 
@@ -863,9 +900,39 @@ export const register: Register = (on, options) => {
         {repo.isRepo && (
           <Box flexDirection="column">
             {heading('Git')}
-            {row('sync', `${syncText(repo)} · ${repo.dirty === 0 ? 'clean' : `${repo.dirty} changed`}`, isInSync(repo) ? palette.ok : palette.text)}
+            {row('branch', repo.branch ?? 'HEAD (detached)', repo.branch === null ? palette.warning : palette.text)}
+            {row('up', `${repo.upstream ?? 'none'}${repo.upstreamStatus === 'ok' ? '' : `  (${repo.upstreamStatus})`}`, toneColor(UPSTREAM_TONE[repo.upstreamStatus]))}
             {repo.pushTarget !== null && row('push', repo.pushTarget, palette.warning)}
+            {row('sync', `${syncText(repo)} · ${repo.dirty === 0 ? 'clean' : `${repo.dirty} changed`}`, isInSync(repo) ? palette.ok : palette.text)}
             {pullLine !== null && row('pr', pullLine.text, toneColor(pullLine.tone))}
+            {pullShown !== null && (
+              <Text color={palette.muted} wrap="truncate-end">
+                {`      ${pullShown.title}`}
+              </Text>
+            )}
+            {otherWorktrees.length > 0 && (
+              <Box flexDirection="column" marginTop={1}>
+                <Text color={palette.muted}>{`worktrees (${otherWorktrees.length})`}</Text>
+                {otherWorktrees.map(worktree =>
+                  spread(
+                    `w:${worktree.path}`,
+                    <Box flexDirection="row">
+                      <Text color={toneColor(UPSTREAM_TONE[worktree.status])}>{'● '}</Text>
+                      <Text color={palette.text} wrap="truncate-end">
+                        {worktree.name}
+                      </Text>
+                    </Box>,
+                    worktree.branch === null ? 'detached' : worktree.status,
+                    toneColor(worktree.branch === null ? 'yellow' : UPSTREAM_TONE[worktree.status]),
+                  ),
+                )}
+              </Box>
+            )}
+            {repo.commits.length > 0 && (
+              <Box marginTop={1}>
+                <Text color={palette.muted}>commits</Text>
+              </Box>
+            )}
             {repo.commits.length === 0 && <Text color={palette.muted}>no commits yet</Text>}
             {repo.commits.map(commit => (
               <Box key={`k:${commit.hash}`}>

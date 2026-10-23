@@ -24,7 +24,7 @@
       "type": "number",
       "title": "Commits shown",
       "description": "How many recent commits the pane lists.",
-      "default": 3
+      "default": 5
     },
     "autoOpen": {
       "type": "boolean",
@@ -65,7 +65,7 @@
     "recapLines": {
       "type": "number",
       "title": "Recap lines",
-      "description": "How many lines of the previous session's last answer the pane keeps.",
+      "description": "How many lines of an answer the last-turn and previous-session recaps keep.",
       "default": 4
     },
     "theme": {

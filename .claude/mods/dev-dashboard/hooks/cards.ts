@@ -4,7 +4,7 @@ import { formatDuration } from './recap'
 import type { Signal, SignalLevel } from './signals'
 import { drawCard } from './svg'
 import type { CardBlock, Drawing, Tone } from './svg'
-import { CHECK_TONE, JIRA_STATUS_TONE, costSummary, jiraWaitText, UPSTREAM_NOTE, UPSTREAM_TONE, activityLine, changeSummary, checkRows, currentPr, currentTicket, diffStat, isInSync, issueContext, prSummary, recapSummary, relativePath, shortAge, shortenHome, syncText, todoProgress, toolName } from './view'
+import { CHECK_TONE, FILE_CODE_TONE, JIRA_STATUS_TONE, changeRows, costSummary, jiraWaitText, sessionLine, UPSTREAM_NOTE, UPSTREAM_TONE, activityLine, changeSummary, checkRows, currentPr, currentTicket, diffStat, isInSync, issueContext, prSummary, recapSummary, shortAge, shortenHome, syncText, todoProgress, toolName } from './view'
 import type { PaneFacts } from './view'
 
 export type Card = Drawing & { alt: string }
@@ -99,6 +99,8 @@ export function nowCard(view: PaneFacts, signals: readonly Signal[], width: numb
   const line = activityLine(view)
   const isAllClear = !signals.some(signal => signal.level !== 'info')
   const blocks: CardBlock[] = [{ kind: 'big', text: line.state.toLowerCase(), cls: line.isWorking ? 'blue' : 'fg', side: line.detail }]
+  const session = sessionLine(view)
+  if (session !== '') blocks.push({ kind: 'line', text: session })
 
   for (const running of view.activity.running.slice(0, 4)) {
     blocks.push({
@@ -149,16 +151,16 @@ export function checksCard(view: PaneFacts, width: number): Card | null {
 }
 
 export function changesCard(view: PaneFacts, width: number, fileCount: number): Card | null {
-  const { snapshot, edits, home } = view
-  if (snapshot.dirty === 0 && edits.length === 0) return null
+  const rows = changeRows(view)
+  if (rows.length === 0) return null
 
-  const stat = diffStat(snapshot)
+  const stat = diffStat(view.snapshot)
   const blocks: CardBlock[] = [
     { kind: 'line', text: changeSummary(view) },
-    ...edits.slice(0, fileCount).map((file): CardBlock => ({
+    ...rows.slice(0, fileCount).map((file): CardBlock => ({
       kind: 'row',
-      segments: [{ text: relativePath(file.path, snapshot.root, home), cls: 'fg' }],
-      right: { text: `×${file.edits}` },
+      segments: [{ text: file.code.padEnd(3), cls: FILE_CODE_TONE[file.code] ?? 'mu', weight: 700, size: 9 }, { text: file.path, cls: 'fg' }],
+      right: file.edits === 0 ? undefined : { text: `×${file.edits}` },
     })),
   ]
   const drawing = drawCard({ width, tone: null, title: 'CHANGES', titleRight: stat === null ? undefined : { text: stat }, blocks })
@@ -232,6 +234,23 @@ export function recapCard(title: string, recap: TurnRecap, now: number, width: n
   const drawing = drawCard({ width, tone, title, titleRight: { text: age }, blocks })
 
   return { ...drawing, alt: `${title.toLowerCase()}: ${summary.join(', ')}. ${recap.lines.join(' ')}` }
+}
+
+export function worktreesCard(view: PaneFacts, width: number): Card | null {
+  const others = view.snapshot.worktrees.filter(worktree => !worktree.isCurrent)
+  if (others.length === 0) return null
+
+  const blocks: CardBlock[] = others.flatMap((worktree): CardBlock[] => [
+    {
+      kind: 'row',
+      segments: [{ dot: UPSTREAM_TONE[worktree.status] ?? 'purple' }, { text: worktree.name, cls: 'fg', weight: 650 }],
+      right: worktree.branch === null ? { text: 'detached', cls: 'yellow' } : worktree.status === 'ok' ? undefined : { text: worktree.status, cls: UPSTREAM_TONE[worktree.status] ?? 'mu' },
+    },
+    { kind: 'row', segments: [{ text: '  →', cls: 'lb' }, { text: worktree.upstream ?? 'none', cls: UPSTREAM_TONE[worktree.status] ?? 'mu' }] },
+  ])
+  const drawing = drawCard({ width, tone: 'cyan', title: 'WORKTREES', titleRight: { text: String(others.length) }, blocks })
+
+  return { ...drawing, alt: `worktrees: ${others.map(worktree => `${worktree.name} → ${worktree.upstream ?? 'none'} ${worktree.status}`).join(', ')}` }
 }
 
 export function commitsCard(view: PaneFacts, width: number): Card {
