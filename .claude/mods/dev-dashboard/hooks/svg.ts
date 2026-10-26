@@ -20,7 +20,10 @@ export type CardBlock =
 export type Drawing = { source: string; width: number; height: number }
 
 const FONT = 'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace'
+// A monospace glyph is about 0.62em wide; Hangul, kana, han and other
+// East Asian wide glyphs take a full em.
 const ADVANCE = 0.62
+const WIDE_GLYPH = /[\u1100-\u115F\u2E80-\u303E\u3041-\u33FF\u3400-\u4DBF\u4E00-\u9FFF\uA960-\uA97F\uAC00-\uD7FF\uF900-\uFAFF\uFE30-\uFE4F\uFF00-\uFF60\uFFE0-\uFFE6]/
 const TONES: readonly Tone[] = ['green', 'yellow', 'red', 'blue', 'purple', 'cyan']
 
 // [light, dark]
@@ -49,14 +52,31 @@ const BODY_TOP = 34
 const ROW_HEIGHT = 18
 const ROW_BASELINE = 13
 const BIG_HEIGHT = 30
-const BREAK_AFTER: readonly (readonly string[])[] = [['/'], ['_', '-', ' '], ['.']]
+const BREAK_AFTER: readonly (readonly string[])[] = [[' '], ['/'], ['_', '-'], ['.']]
 
 export function escapeXml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
+function glyphWidth(glyph: string, size: number): number {
+  return size * (WIDE_GLYPH.test(glyph) ? 1 : ADVANCE)
+}
+
 export function textWidth(text: string, size: number, tracking = 0): number {
-  return [...text].length * (size * ADVANCE + tracking)
+  return [...text].reduce((width, glyph) => width + glyphWidth(glyph, size) + tracking, 0)
+}
+
+function fitCount(glyphs: readonly string[], size: number, room: number): number {
+  let width = 0
+  let count = 0
+
+  for (const glyph of glyphs) {
+    width += glyphWidth(glyph, size)
+    if (width > room + 0.001) break
+    count += 1
+  }
+
+  return count
 }
 
 export function cardInnerWidth(width: number): number {
@@ -64,19 +84,20 @@ export function cardInnerWidth(width: number): number {
 }
 
 export function fitText(text: string, size: number, room: number): string {
-  const max = Math.floor(room / (size * ADVANCE))
   const glyphs = [...text]
 
-  if (glyphs.length <= max) return text
-  if (max <= 1) return ''
+  if (fitCount(glyphs, size, room) === glyphs.length) return text
 
-  return `${glyphs.slice(0, max - 1).join('')}…`
+  const kept = fitCount(glyphs, size, room - glyphWidth('…', size))
+  if (kept === 0) return ''
+
+  return `${glyphs.slice(0, kept).join('')}…`
 }
 
 // Breaks after a separator in the back half of the line where there is one,
-// so `feature/NX-1_long-name` splits at a word, not mid-word. A `/` is taken
-// before `_`, `-` or a space, and those before a `.`, so a path breaks at a
-// folder and a branch at a word rather than inside a version number.
+// so `feature/NX-1_long-name` splits at a word, not mid-word. A space is
+// taken before a `/`, that before `_` or `-`, and those before a `.`, so prose
+// breaks at a word, a path at a folder and a branch outside a version number.
 function breakAt(glyphs: readonly string[], max: number): number {
   for (const separators of BREAK_AFTER) {
     for (let index = max; index > Math.floor(max / 2); index -= 1) {
@@ -88,17 +109,17 @@ function breakAt(glyphs: readonly string[], max: number): number {
 }
 
 export function wrapText(text: string, size: number, room: number, maxLines: number): string[] {
-  const max = Math.floor(room / (size * ADVANCE))
   const glyphs = [...text]
   const lines: string[] = []
   let start = 0
 
-  if (max <= 1 || glyphs.length === 0) return lines
+  if (glyphs.length === 0 || fitCount(glyphs.slice(0, 2), size, room) < 2) return lines
 
   while (start < glyphs.length) {
     const rest = glyphs.slice(start)
+    const max = fitCount(rest, size, room)
 
-    if (rest.length <= max) {
+    if (max === rest.length) {
       lines.push(rest.join(''))
       break
     }

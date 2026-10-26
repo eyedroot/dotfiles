@@ -181,6 +181,8 @@ test('a wrapped value breaks after a separator and grows the card, and its last 
   expect(wrapText('short', 13, 200, 2)).toEqual(['short'])
   expect(wrapText('a'.repeat(60), 10, 62, 2)).toEqual(['aaaaaaaaaa', 'aaaaaaaaa…'])
   expect(wrapText('', 10, 62, 2)).toEqual([])
+  expect(fitText('한글 제목입니다', 12, 60)).toBe('한글 제…')
+  expect(wrapText('데스크톱 패널(SVG 카드)을 세 가지 불만에 맞춰 고쳤습니다', 12, 240, 3)).toEqual(['데스크톱 패널(SVG 카드)을 세 가지', '불만에 맞춰 고쳤습니다'])
 
   const oneLine = drawCard({ width: 300, tone: null, title: 'T', blocks: [{ kind: 'wrap', text: 'short' }] })
   const twoLines = drawCard({ width: 300, tone: null, title: 'T', blocks: [{ kind: 'wrap', text: 'feature/pre_release_tdev_1.0.13-hotfix-2/and-then-some-more' }] })

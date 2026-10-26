@@ -159,7 +159,7 @@ export function recapCard(title: string, recap: TurnRecap, now: number, width: n
   const [age = ''] = summary
   const blocks: CardBlock[] = [
     { kind: 'big', text: formatDuration(recap.durationMs), cls: tone ?? 'fg', side: summary.slice(2).join(' · ') },
-    ...recap.lines.map((line): CardBlock => ({ kind: 'line', text: line, cls: 'fg' })),
+    ...recap.lines.map((line): CardBlock => ({ kind: 'wrap', text: line, cls: 'fg', maxLines: 3 })),
   ]
   const drawing = drawCard({ width, tone, title, titleRight: { text: age }, blocks })
 
