@@ -7,7 +7,7 @@ import { FLOWER } from '../hooks/flower'
 import { customThemeSlug, resolveTheme } from '../hooks/palette'
 import { encodeBase64, makeHalfBlockCells } from '../hooks/raster'
 import { firstLines, rememberRoot } from '../hooks/recap'
-import { drawCard, drawPill, fitText } from '../hooks/svg'
+import { drawCard, fitText, wrapText } from '../hooks/svg'
 
 const MAIN_ROOT = '/home/dev/repo'
 const WORKTREE = `${MAIN_ROOT}/.claude/worktrees/NX-1_feature`
@@ -162,22 +162,30 @@ test('the palette follows the theme setting unless the option forces one', () =>
   expect(customThemeSlug('light')).toBeNull()
 })
 
-test('pills and cards are self-contained SVG documents that restyle themselves for a dark appearance', () => {
-  const pill = drawPill('blue', [{ label: 'CTX' }, { bar: { percent: 18, tone: 'blue' } }, { value: '18%', cls: 'blue' }])
-  expect(pill.height).toBe(30)
-  expect(pill.source.startsWith('<svg xmlns="http://www.w3.org/2000/svg"')).toBe(true)
-  expect(pill.source).toContain('@media (prefers-color-scheme:dark)')
-  expect(pill.source).toContain('class="pill-blue"')
-  expect(pill.source).toContain('>CTX<')
-
+test('cards are self-contained SVG documents that restyle themselves for a dark appearance', () => {
   const card = drawCard({ width: 300, tone: 'purple', title: 'WORKTREE', blocks: [{ kind: 'big', text: 'NX-1_feature' }, { kind: 'line', text: '~/repo/.claude/worktrees/NX-1_feature' }] })
   expect(card.width).toBe(300)
   expect(card.height).toBeGreaterThan(60)
+  expect(card.source.startsWith('<svg xmlns="http://www.w3.org/2000/svg"')).toBe(true)
+  expect(card.source).toContain('@media (prefers-color-scheme:dark)')
   expect(card.source).toContain('class="card-purple"')
   expect(card.source).toContain('>NX-1_feature<')
   expect(drawCard({ width: 200, tone: null, title: 'A <B> & C', blocks: [] }).source).toContain('A &lt;B&gt; &amp; C')
   expect(fitText('a very long branch name indeed', 10, 60)).toBe('a very l…')
   expect(fitText('short', 10, 60)).toBe('short')
+})
+
+test('a wrapped value breaks after a separator and grows the card, and its last line is cut with an ellipsis', () => {
+  expect(wrapText('feature/pre_release_tdev_1.0.13-hotfix-2', 13, 200, 2)).toEqual(['feature/pre_release_', 'tdev_1.0.13-hotfix-2'])
+  expect(wrapText('~/Github/Catenoid/kollus-vod-console', 12, 240, 2)).toEqual(['~/Github/Catenoid/', 'kollus-vod-console'])
+  expect(wrapText('short', 13, 200, 2)).toEqual(['short'])
+  expect(wrapText('a'.repeat(60), 10, 62, 2)).toEqual(['aaaaaaaaaa', 'aaaaaaaaa…'])
+  expect(wrapText('', 10, 62, 2)).toEqual([])
+
+  const oneLine = drawCard({ width: 300, tone: null, title: 'T', blocks: [{ kind: 'wrap', text: 'short' }] })
+  const twoLines = drawCard({ width: 300, tone: null, title: 'T', blocks: [{ kind: 'wrap', text: 'feature/pre_release_tdev_1.0.13-hotfix-2/and-then-some-more' }] })
+  expect(twoLines.height - oneLine.height).toBe(18)
+  expect(twoLines.source).toContain('>feature/pre_release_tdev_1.0.13-<')
 })
 
 test('a custom theme is read as the preset it is based on', async ($, on) => {
@@ -234,7 +242,7 @@ test('the terminal pane leads with the worktree, then chips, the mismatched upst
   await wide.unmount()
 })
 
-test('the desktop pane is SVG cards on the host background, the worktree card first, and no raster or palette fill', async ($, on) => {
+test('the desktop pane is SVG cards on the host background, one card with the place, branch, changes and upstream first, and no raster or palette fill', async ($, on) => {
   mockWorld(on)
   await $.session.start({ cwd: WORKTREE, surface: 'desktop', isInteractive: true })
 
@@ -242,23 +250,26 @@ test('the desktop pane is SVG cards on the host background, the worktree card fi
   const alts = await svgAlts(ui)
   const has = (pattern: RegExp) => expect(alts.some(alt => pattern.test(alt)), `desktop: ${pattern}`).toBe(true)
 
-  has(/^worktree NX-1_feature at ~\/repo\/\.claude\/worktrees\/NX-1_feature, project repo, branch feature\/NX-1_feature$/)
-  has(/^branch feature\/NX-1_feature, 2 changed, ↑2 ↓1$/)
-  has(/^upstream origin\/develop mismatch$/)
-  has(/^context 18%$/)
-  has(/^Fable 5\.1, 3 turns$/)
-  has(/^git: branch feature\/NX-1_feature, upstream origin\/develop mismatch, ↑2 ↓1, 2 changed$/)
-  has(/^context 18%, Fable 5\.1, 3 turns$/)
+  has(/^worktree NX-1_feature at ~\/repo\/\.claude\/worktrees\/NX-1_feature, project repo, branch feature\/NX-1_feature, 2 changed, ↑2 ↓1, upstream origin\/develop mismatch$/)
   has(/^worktrees: repo → origin\/develop ok, NX-2_other → origin\/feature\/NX-2_other ok$/)
   has(/^commits: bbbb111 Add the feature, aaaa222 Merge develop$/)
-  expect(alts[0], 'desktop: the worktree card comes first').toMatch(/^worktree NX-1_feature at /)
-  expect(alts[1], 'desktop: then the pills').toMatch(/^branch /)
-  expect(alts.findIndex(alt => alt.startsWith('git:')), 'desktop: the cards follow the pills').toBeGreaterThan(alts.findIndex(alt => alt.startsWith('Fable 5.1,')))
-  expect(alts.some(alt => /last turn/.test(alt)), 'desktop: no recap yet').toBe(false)
+  has(/^context 18%, Fable 5\.1, 3 turns$/)
+  expect(alts, 'desktop: each fact is drawn once').toEqual([
+    expect.stringMatching(/^worktree NX-1_feature at /),
+    expect.stringMatching(/^worktrees: /),
+    expect.stringMatching(/^commits: /),
+    expect.stringMatching(/^context 18%/),
+  ])
 
   const place = (await ui.findAll({ type: 'Svg' })).find(found => String(found.props?.alt).startsWith('worktree NX-1'))
-  expect(String(place?.props?.source)).toContain('@media (prefers-color-scheme:dark)')
-  expect(String(place?.props?.source)).toContain('>WORKTREE<')
+  const source = String(place?.props?.source)
+  expect(source).toContain('@media (prefers-color-scheme:dark)')
+  expect(source).toContain('>WORKTREE<')
+  expect(source).toContain('>BRANCH<')
+  expect(source).toContain('>2 changed<')
+  expect(source).toContain('>! name differs, git push is refused<')
+  expect(source).toContain('font-size="22"')
+  expect(source).not.toContain('font-size="9.5"')
   expect(place?.props?.width, 'desktop: the worktree card spans two columns').toBeGreaterThan(400)
   expect((await ui.findAll({ type: 'Box' })).some(box => box.props?.backgroundColor !== undefined), 'desktop: no painted background').toBe(false)
   expect(await ui.find({ type: 'Raster' }), 'desktop: no raster').toBeUndefined()

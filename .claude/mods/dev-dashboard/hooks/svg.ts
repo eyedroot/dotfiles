@@ -6,19 +6,13 @@
 export type Tone = 'green' | 'yellow' | 'red' | 'blue' | 'purple' | 'cyan'
 export type Cls = Tone | 'fg' | 'mu' | 'lb'
 
-export type PillItem =
-  | { label: string }
-  | { value: string; cls?: Cls }
-  | { aside: string; cls?: Cls }
-  | { bar: { percent: number; tone: Tone } }
-  | { dot: Tone }
-
 export type TextSegment = { text: string; cls?: Cls; weight?: number; size?: number }
 export type Segment = TextSegment | { dot: Tone }
 
 export type CardBlock =
   | { kind: 'big'; text: string; cls?: Cls; side?: string; sideCls?: Cls; size?: number }
   | { kind: 'line'; text: string; cls?: Cls; size?: number }
+  | { kind: 'wrap'; text: string; cls?: Cls; size?: number; weight?: number; maxLines?: number }
   | { kind: 'bar'; percent: number; tone: Tone }
   | { kind: 'row'; segments: Segment[]; right?: TextSegment }
   | { kind: 'gap'; px: number }
@@ -43,19 +37,19 @@ const PALETTE: Record<Cls | 'track', readonly [string, string]> = {
   cyan: ['#167f8c', '#5cc9d6'],
 }
 
-const PILL_HEIGHT = 30
-const PILL_PAD = 10
-const PILL_GAP = 6
-const PILL_BAR_WIDTH = 34
-const SIZE = { label: 9, value: 12, aside: 10.5 }
+// CSS pixels. The desktop host draws its own pane text at about 13px, so body
+// text sits just under that and the small-caps labels one step below it.
+export const SIZE = { label: 10, body: 12, value: 13, big: 22 }
 const LABEL_TRACKING = 0.8
 
-const CARD_PAD = 12
+const CARD_PAD = 14
 const CARD_RADIUS = 11
-const TITLE_BASELINE = 19
-const BODY_TOP = 30
-const ROW_HEIGHT = 14
-const BIG_HEIGHT = 24
+const TITLE_BASELINE = 21
+const BODY_TOP = 34
+const ROW_HEIGHT = 18
+const ROW_BASELINE = 13
+const BIG_HEIGHT = 30
+const BREAK_AFTER: readonly (readonly string[])[] = [['/'], ['_', '-', ' '], ['.']]
 
 export function escapeXml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -63,6 +57,10 @@ export function escapeXml(text: string): string {
 
 export function textWidth(text: string, size: number, tracking = 0): number {
   return [...text].length * (size * ADVANCE + tracking)
+}
+
+export function cardInnerWidth(width: number): number {
+  return width - 2 * CARD_PAD
 }
 
 export function fitText(text: string, size: number, room: number): string {
@@ -75,14 +73,56 @@ export function fitText(text: string, size: number, room: number): string {
   return `${glyphs.slice(0, max - 1).join('')}…`
 }
 
+// Breaks after a separator in the back half of the line where there is one,
+// so `feature/NX-1_long-name` splits at a word, not mid-word. A `/` is taken
+// before `_`, `-` or a space, and those before a `.`, so a path breaks at a
+// folder and a branch at a word rather than inside a version number.
+function breakAt(glyphs: readonly string[], max: number): number {
+  for (const separators of BREAK_AFTER) {
+    for (let index = max; index > Math.floor(max / 2); index -= 1) {
+      if (separators.includes(glyphs[index - 1] ?? '')) return index
+    }
+  }
+
+  return max
+}
+
+export function wrapText(text: string, size: number, room: number, maxLines: number): string[] {
+  const max = Math.floor(room / (size * ADVANCE))
+  const glyphs = [...text]
+  const lines: string[] = []
+  let start = 0
+
+  if (max <= 1 || glyphs.length === 0) return lines
+
+  while (start < glyphs.length) {
+    const rest = glyphs.slice(start)
+
+    if (rest.length <= max) {
+      lines.push(rest.join(''))
+      break
+    }
+
+    if (lines.length === maxLines - 1) {
+      lines.push(fitText(rest.join(''), size, room))
+      break
+    }
+
+    const cut = breakAt(rest, max)
+
+    lines.push(rest.slice(0, cut).join('').trimEnd())
+    start += cut
+  }
+
+  return lines
+}
+
 function styles(mode: 0 | 1): string {
   const fills = (Object.keys(PALETTE) as (keyof typeof PALETTE)[]).map(name => `.${name}{fill:${PALETTE[name][mode]}}`).join('')
-  const pills = TONES.map(tone => `.pill-${tone}{fill:${PALETTE[tone][mode]};fill-opacity:${mode ? 0.17 : 0.12};stroke:${PALETTE[tone][mode]};stroke-opacity:${mode ? 0.42 : 0.35}}`).join('')
   const cards = TONES.map(tone => `.card-${tone}{fill:${PALETTE[tone][mode]};fill-opacity:${mode ? 0.07 : 0.05};stroke:${PALETTE[tone][mode]};stroke-opacity:${mode ? 0.2 : 0.18}}`).join('')
-  const neutral = `.pill-none{fill:${PALETTE.fg[mode]};fill-opacity:${mode ? 0.06 : 0.045};stroke:${PALETTE.fg[mode]};stroke-opacity:${mode ? 0.14 : 0.12}}` +
-    `.card-none{fill:${PALETTE.fg[mode]};fill-opacity:${mode ? 0.04 : 0.03};stroke:${PALETTE.fg[mode]};stroke-opacity:${mode ? 0.12 : 0.1}}`
+  const neutral = `.card-none{fill:${PALETTE.fg[mode]};fill-opacity:${mode ? 0.04 : 0.03};stroke:${PALETTE.fg[mode]};stroke-opacity:${mode ? 0.12 : 0.1}}`
 
-  return fills + pills + cards + neutral
+  return fills + cards + neutral
 }
 
 function document(width: number, height: number, body: string): string {
@@ -97,101 +137,73 @@ function text(x: number, baseline: number, content: string, options: { size: num
   return `<text class="${options.cls ?? 'fg'}" x="${x.toFixed(1)}" y="${baseline.toFixed(1)}" font-size="${options.size}" font-weight="${options.weight ?? 500}"${anchor}${tracking}>${escapeXml(content)}</text>`
 }
 
-function pillItemWidth(item: PillItem): number {
-  if ('label' in item) return textWidth(item.label, SIZE.label, LABEL_TRACKING)
-  if ('value' in item) return textWidth(item.value, SIZE.value)
-  if ('aside' in item) return textWidth(item.aside, SIZE.aside)
-  if ('bar' in item) return PILL_BAR_WIDTH
-
-  return 7
-}
-
-function pillItem(item: PillItem, x: number, tone: Tone | null): string {
-  const middle = PILL_HEIGHT / 2
-
-  if ('label' in item) return text(x, middle + SIZE.label * 0.36, item.label, { size: SIZE.label, weight: 700, cls: tone ?? 'lb', tracking: LABEL_TRACKING })
-  if ('value' in item) return text(x, middle + SIZE.value * 0.36, item.value, { size: SIZE.value, weight: 650, cls: item.cls ?? 'fg' })
-  if ('aside' in item) return text(x, middle + SIZE.aside * 0.36, item.aside, { size: SIZE.aside, cls: item.cls ?? 'mu' })
-  if ('dot' in item) return `<circle class="${item.dot}" cx="${x + 3.5}" cy="${middle}" r="3.5"/>`
-
-  const y = middle - 2
-  const fill = item.bar.percent > 0 ? Math.max(4, (item.bar.percent / 100) * PILL_BAR_WIDTH) : 0
-  const track = `<rect class="track" x="${x}" y="${y}" width="${PILL_BAR_WIDTH}" height="4" rx="2"/>`
-
-  return fill === 0 ? track : `${track}<rect class="${item.bar.tone}" x="${x}" y="${y}" width="${fill.toFixed(1)}" height="4" rx="2"/>`
-}
-
-export function drawPill(tone: Tone | null, items: readonly PillItem[]): Drawing {
-  let x = PILL_PAD
-  let body = ''
-
-  items.forEach((item, index) => {
-    if (index > 0) x += PILL_GAP
-    body += pillItem(item, x, tone)
-    x += pillItemWidth(item)
-  })
-
-  const width = Math.ceil(x + PILL_PAD)
-  const inner = PILL_HEIGHT - 7
-  const frame = `<rect class="pill-${tone ?? 'none'}" x=".5" y="3.5" width="${width - 1}" height="${inner}" rx="${inner / 2}" stroke-width="1"/>`
-
-  return { source: document(width, PILL_HEIGHT, frame + body), width, height: PILL_HEIGHT }
-}
-
 function segmentWidth(segment: Segment): number {
-  if ('dot' in segment) return 7
+  if ('dot' in segment) return 8
 
-  return textWidth(segment.text, segment.size ?? 9.5)
+  return textWidth(segment.text, segment.size ?? SIZE.body)
 }
 
 function segment(segment: Segment, x: number, baseline: number, room: number): string {
-  if ('dot' in segment) return `<circle class="${segment.dot}" cx="${x + 3}" cy="${baseline - 3.2}" r="2.6"/>`
+  if ('dot' in segment) return `<circle class="${segment.dot}" cx="${x + 3.5}" cy="${baseline - 4}" r="3"/>`
 
-  const size = segment.size ?? 9.5
+  const size = segment.size ?? SIZE.body
 
   return text(x, baseline, fitText(segment.text, size, room), { size, weight: segment.weight, cls: segment.cls ?? 'mu' })
 }
 
-function blockHeight(block: CardBlock): number {
+function wrapLines(block: Extract<CardBlock, { kind: 'wrap' }>, width: number): string[] {
+  return wrapText(block.text, block.size ?? SIZE.body, cardInnerWidth(width), block.maxLines ?? 2)
+}
+
+function blockHeight(block: CardBlock, width: number): number {
   if (block.kind === 'big') return BIG_HEIGHT
   if (block.kind === 'gap') return block.px
+  if (block.kind === 'wrap') return Math.max(1, wrapLines(block, width).length) * ROW_HEIGHT
 
   return ROW_HEIGHT
 }
 
 function block(block: CardBlock, y: number, width: number): string {
-  const inner = width - 2 * CARD_PAD
+  const inner = cardInnerWidth(width)
   const left = CARD_PAD
 
   if (block.kind === 'gap') return ''
 
   if (block.kind === 'big') {
-    const size = block.size ?? 19
+    const size = block.size ?? SIZE.big
     const main = fitText(block.text, size, block.side === undefined ? inner : inner * 0.6)
-    let drawn = text(left, y + 17, main, { size, weight: 700, cls: block.cls ?? 'fg' })
+    let drawn = text(left, y + size, main, { size, weight: 700, cls: block.cls ?? 'fg' })
 
     if (block.side !== undefined) {
-      const sideX = left + textWidth(main, size) + 6
-      drawn += text(sideX, y + 17, fitText(block.side, 9.5, width - CARD_PAD - sideX), { size: 9.5, cls: block.sideCls ?? 'mu' })
+      const sideX = left + textWidth(main, size) + 8
+      drawn += text(sideX, y + size, fitText(block.side, SIZE.body, width - CARD_PAD - sideX), { size: SIZE.body, cls: block.sideCls ?? 'mu' })
     }
 
     return drawn
   }
 
   if (block.kind === 'line') {
-    const size = block.size ?? 9.5
+    const size = block.size ?? SIZE.body
 
-    return text(left, y + 10, fitText(block.text, size, inner), { size, cls: block.cls ?? 'mu' })
+    return text(left, y + ROW_BASELINE, fitText(block.text, size, inner), { size, cls: block.cls ?? 'mu' })
+  }
+
+  if (block.kind === 'wrap') {
+    const size = block.size ?? SIZE.body
+
+    return wrapLines(block, width)
+      .map((line, index) => text(left, y + ROW_BASELINE + index * ROW_HEIGHT, line, { size, weight: block.weight, cls: block.cls ?? 'mu' }))
+      .join('')
   }
 
   if (block.kind === 'bar') {
     const fill = block.percent > 0 ? Math.max(3, (block.percent / 100) * inner) : 0
-    const track = `<rect class="track" x="${left}" y="${y + 3}" width="${inner}" height="6" rx="3"/>`
+    const track = `<rect class="track" x="${left}" y="${y + 5}" width="${inner}" height="6" rx="3"/>`
 
-    return fill === 0 ? track : `${track}<rect class="${block.tone}" x="${left}" y="${y + 3}" width="${fill.toFixed(1)}" height="6" rx="3"/>`
+    return fill === 0 ? track : `${track}<rect class="${block.tone}" x="${left}" y="${y + 5}" width="${fill.toFixed(1)}" height="6" rx="3"/>`
   }
 
-  const baseline = y + 10
+  const baseline = y + ROW_BASELINE
   const rightWidth = block.right === undefined ? 0 : segmentWidth(block.right) + 8
   let x = left
   let drawn = ''
@@ -203,11 +215,11 @@ function block(block: CardBlock, y: number, width: number): string {
     if (room <= 0) return
 
     drawn += segment(part, x, baseline, room)
-    x += ('dot' in part ? 7 : textWidth(fitText(part.text, part.size ?? 9.5, room), part.size ?? 9.5)) + 6
+    x += ('dot' in part ? 8 : textWidth(fitText(part.text, part.size ?? SIZE.body, room), part.size ?? SIZE.body)) + 7
   })
 
   if (block.right !== undefined) {
-    const size = block.right.size ?? 9.5
+    const size = block.right.size ?? SIZE.body
     drawn += text(width - CARD_PAD, baseline, block.right.text, { size, weight: block.right.weight, cls: block.right.cls ?? 'mu', anchor: 'end' })
   }
 
@@ -222,22 +234,21 @@ export function drawCard(options: {
   blocks: readonly CardBlock[]
 }): Drawing {
   const { width } = options
-  const titleSize = 8.5
-  let body = text(CARD_PAD, TITLE_BASELINE, options.title, { size: titleSize, weight: 700, cls: options.tone ?? 'lb', tracking: LABEL_TRACKING })
+  let body = text(CARD_PAD, TITLE_BASELINE, options.title, { size: SIZE.label, weight: 700, cls: options.tone ?? 'lb', tracking: LABEL_TRACKING })
 
   if (options.titleRight !== undefined) {
-    const room = width - 2 * CARD_PAD - textWidth(options.title, titleSize, LABEL_TRACKING) - 10
-    body += text(width - CARD_PAD, TITLE_BASELINE, fitText(options.titleRight.text, 9.5, room), { size: 9.5, cls: options.titleRight.cls ?? 'mu', anchor: 'end' })
+    const room = cardInnerWidth(width) - textWidth(options.title, SIZE.label, LABEL_TRACKING) - 10
+    body += text(width - CARD_PAD, TITLE_BASELINE, fitText(options.titleRight.text, SIZE.body, room), { size: SIZE.body, cls: options.titleRight.cls ?? 'mu', anchor: 'end' })
   }
 
   let y = BODY_TOP
 
   for (const part of options.blocks) {
     body += block(part, y, width)
-    y += blockHeight(part)
+    y += blockHeight(part, width)
   }
 
-  const height = Math.max(y + 6, BODY_TOP + 10)
+  const height = Math.max(y + 8, BODY_TOP + 12)
   const frame = `<rect class="card-${options.tone ?? 'none'}" x=".5" y=".5" width="${width - 1}" height="${height - 1}" rx="${CARD_RADIUS}"/>`
 
   return { source: document(width, height, frame + body), width, height }

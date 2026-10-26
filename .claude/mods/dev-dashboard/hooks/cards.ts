@@ -1,8 +1,8 @@
 import type { GitSnapshot, SessionFacts, TurnRecap, UpstreamStatus } from '../types'
 import type { ChipTone } from './palette'
 import { formatDuration, formatTokens, relativeAge } from './recap'
-import { contextTone, drawCard } from './svg'
-import type { CardBlock, Drawing, PillItem, Tone } from './svg'
+import { SIZE, cardInnerWidth, contextTone, drawCard, textWidth } from './svg'
+import type { CardBlock, Cls, Drawing, TextSegment, Tone } from './svg'
 
 export type PaneFacts = {
   snapshot: GitSnapshot
@@ -13,13 +13,13 @@ export type PaneFacts = {
   home: string | null
 }
 
-export type Pill = { key: string; tone: Tone | null; items: PillItem[]; alt: string }
 export type Card = Drawing & { alt: string }
 
 export type ChipPart = [text: string, kind: 'label' | 'value' | 'aside' | 'accent' | 'off']
 export type Chip = { key: string; tone: ChipTone; parts: ChipPart[] }
 
 const CHIP_BAR = 6
+const BIG_SIZES = [SIZE.big, 18, 15]
 
 export const UPSTREAM_NOTE: Record<UpstreamStatus, string | null> = {
   ok: null,
@@ -53,6 +53,10 @@ export function isInSync(snapshot: GitSnapshot): boolean {
   return snapshot.dirty === 0 && snapshot.ahead === 0 && snapshot.behind === 0
 }
 
+export function changedText(snapshot: GitSnapshot): string {
+  return snapshot.dirty === 0 ? 'clean' : `${snapshot.dirty} changed`
+}
+
 export function shortenHome(path: string, home: string | null): string {
   if (home === null || home === '' || !(path === home || path.startsWith(`${home}/`))) return path
 
@@ -69,115 +73,68 @@ export function recapSummary(recap: TurnRecap, now: number): string[] {
   ].filter((fact): fact is string => fact !== null)
 }
 
-export function pills(view: PaneFacts): Pill[] {
-  const { snapshot, facts } = view
-  const list: Pill[] = []
-  const status = snapshot.upstreamStatus
+function label(text: string): TextSegment {
+  return { text, cls: 'lb', weight: 700, size: SIZE.label }
+}
 
-  if (snapshot.isRepo) {
-    const branch: PillItem[] = [{ label: 'BRANCH' }, { value: snapshot.branch ?? 'HEAD (detached)', cls: snapshot.branch === null ? 'yellow' : undefined }]
-    if (snapshot.dirty > 0) branch.push({ aside: `±${snapshot.dirty}`, cls: 'yellow' })
-    else branch.push({ aside: 'clean', cls: 'green' })
-    if (snapshot.ahead > 0 || snapshot.behind > 0) branch.push({ aside: syncText(snapshot) })
-    list.push({ key: 'branch', tone: UPSTREAM_TONE[status], items: branch, alt: `branch ${snapshot.branch ?? 'detached'}, ${snapshot.dirty} changed, ${syncText(snapshot)}` })
-
-    const upstream: PillItem[] = [{ label: 'UPSTREAM' }, { value: snapshot.upstream ?? 'none', cls: UPSTREAM_TONE[status] ?? undefined }]
-    if (status !== 'ok') upstream.push({ aside: status, cls: UPSTREAM_TONE[status] ?? undefined })
-    list.push({ key: 'upstream', tone: UPSTREAM_TONE[status], items: upstream, alt: `upstream ${snapshot.upstream ?? 'none'} ${status}` })
-  }
-
-  if (facts !== null && facts.contextPercent !== null) {
-    const percent = Math.round(facts.contextPercent)
-    const tone = contextTone(percent)
-    const context: PillItem[] = [{ label: 'CTX' }, { bar: { percent, tone } }, { value: `${percent}%`, cls: tone }]
-    if (facts.contextTokens !== null && facts.contextWindow !== null) context.push({ aside: `${formatTokens(facts.contextTokens)}/${formatTokens(facts.contextWindow)}` })
-    list.push({ key: 'ctx', tone, items: context, alt: `context ${percent}%` })
-  }
-
-  if (facts !== null) {
-    list.push({ key: 'model', tone: null, items: [{ aside: `${facts.model} · ${facts.turns} turns` }], alt: `${facts.model}, ${facts.turns} turns` })
-  }
-
-  return list
+function bigSize(text: string, width: number): number {
+  return BIG_SIZES.find(size => textWidth(text, size) <= cardInnerWidth(width)) ?? BIG_SIZES[BIG_SIZES.length - 1] ?? SIZE.big
 }
 
 export function placeCard(view: PaneFacts, width: number): Card {
   const { snapshot, home } = view
   const status = snapshot.upstreamStatus
   const statusTone = UPSTREAM_TONE[status]
+  const note = UPSTREAM_NOTE[status]
   const isWorktree = snapshot.worktree !== null
   const name = snapshot.worktree ?? snapshot.projectName
   const path = shortenHome(snapshot.root, home)
   const blocks: CardBlock[] = [
-    { kind: 'big', text: name, cls: isWorktree ? 'purple' : 'cyan', size: name.length > 28 ? 15 : 19 },
-    { kind: 'line', text: path, cls: 'mu' },
+    { kind: 'big', text: name, cls: isWorktree ? 'purple' : 'cyan', size: bigSize(name, width) },
+    { kind: 'wrap', text: path, cls: 'mu' },
   ]
 
   if (isWorktree) {
-    blocks.push({
-      kind: 'row',
-      segments: [{ text: 'PROJECT', cls: 'lb', weight: 700, size: 8.5 }, { text: snapshot.projectName, cls: 'fg', weight: 650 }],
-      right: snapshot.remoteName === null ? undefined : { text: snapshot.remoteName },
-    })
+    blocks.push({ kind: 'row', segments: [label('PROJECT'), { text: snapshot.projectName, cls: 'fg', weight: 650, size: SIZE.value }] })
   }
 
   if (snapshot.isRepo) {
+    const changedCls: Cls = snapshot.dirty === 0 ? 'green' : 'yellow'
     const isOk = status === 'ok'
-    blocks.push({
-      kind: 'row',
-      segments: [{ text: 'BRANCH', cls: 'lb', weight: 700, size: 8.5 }, { text: snapshot.branch ?? 'HEAD (detached)', cls: snapshot.branch === null ? 'yellow' : 'fg', weight: 650 }],
-      right: {
-        text: isOk ? (isInSync(snapshot) ? 'in sync' : syncText(snapshot)) : status,
-        cls: isOk ? (isInSync(snapshot) ? 'green' : 'mu') : statusTone ?? 'mu',
-        weight: 650,
+    const syncCls: Cls = isOk ? (snapshot.ahead === 0 && snapshot.behind === 0 ? 'green' : 'mu') : statusTone ?? 'mu'
+
+    blocks.push(
+      { kind: 'gap', px: 6 },
+      { kind: 'row', segments: [label('BRANCH')], right: { text: changedText(snapshot), cls: changedCls, weight: 700, size: SIZE.value } },
+      { kind: 'wrap', text: snapshot.branch ?? 'HEAD (detached)', cls: snapshot.branch === null ? 'yellow' : 'fg', weight: 650, size: SIZE.value },
+      { kind: 'gap', px: 6 },
+      {
+        kind: 'row',
+        segments: [label('UPSTREAM')],
+        right: { text: isOk ? (snapshot.ahead === 0 && snapshot.behind === 0 ? 'in sync' : syncText(snapshot)) : status, cls: syncCls, weight: 650 },
       },
-    })
+      { kind: 'wrap', text: snapshot.upstream ?? 'none', cls: statusTone ?? 'mu', weight: 600 },
+    )
+
+    if (note !== null) blocks.push({ kind: 'line', text: `! ${note}`, cls: statusTone ?? 'mu' })
+    if (snapshot.pushTarget !== null) blocks.push({ kind: 'line', text: `push → ${snapshot.pushTarget}`, cls: 'yellow' })
   }
 
   const drawing = drawCard({
     width,
     tone: isWorktree ? 'purple' : 'cyan',
     title: isWorktree ? 'WORKTREE' : 'PROJECT',
-    titleRight: isWorktree || snapshot.remoteName === null ? undefined : { text: snapshot.remoteName },
+    titleRight: snapshot.remoteName === null ? undefined : { text: snapshot.remoteName },
     blocks,
   })
+  const gitAlt = snapshot.isRepo
+    ? `, branch ${snapshot.branch ?? 'detached'}, ${changedText(snapshot)}, ${syncText(snapshot)}, upstream ${snapshot.upstream ?? 'none'} ${status}`
+    : ''
 
   return {
     ...drawing,
-    alt: `${isWorktree ? 'worktree' : 'project'} ${name} at ${path}${isWorktree ? `, project ${snapshot.projectName}` : ''}${snapshot.branch === null ? '' : `, branch ${snapshot.branch}`}`,
+    alt: `${isWorktree ? 'worktree' : 'project'} ${name} at ${path}${isWorktree ? `, project ${snapshot.projectName}` : ''}${gitAlt}`,
   }
-}
-
-export function gitCard(view: PaneFacts, width: number): Card {
-  const { snapshot } = view
-  const status = snapshot.upstreamStatus
-  const tone = UPSTREAM_TONE[status]
-  const note = UPSTREAM_NOTE[status]
-  const branch = snapshot.branch ?? 'HEAD (detached)'
-  const blocks: CardBlock[] = [
-    { kind: 'big', text: branch, cls: snapshot.branch === null ? 'yellow' : 'fg', size: branch.length > 16 ? 15 : 19 },
-    {
-      kind: 'row',
-      segments: [{ text: '→', cls: 'lb' }, { text: snapshot.upstream ?? 'no upstream', cls: tone ?? 'mu', weight: 600 }],
-      right: status === 'ok' ? undefined : { text: status, cls: tone ?? 'mu', weight: 650 },
-    },
-  ]
-
-  if (note !== null) blocks.push({ kind: 'line', text: note, cls: tone ?? 'mu' })
-  if (snapshot.pushTarget !== null) blocks.push({ kind: 'line', text: `push → ${snapshot.pushTarget}`, cls: 'yellow' })
-
-  const facts = [snapshot.dirty === 0 ? 'clean' : `${snapshot.dirty} changed`, snapshot.worktree === null ? null : `worktree ${snapshot.worktree}`].filter((fact): fact is string => fact !== null)
-  blocks.push({ kind: 'line', text: facts.join(' · '), cls: isInSync(snapshot) ? 'green' : 'mu' })
-
-  const drawing = drawCard({
-    width,
-    tone,
-    title: 'GIT',
-    titleRight: { text: isInSync(snapshot) ? 'in sync' : syncText(snapshot), cls: isInSync(snapshot) ? 'green' : 'mu' },
-    blocks,
-  })
-
-  return { ...drawing, alt: `git: branch ${snapshot.branch ?? 'detached'}, upstream ${snapshot.upstream ?? 'none'} ${status}, ${syncText(snapshot)}, ${snapshot.dirty} changed` }
 }
 
 export function contextCard(view: PaneFacts, width: number): Card | null {
@@ -216,7 +173,7 @@ export function worktreesCard(view: PaneFacts, width: number): Card | null {
   const blocks: CardBlock[] = others.flatMap((worktree): CardBlock[] => [
     {
       kind: 'row',
-      segments: [{ dot: UPSTREAM_TONE[worktree.status] ?? 'purple' }, { text: worktree.name, cls: 'fg', weight: 650 }],
+      segments: [{ dot: UPSTREAM_TONE[worktree.status] ?? 'purple' }, { text: worktree.name, cls: 'fg', weight: 650, size: SIZE.value }],
       right: worktree.branch === null ? { text: 'detached', cls: 'yellow' } : worktree.status === 'ok' ? undefined : { text: worktree.status, cls: UPSTREAM_TONE[worktree.status] ?? 'mu' },
     },
     { kind: 'row', segments: [{ text: '  →', cls: 'lb' }, { text: worktree.upstream ?? 'none', cls: UPSTREAM_TONE[worktree.status] ?? 'mu' }] },
@@ -233,8 +190,8 @@ export function commitsCard(view: PaneFacts, width: number): Card {
     : commits.map((commit): CardBlock => ({
         kind: 'row',
         segments: [
-          { text: commit.hash.slice(0, 7), cls: 'purple', weight: 650, size: 9 },
-          { text: shortAge(commit.age).padStart(3), cls: 'lb', size: 9 },
+          { text: commit.hash.slice(0, 7), cls: 'purple', weight: 650, size: 11 },
+          { text: shortAge(commit.age).padStart(3), cls: 'lb', size: 11 },
           { text: commit.subject, cls: 'fg' },
         ],
       }))

@@ -5,7 +5,7 @@ import type { GitSnapshot, RateLimit, SessionFacts, TurnCosts, TurnRecap, Upstre
 import { bandGroups, barRuns } from './band'
 import type { BandGroup } from './band'
 import { bannerWidth, renderBanner } from './banner'
-import { UPSTREAM_NOTE, chips, commitsCard, contextCard, fit, gitCard, isInSync, pills, placeCard, recapCard, recapSummary, shortAge, shortenHome, syncText, worktreesCard } from './cards'
+import { UPSTREAM_NOTE, changedText, chips, commitsCard, contextCard, fit, isInSync, placeCard, recapCard, recapSummary, shortAge, shortenHome, syncText, worktreesCard } from './cards'
 import type { Card, ChipPart, PaneFacts } from './cards'
 import { FLOWER } from './flower'
 import { readGitSnapshot } from './git'
@@ -13,7 +13,6 @@ import { BAND_PALETTES, PALETTES, customThemeSlug, resolveTheme } from './palett
 import type { ChipTone, Palette, ThemeName } from './palette'
 import { makeHalfBlockCells } from './raster'
 import { RECAP_ROOTS_KEY, makeRecap, recapKey, rememberRoot } from './recap'
-import { drawPill } from './svg'
 
 const PANE_ID = 'dev-dashboard'
 const PANE_TITLE = 'Dashboard'
@@ -367,19 +366,17 @@ export const register: Register = (on, options) => {
       const context = contextCard(view, cardWidth)
       const worktrees = worktreesCard(view, cardWidth)
 
+      // Development facts first (where the session is, its other worktrees,
+      // the commits), the session's own facts after them.
       return (
         <Box flexDirection="column" width="100%" paddingX={1} rowGap={1}>
           {draw('card:place', placeCard(view, wideWidth))}
-          <Box flexDirection="row" flexWrap="wrap" alignItems="center" columnGap={1} rowGap={1}>
-            {pills(view).map(pill => draw(`pill:${pill.key}`, { ...drawPill(pill.tone, pill.items), alt: pill.alt }))}
-          </Box>
           <Box flexDirection="row" flexWrap="wrap" alignItems="flex-start" columnGap={1} rowGap={1}>
-            {snapshot.isRepo && draw('card:git', gitCard(view, cardWidth))}
-            {context !== null && draw('card:context', context)}
             {worktrees !== null && draw('card:worktrees', worktrees)}
+            {snapshot.isRepo && draw('card:commits', commitsCard(view, wideWidth))}
+            {context !== null && draw('card:context', context)}
             {turn !== null && draw('card:turn', recapCard('LAST TURN', turn, now, wideWidth, 'purple'))}
             {showsPrior && draw('card:previous', recapCard('PREVIOUS SESSION', prior, now, wideWidth, null))}
-            {snapshot.isRepo && draw('card:commits', commitsCard(view, wideWidth))}
             {!snapshot.isRepo && <Text dimColor>not a git repository</Text>}
           </Box>
           <Box flexDirection="row" columnGap={1}>
@@ -533,7 +530,7 @@ export const register: Register = (on, options) => {
               </Text>
             )}
             {snapshot.pushTarget !== null && row('push', snapshot.pushTarget, palette.warning)}
-            {row('sync', `${syncText(snapshot)}  ${snapshot.dirty === 0 ? 'clean' : `${snapshot.dirty} changed`}`, isInSync(snapshot) ? palette.ok : palette.text)}
+            {row('sync', `${syncText(snapshot)}  ${changedText(snapshot)}`, isInSync(snapshot) ? palette.ok : palette.text)}
             {otherWorktrees.length > 0 && (
               <Box flexDirection="column">
                 {heading(`Worktrees (${otherWorktrees.length})`)}
