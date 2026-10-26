@@ -20,9 +20,13 @@ const PANE_COLUMNS = 46
 const GIT_TIMEOUT_MS = 10000
 const LABEL_WIDTH = 10
 
-// A remote pane reports its width in cells; its text is drawn at about this
-// many CSS pixels per cell, which sizes the SVG cards to the pane.
-const REMOTE_CELL_PX = 6.2
+// A remote pane reports its width in cells only. Measured on the desktop app
+// at two pane widths: a cell is about 9.5 CSS pixels, the pane body has no
+// padding of its own, and the Box's paddingX={1} takes about 26 pixels a side.
+// A few pixels are kept back so a card never crosses the pane's edge.
+const REMOTE_CELL_PX = 9.5
+const REMOTE_PAD_PX = 26
+const REMOTE_SAFETY_PX = 4
 const CARD_GAP_PX = 8
 const CARD_MIN_PX = 250
 const CARD_MAX_COLUMNS = 3
@@ -348,7 +352,7 @@ export const register: Register = (on, options) => {
 
     if (e.surface !== 'terminal') {
       const { Box, Button, Svg, Text } = $.ui.resolve(e)
-      const paneWidth = Math.max(CARD_MIN_PX, Math.floor(e.props.bodyColumns * REMOTE_CELL_PX) - 2 * CARD_GAP_PX)
+      const paneWidth = Math.max(CARD_MIN_PX, Math.floor(e.props.bodyColumns * REMOTE_CELL_PX) - 2 * REMOTE_PAD_PX - REMOTE_SAFETY_PX)
       const columns = Math.max(1, Math.min(CARD_MAX_COLUMNS, Math.floor((paneWidth + CARD_GAP_PX) / (CARD_MIN_PX + CARD_GAP_PX))))
       const cardWidth = Math.floor((paneWidth - CARD_GAP_PX * (columns - 1)) / columns)
       const wideWidth = columns === 1 ? cardWidth : cardWidth * 2 + CARD_GAP_PX
