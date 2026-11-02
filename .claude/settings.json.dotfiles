@@ -91,6 +91,18 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -I \"$HOME/.agents/hooks/zsh-var-modifier-guard.py\"",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   }
 }

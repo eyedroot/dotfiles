@@ -34,6 +34,11 @@ Shared global instructions for coding agents. Claude Code imports this file via 
 - Verify a process's ownership and purpose before stopping it; preserve other tasks' processes and shared services, and leave ambiguous processes running unless the user authorizes stopping them. Do not force-kill apps or delete simulator/emulator data for routine cleanup.
 - After heavy verification, shut down this task's unneeded workloads and retain services still needed for ongoing work. Report resource constraints or cleanup only when they materially affect the task.
 
+## Shell Commands
+
+- Shell commands run in zsh. When a colon follows a variable, wrap the name in braces: `"${IMAGE}:stage-test"`, not `$IMAGE:stage-test`. zsh reads a letter after `$name:` as a modifier (`:s` substitutes, `:a` makes an absolute path, `:h`/`:t` take the head or tail) and rewrites the value without an error, so `docker push` can silently publish `latest` instead of the intended tag.
+- In Claude Code, the PreToolUse hook `$HOME/.agents/hooks/zsh-var-modifier-guard.py` blocks Bash commands that contain this pattern. Codex has no such hook, so follow the rule directly there.
+
 ## Kubernetes Cluster Commands
 
 - Before running or proposing any kubectl, helm, or kustomize command, load the installed `kubectl-guard` skill (`~/.codex/skills/kubectl-guard/SKILL.md`, linked from `~/.claude/skills/kubectl-guard`) and follow it. Load it even when the request never mentions kubectl, as soon as the work would touch a Kubernetes cluster: restarting pods, scaling or deploying workloads, changing manifests or config, or inspecting cluster state.
