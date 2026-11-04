@@ -38,10 +38,28 @@
       "Bash(rm:*)",
       "Bash(touch:*)",
       "Bash(chmod:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(agent-desktop skills:*)",
+      "Bash(agent-desktop snapshot:*)",
+      "Bash(agent-desktop find:*)",
+      "Bash(agent-desktop get:*)",
+      "Bash(agent-desktop is:*)",
+      "Bash(agent-desktop status:*)",
+      "Bash(agent-desktop list-apps:*)",
+      "Bash(agent-desktop list-windows:*)",
+      "Bash(agent-desktop wait:*)"
     ],
     "deny": [],
-    "ask": [],
+    "ask": [
+      "Bash(agent-desktop click:*)",
+      "Bash(agent-desktop type:*)",
+      "Bash(agent-desktop set-value:*)",
+      "Bash(agent-desktop press:*)",
+      "Bash(agent-desktop clipboard-get:*)",
+      "Bash(agent-desktop clipboard-set:*)",
+      "Bash(agent-desktop launch:*)",
+      "Bash(agent-desktop close-app:*)"
+    ],
     "defaultMode": "default"
   },
   "statusLine": {

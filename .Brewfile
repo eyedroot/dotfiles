@@ -41,6 +41,8 @@ brew "wget"
 brew "yarn"
 brew "yt-dlp"
 brew "pyenv"
+# Desktop automation CLI; only the Claude skill in ~/.claude/skills/agent-desktop points to it
+brew "agent-desktop"
 
 # ===== Casks (GUI Applications) =====
 cask "bitwarden"
