@@ -5,6 +5,7 @@
 tap "homebrew/bundle"
 tap "oven-sh/bun"
 tap "catenoid-company/tap", "git@github.com:catenoid-company/homebrew-tap.git"
+tap "lightpanda-io/browser"
 
 # ===== Formulae =====
 brew "bitwarden-cli"
@@ -45,6 +46,8 @@ brew "pyenv"
 brew "agent-desktop"
 # Browser automation CLI; brew does not download its browser, so run `agent-browser install` once after bundling
 brew "agent-browser"
+# Headless engine for `agent-browser --engine lightpanda`; on a new machine run `brew trust lightpanda-io/browser` before bundling
+brew "lightpanda-io/browser/lightpanda"
 
 # ===== Casks (GUI Applications) =====
 cask "bitwarden"
