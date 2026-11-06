@@ -43,6 +43,8 @@ brew "yt-dlp"
 brew "pyenv"
 # Desktop automation CLI; only the Claude skill in ~/.claude/skills/agent-desktop points to it
 brew "agent-desktop"
+# Browser automation CLI; brew does not download its browser, so run `agent-browser install` once after bundling
+brew "agent-browser"
 
 # ===== Casks (GUI Applications) =====
 cask "bitwarden"
