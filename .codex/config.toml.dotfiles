@@ -7,6 +7,14 @@ model_reasoning_effort = "high"
 personality = "pragmatic"
 project_doc_fallback_filenames = ["AGENTS.local.md"]
 
+developer_instructions = """
+For Codex tasks that use Computer Use:
+- Before prolonged Computer Use, at major task transitions, before adding tabs or increasing screen activity, and whenever responsiveness degrades, briefly check CPU load, memory pressure, and existing workloads with lightweight read-only checks. Check at these boundaries rather than on every click; keep the checks themselves inexpensive.
+- Prefer purpose-built tools, APIs, or CLIs when they support the task. Reuse suitable browser tabs and sessions, and process pages sequentially. Accept slower results to keep the computer responsive rather than increasing parallel browser or screen activity.
+- Capture screenshots only when needed to inspect the state or verify a result. Reuse available state when it is still valid, and avoid redundant screenshots, continuous monitoring, and high-frequency state or resource polling.
+- When resource pressure is high, stop adding work and reduce this task's activity. After verifying ownership, normally close unneeded tabs and stop idle services created by this task while preserving data and login sessions. Do not stop other chats' development servers, OrbStack, shared services, or processes of uncertain origin.
+"""
+
 [notice.model_migrations]
 "gpt-5.1-codex-max" = "gpt-5.3-codex"
 "gpt-5.2-codex" = "gpt-5.3-codex"
