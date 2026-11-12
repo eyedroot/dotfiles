@@ -113,6 +113,16 @@ Shared global instructions for coding agents. Claude Code imports this file via 
 - When claiming something is unsafe or broken, show the path the request actually takes. An assertion without a traceable path is a classification, not an explanation.
 - The same applies when disagreeing with the user. Do not restate the conclusion louder; replay their reasoning against a concrete case and show where the case diverges from it.
 
+## Asking the User for Decisions
+
+- When the next step depends on a choice only the user can make, ask it as a numbered list so the user can answer by number ("1번은 A"). Put one decision in each item; do not join two questions in one item.
+- Write each item in this order: the situation as a concrete scenario (who does what, with example values, dates, or amounts), the impact today (what breaks, what does not, and whether the behavior existed before this work), the options labeled A and B with what each one leads to, and your recommendation with the reason in one line.
+- Use everyday words for the actors and things involved, such as 콘솔 화면, 콘솔 서버, and 결제 서버. Leave out code identifiers, field names, and internal labels unless the user needs them to act; when one is needed, say what it is in plain words first.
+- Before asking, check whether the matter was already decided in the conversation or in a document or artifact the user points to. State a settled point as settled. When the user's recollection and the record answer different questions, separate them: say which part is decided and ask only the part that is still open.
+- Separate what must be decided now from what can wait, and say what each one blocks.
+- Do not ask about facts you can verify yourself. Check them first and ask only the choice that remains.
+- When the user says an explanation was hard to follow, restate it in this format instead of adding detail to the earlier wording.
+
 ## Code Exploration
 
 - In Codex and Claude Code, delegate codebase exploration to the `code_explorer` custom subagent when the task requires tracing execution across files, locating feature ownership, or assessing dependencies and change impact.
