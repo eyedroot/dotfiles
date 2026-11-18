@@ -32,9 +32,11 @@ else
     layout="vivid"
     # The status line cannot query the terminal background, so Claude Code's
     # own theme setting is the light/dark switch; the UI around the status
-    # line already follows that value. "auto" follows the macOS appearance,
-    # which is what Claude Code itself resolves it to. An Unpeel pane on the
-    # dark appearance keeps the dark palette whatever the setting says.
+    # line already follows that value. Claude Code resolves "auto" by asking
+    # the terminal (OSC 11); the shell that started it asked the same and left
+    # the answer in TERMINAL_APPEARANCE (.zshrc.shared). Without it, the macOS
+    # appearance stands in. An Unpeel pane on the dark appearance keeps the
+    # dark palette whatever the setting says.
     if [ "$TERM_PROGRAM" = "Unpeel" ] && [ "$unpeel_appearance" = "dark" ]; then
         claude_theme="dark"
     else
@@ -48,7 +50,9 @@ else
             ;;
     esac
     if [ "$claude_theme" = "auto" ]; then
-        if [ "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" = "Dark" ]; then
+        if [ -n "$TERMINAL_APPEARANCE" ]; then
+            claude_theme="$TERMINAL_APPEARANCE"
+        elif [ "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" = "Dark" ]; then
             claude_theme="dark"
         else
             claude_theme="light"
@@ -56,25 +60,25 @@ else
     fi
     case "$claude_theme" in
         light*)
-            # PhpStorm Rider Melon Light palette, the same roles as the Mocha
-            # block below: function purple on the project name, keyword blue on
-            # the model name, console red on the context meter. Every color but
-            # the separator clears 4.5:1 on the white Ghostty background.
-            project_color='\033[38;2;107;47;186m'    # function purple #6B2FBA
-            model_color='\033[38;2;15;84;214m'      # keyword blue #0F54D6
-            ctx_bar_color='\033[38;2;173;15;0m'    # console red, bright #AD0F00
-            branch_color='\033[38;2;27;102;0m'      # console green, bright #1B6600
-            worktree_color='\033[38;2;0;92;67m'      # console cyan, bright #005C43
-            style_color='\033[38;2;107;47;186m'      # function purple
-            rate_icon_color='\033[38;2;0;92;67m'   # console cyan, bright
-            subtext_color='\033[38;2;96;96;96m'     # gray #606060
-            separator_color='\033[38;2;173;173;173m' # gray #ADADAD
-            alert_color='\033[38;2;173;15;0m'      # console red, bright
+            # Herdr's paper theme, the light Herdr window around the terminal,
+            # in the same roles as the Mocha block below. Usage steps green,
+            # working amber and blocked red as Herdr's own usage bar does. Every
+            # color but the separator clears 4.5:1 on paper's white background.
+            project_color='\033[38;2;122;69;200m'    # ansi5 purple #7A45C8
+            model_color='\033[38;2;31;98;208m'       # accent blue #1F62D0
+            ctx_bar_color='\033[38;2;198;42;42m'     # ansi1 red #C62A2A
+            branch_color='\033[38;2;26;127;55m'      # ansi2 green #1A7F37
+            worktree_color='\033[38;2;15;111;116m'   # ansi6 teal #0F6F74
+            style_color='\033[38;2;122;69;200m'      # ansi5 purple
+            rate_icon_color='\033[38;2;15;111;116m'  # ansi6 teal
+            subtext_color='\033[38;2;105;105;107m'   # muted #69696B
+            separator_color='\033[38;2;150;150;152m' # dim #969698
+            alert_color='\033[38;2;201;60;44m'       # blocked #C93C2C
 
-            rate_low='\033[38;2;0;92;67m'    # console cyan, bright
-            rate_mid='\033[38;2;130;106;0m'    # console yellow, bright #826A00
-            rate_high='\033[38;2;161;73;22m'   # orange #A14916
-            rate_crit='\033[38;2;173;15;0m'    # console red, bright
+            rate_low='\033[38;2;26;127;55m'   # ansi2 green
+            rate_mid='\033[38;2;154;103;0m'   # working amber #9A6700
+            rate_high='\033[38;2;201;60;44m'  # blocked #C93C2C
+            rate_crit='\033[38;2;198;42;42m'  # ansi1 red
             ;;
         *)
             # Colorful palette: Catppuccin Mocha vivid

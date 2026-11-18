@@ -73,6 +73,23 @@ export type TurnCosts = {
   startUsd: number | null
 }
 
+export type CheckRun = {
+  label: string
+  hasPassed: boolean
+  endedAt: number
+}
+
+export type Verification = {
+  editedSinceCheck: string[]
+  lastCheck: CheckRun | null
+}
+
+export type ExternalWrites = {
+  count: number
+  lastLabel: string | null
+  lastAt: number | null
+}
+
 declare module 'claude-code' {
   interface PluginState {
     'dev-dashboard': {
@@ -82,6 +99,8 @@ declare module 'claude-code' {
       session: Shaped<SessionFacts | null>
       isDismissed: boolean
       costs: TurnCosts
+      verification: Shaped<Verification>
+      externalWrites: Shaped<ExternalWrites>
     }
   }
 }

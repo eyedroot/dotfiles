@@ -73,26 +73,25 @@ vimcmd_replace_one_symbol = '[❮](bold fg:vim_replace)'
 vimcmd_replace_symbol = '[❮](bold fg:vim_replace)'
 vimcmd_visual_symbol = '[❮](bold fg:vim_visual)'
 
-# PhpStorm's Rider Melon Light, used by the Unpeel light appearance through
-# the swap in .zshrc.shared. Mark and prompt character take the keyword blue,
-# the name the function purple, the heart the number pink; the directory pill
-# is the editor selection blue with the editor text color on it. Text colors
-# are the scheme's darker console variants where the syntax color falls short
-# of 4.5:1 on white.
-[palettes.phpstorm_light]
-prompt_mark = "#0F54D6"   # keyword blue
-user_name = "#6B2FBA"      # function purple
-heart = "#AB2F6B"            # number pink
-dir_pill = "#B8D9FF"          # editor selection blue
-dir_text = "#202020"         # editor text
-git_pill = "#DCEFD6"         # pale green, 1.2:1 against white so it reads as a pill, not a block
-git = "#1B6600"           # console green, bright
-git_status = "#786200"        # console yellow, bright
-prompt_ok = "#0F54D6"     # keyword blue
-prompt_error = "#AD0F00"    # console red, bright
-vim_normal = "#0F54D6"    # keyword blue
-vim_replace = "#AD0F00"     # console red, bright
-vim_visual = "#6B2FBA"     # function purple
+# Herdr's paper theme, used in light terminals through the swap in
+# .zshrc.shared. Mark and prompt character take paper's accent blue, the name
+# its ANSI purple, the heart its ANSI red; the directory pill is paper's
+# selection blue with its text color on it, and the git pill its sidebar
+# chrome, so both pills read as parts of the Herdr window around them.
+[palettes.herdr_paper]
+prompt_mark = "#1F62D0"   # accent
+user_name = "#7A45C8"     # ansi5 purple
+heart = "#C62A2A"         # ansi1 red
+dir_pill = "#CFDCF5"      # selection
+dir_text = "#1B1B1E"      # foreground
+git_pill = "#F1F1EE"      # chrome
+git = "#1A7F37"           # ansi2 green
+git_status = "#8F5D00"    # ansi3 amber
+prompt_ok = "#1F62D0"     # accent
+prompt_error = "#C62A2A"  # ansi1 red
+vim_normal = "#1F62D0"    # accent
+vim_replace = "#C62A2A"   # ansi1 red
+vim_visual = "#7A45C8"    # ansi5 purple
 
 # PhpStorm's Rider Melon Dark, for the dark Ghostty theme. Dark text on the
 # blue pill as in the reference setup.

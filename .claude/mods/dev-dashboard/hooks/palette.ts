@@ -23,23 +23,26 @@ export type Palette = {
 }
 
 export const PALETTES: Record<ThemeName, Palette> = {
+  // Herdr's paper theme: the pane sits on its sidebar chrome, and the accents
+  // are its ANSI colors. A chip's tint is its color at 12% over chrome, and its
+  // accent and muted are darkened just enough to keep 4.5:1 on that tint.
   light: {
-    background: '#f7f7f7',
-    accent: '#0f54d6',
-    text: '#202020',
-    muted: '#606060',
-    hash: '#6b2fba',
-    ok: '#1b6600',
-    warning: '#826a00',
-    error: '#ad0f00',
+    background: '#f1f1ee',
+    accent: '#1f62d0',
+    text: '#1b1b1e',
+    muted: '#69696b',
+    hash: '#7a45c8',
+    ok: '#1a7f37',
+    warning: '#8f5d00',
+    error: '#c62a2a',
     chips: {
-      green: { tint: '#dcf1e4', text: '#123f28', accent: '#1b7f4b', muted: '#4f7d62' },
-      yellow: { tint: '#f6ebc4', text: '#4a3700', accent: '#9a6b00', muted: '#857449' },
-      red: { tint: '#f9dad6', text: '#5e160d', accent: '#c4402b', muted: '#9a6a65' },
-      blue: { tint: '#dbe5fb', text: '#17295e', accent: '#3563d1', muted: '#6775a3' },
-      purple: { tint: '#e5dffa', text: '#2a2064', accent: '#6a52cc', muted: '#7d76a6' },
-      cyan: { tint: '#d4ecf0', text: '#0d4148', accent: '#167f8c', muted: '#5b8b91' },
-      slate: { tint: '#e5e5e9', text: '#26262c', accent: '#5b5b66', muted: '#787884' },
+      green: { tint: '#d7e3d8', text: '#0c3919', accent: '#177232', muted: '#416b4d' },
+      yellow: { tint: '#e5dfd1', text: '#402a00', accent: '#895900', muted: '#745f37' },
+      red: { tint: '#ecd9d6', text: '#591313', accent: '#ba2727', muted: '#914c4c' },
+      blue: { tint: '#d8e0ea', text: '#0e2c5e', accent: '#1e5ec8', muted: '#466392' },
+      purple: { tint: '#e3dce9', text: '#371f5a', accent: '#7844c4', muted: '#6d568f' },
+      cyan: { tint: '#d6e1df', text: '#073234', accent: '#0f6d72', muted: '#3f696b' },
+      slate: { tint: '#dfe0de', text: '#2b2b2f', accent: '#5f6068', muted: '#626266' },
     },
   },
   dark: {
@@ -75,11 +78,11 @@ export type BandPalette = {
 
 export const BAND_PALETTES: Record<ThemeName, BandPalette> = {
   light: {
-    separator: '#adadad',
-    label: '#606060',
-    value: '#202020',
-    spark: '#6b2fba',
-    bars: { low: '#005c43', mid: '#826a00', high: '#a14916', crit: '#ad0f00', context: '#ad0f00' },
+    separator: '#969698',
+    label: '#69696b',
+    value: '#1b1b1e',
+    spark: '#7a45c8',
+    bars: { low: '#1a7f37', mid: '#9a6700', high: '#c93c2c', crit: '#c62a2a', context: '#c62a2a' },
   },
   dark: {
     separator: '#7f849c',
@@ -90,8 +93,12 @@ export const BAND_PALETTES: Record<ThemeName, BandPalette> = {
   },
 }
 
-export function resolveTheme(option: unknown, settingsTheme: unknown): ThemeName {
+// Claude Code resolves its "auto" theme by asking the terminal for its
+// background; the shell that started the session asked the same and exported
+// the answer as TERMINAL_APPEARANCE (.zshrc.shared).
+export function resolveTheme(option: unknown, settingsTheme: unknown, terminalAppearance?: string): ThemeName {
   if (option === 'light' || option === 'dark') return option
+  if (settingsTheme === 'auto') return terminalAppearance === 'light' ? 'light' : 'dark'
 
   return typeof settingsTheme === 'string' && settingsTheme.startsWith('light') ? 'light' : 'dark'
 }
