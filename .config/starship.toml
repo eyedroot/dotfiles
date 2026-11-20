@@ -73,25 +73,26 @@ vimcmd_replace_one_symbol = '[❮](bold fg:vim_replace)'
 vimcmd_replace_symbol = '[❮](bold fg:vim_replace)'
 vimcmd_visual_symbol = '[❮](bold fg:vim_visual)'
 
-# Herdr's paper theme, used in light terminals through the swap in
-# .zshrc.shared. Mark and prompt character take paper's accent blue, the name
-# its ANSI purple, the heart its ANSI red; the directory pill is paper's
-# selection blue with its text color on it, and the git pill its sidebar
-# chrome, so both pills read as parts of the Herdr window around them.
-[palettes.herdr_paper]
-prompt_mark = "#1F62D0"   # accent
-user_name = "#7A45C8"     # ansi5 purple
-heart = "#C62A2A"         # ansi1 red
-dir_pill = "#CFDCF5"      # selection
-dir_text = "#1B1B1E"      # foreground
-git_pill = "#F1F1EE"      # chrome
-git = "#1A7F37"           # ansi2 green
-git_status = "#8F5D00"    # ansi3 amber
-prompt_ok = "#1F62D0"     # accent
-prompt_error = "#C62A2A"  # ansi1 red
-vim_normal = "#1F62D0"    # accent
-vim_replace = "#C62A2A"   # ansi1 red
-vim_visual = "#7A45C8"    # ansi5 purple
+# Herdr's soft-paper theme (~/.config/herdr-app/themes/soft-paper.json), used
+# in light terminals through the swap in .zshrc.shared. Mark and prompt
+# character take its accent blue, the name its ANSI purple, the heart its ANSI
+# red; the directory pill is its selection blue with its text color on it, and
+# the git pill its sidebar chrome, so both pills read as parts of the Herdr
+# window around them. Green and amber keep 4.5:1 on the chrome pill.
+[palettes.herdr_soft_paper]
+prompt_mark = "#2F64C2"   # accent
+user_name = "#7A4FB8"     # ansi5 purple
+heart = "#B73E37"         # ansi1 red
+dir_pill = "#D3DCEC"      # selection
+dir_text = "#2F3136"      # foreground
+git_pill = "#EBE9E3"      # chrome
+git = "#2C7737"           # ansi2 green
+git_status = "#88630D"    # ansi3 amber
+prompt_ok = "#2F64C2"     # accent
+prompt_error = "#B73E37"  # ansi1 red
+vim_normal = "#2F64C2"    # accent
+vim_replace = "#B73E37"   # ansi1 red
+vim_visual = "#7A4FB8"    # ansi5 purple
 
 # PhpStorm's Rider Melon Dark, for the dark Ghostty theme. Dark text on the
 # blue pill as in the reference setup.

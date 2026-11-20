@@ -23,26 +23,27 @@ export type Palette = {
 }
 
 export const PALETTES: Record<ThemeName, Palette> = {
-  // Herdr's paper theme: the pane sits on its sidebar chrome, and the accents
-  // are its ANSI colors. A chip's tint is its color at 12% over chrome, and its
-  // accent and muted are darkened just enough to keep 4.5:1 on that tint.
+  // Herdr's soft-paper theme (~/.config/herdr-app/themes/soft-paper.json): the
+  // pane sits on its sidebar chrome, and the accents are its ANSI colors. A
+  // chip's tint is its color at 12% over chrome, and its accent and muted are
+  // darkened just enough to keep 4.5:1 on that tint.
   light: {
-    background: '#f1f1ee',
-    accent: '#1f62d0',
-    text: '#1b1b1e',
-    muted: '#69696b',
-    hash: '#7a45c8',
-    ok: '#1a7f37',
-    warning: '#8f5d00',
-    error: '#c62a2a',
+    background: '#ebe9e3',
+    accent: '#2f64c2',
+    text: '#2f3136',
+    muted: '#5c5e64',
+    hash: '#7a4fb8',
+    ok: '#2c7737',
+    warning: '#88630d',
+    error: '#b73e37',
     chips: {
-      green: { tint: '#d7e3d8', text: '#0c3919', accent: '#177232', muted: '#416b4d' },
-      yellow: { tint: '#e5dfd1', text: '#402a00', accent: '#895900', muted: '#745f37' },
-      red: { tint: '#ecd9d6', text: '#591313', accent: '#ba2727', muted: '#914c4c' },
-      blue: { tint: '#d8e0ea', text: '#0e2c5e', accent: '#1e5ec8', muted: '#466392' },
-      purple: { tint: '#e3dce9', text: '#371f5a', accent: '#7844c4', muted: '#6d568f' },
-      cyan: { tint: '#d6e1df', text: '#073234', accent: '#0f6d72', muted: '#3f696b' },
-      slate: { tint: '#dfe0de', text: '#2b2b2f', accent: '#5f6068', muted: '#626266' },
+      green: { tint: '#d4dbce', text: '#123516', accent: '#206d2d', muted: '#466648' },
+      yellow: { tint: '#dfd9c9', text: '#3d2b06', accent: '#7d5900', muted: '#6f5d3d' },
+      red: { tint: '#e5d4ce', text: '#541a17', accent: '#ab322d', muted: '#884e48' },
+      blue: { tint: '#d4d9df', text: '#132c59', accent: '#265bb8', muted: '#455f8b' },
+      purple: { tint: '#ddd7de', text: '#362254', accent: '#7347b0', muted: '#685687' },
+      cyan: { tint: '#d3dbd6', text: '#0c3335', accent: '#0e696e', muted: '#436466' },
+      slate: { tint: '#dbd9d5', text: '#2b2c2f', accent: '#5c5e65', muted: '#5d5e62' },
     },
   },
   dark: {
@@ -78,11 +79,11 @@ export type BandPalette = {
 
 export const BAND_PALETTES: Record<ThemeName, BandPalette> = {
   light: {
-    separator: '#969698',
-    label: '#69696b',
-    value: '#1b1b1e',
-    spark: '#7a45c8',
-    bars: { low: '#1a7f37', mid: '#9a6700', high: '#c93c2c', crit: '#c62a2a', context: '#c62a2a' },
+    separator: '#848589',
+    label: '#5c5e64',
+    value: '#2f3136',
+    spark: '#7a4fb8',
+    bars: { low: '#2c7737', mid: '#88630d', high: '#ad4a13', crit: '#b73e37', context: '#b73e37' },
   },
   dark: {
     separator: '#7f849c',

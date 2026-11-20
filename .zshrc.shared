@@ -114,7 +114,7 @@ if command -v starship &> /dev/null; then
   starship_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/starship"
   if [ "$TERMINAL_APPEARANCE" = "light" ]; then
     mkdir -p "$starship_cache_dir"
-    sed "s/^palette = 'phpstorm_dark'$/palette = 'herdr_paper'/" \
+    sed "s/^palette = 'phpstorm_dark'$/palette = 'herdr_soft_paper'/" \
       "$HOME/.config/starship.toml" > "$starship_cache_dir/starship.light.toml"
     export STARSHIP_CONFIG="$starship_cache_dir/starship.light.toml"
   elif [[ "$STARSHIP_CONFIG" == "$starship_cache_dir/"* ]]; then

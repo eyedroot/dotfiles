@@ -99,7 +99,7 @@ test('the terminal band draws rate limits, context and cost in the status line l
   await shows(/^ 314k\/1M$/)
   await shows(/^cost $/)
   await shows(/^\$8\.04$/)
-  expect((await band.find({ type: 'Text', text: /^ 92%$/ }))?.props, 'band: a window near its limit takes the status line red').toMatchObject({ color: '#c62a2a', weight: 'bold' })
+  expect((await band.find({ type: 'Text', text: /^ 92%$/ }))?.props, 'band: a window near its limit takes the status line red').toMatchObject({ color: '#b73e37', weight: 'bold' })
   expect(await band.find({ type: 'Text', text: /engine/ })).toBeUndefined()
   await band.unmount()
 

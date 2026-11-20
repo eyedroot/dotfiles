@@ -60,25 +60,27 @@ else
     fi
     case "$claude_theme" in
         light*)
-            # Herdr's paper theme, the light Herdr window around the terminal,
-            # in the same roles as the Mocha block below. Usage steps green,
-            # working amber and blocked red as Herdr's own usage bar does. Every
-            # color but the separator clears 4.5:1 on paper's white background.
-            project_color='\033[38;2;122;69;200m'    # ansi5 purple #7A45C8
-            model_color='\033[38;2;31;98;208m'       # accent blue #1F62D0
-            ctx_bar_color='\033[38;2;198;42;42m'     # ansi1 red #C62A2A
-            branch_color='\033[38;2;26;127;55m'      # ansi2 green #1A7F37
-            worktree_color='\033[38;2;15;111;116m'   # ansi6 teal #0F6F74
-            style_color='\033[38;2;122;69;200m'      # ansi5 purple
-            rate_icon_color='\033[38;2;15;111;116m'  # ansi6 teal
-            subtext_color='\033[38;2;105;105;107m'   # muted #69696B
-            separator_color='\033[38;2;150;150;152m' # dim #969698
-            alert_color='\033[38;2;201;60;44m'       # blocked #C93C2C
+            # Herdr's soft-paper theme (~/.config/herdr-app/themes/soft-paper.json),
+            # the light Herdr window around the terminal, in the same roles as
+            # the Mocha block below. Usage steps green, working amber and blocked
+            # orange as Herdr's own usage bar does. Every color but the separator
+            # clears 4.5:1 on both the terminal background #F4F3EF and the
+            # sidebar chrome #EBE9E3.
+            project_color='\033[38;2;122;79;184m'    # ansi5 purple #7A4FB8
+            model_color='\033[38;2;47;100;194m'      # accent blue #2F64C2
+            ctx_bar_color='\033[38;2;183;62;55m'     # ansi1 red #B73E37
+            branch_color='\033[38;2;44;119;55m'      # ansi2 green #2C7737
+            worktree_color='\033[38;2;31;115;120m'   # ansi6 teal #1F7378
+            style_color='\033[38;2;122;79;184m'      # ansi5 purple
+            rate_icon_color='\033[38;2;31;115;120m'  # ansi6 teal
+            subtext_color='\033[38;2;92;94;100m'     # muted #5C5E64
+            separator_color='\033[38;2;132;133;137m' # dim #848589
+            alert_color='\033[38;2;173;74;19m'       # blocked #AD4A13
 
-            rate_low='\033[38;2;26;127;55m'   # ansi2 green
-            rate_mid='\033[38;2;154;103;0m'   # working amber #9A6700
-            rate_high='\033[38;2;201;60;44m'  # blocked #C93C2C
-            rate_crit='\033[38;2;198;42;42m'  # ansi1 red
+            rate_low='\033[38;2;44;119;55m'   # ansi2 green
+            rate_mid='\033[38;2;136;99;13m'   # working amber #88630D
+            rate_high='\033[38;2;173;74;19m'  # blocked #AD4A13
+            rate_crit='\033[38;2;183;62;55m'  # ansi1 red
             ;;
         *)
             # Colorful palette: Catppuccin Mocha vivid
