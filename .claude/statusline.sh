@@ -32,9 +32,11 @@ else
     layout="vivid"
     # The status line cannot query the terminal background, so Claude Code's
     # own theme setting is the light/dark switch; the UI around the status
-    # line already follows that value. "auto" follows the macOS appearance,
-    # which is what Claude Code itself resolves it to. An Unpeel pane on the
-    # dark appearance keeps the dark palette whatever the setting says.
+    # line already follows that value. Claude Code resolves "auto" by asking
+    # the terminal (OSC 11); the shell that started it asked the same and left
+    # the answer in TERMINAL_APPEARANCE (.zshrc.shared). Without it, the macOS
+    # appearance stands in. An Unpeel pane on the dark appearance keeps the
+    # dark palette whatever the setting says.
     if [ "$TERM_PROGRAM" = "Unpeel" ] && [ "$unpeel_appearance" = "dark" ]; then
         claude_theme="dark"
     else
@@ -48,7 +50,9 @@ else
             ;;
     esac
     if [ "$claude_theme" = "auto" ]; then
-        if [ "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" = "Dark" ]; then
+        if [ -n "$TERMINAL_APPEARANCE" ]; then
+            claude_theme="$TERMINAL_APPEARANCE"
+        elif [ "$(defaults read -g AppleInterfaceStyle 2>/dev/null)" = "Dark" ]; then
             claude_theme="dark"
         else
             claude_theme="light"
@@ -56,25 +60,27 @@ else
     fi
     case "$claude_theme" in
         light*)
-            # PhpStorm Rider Melon Light palette, the same roles as the Mocha
-            # block below: function purple on the project name, keyword blue on
-            # the model name, console red on the context meter. Every color but
-            # the separator clears 4.5:1 on the white Ghostty background.
-            project_color='\033[38;2;107;47;186m'    # function purple #6B2FBA
-            model_color='\033[38;2;15;84;214m'      # keyword blue #0F54D6
-            ctx_bar_color='\033[38;2;173;15;0m'    # console red, bright #AD0F00
-            branch_color='\033[38;2;27;102;0m'      # console green, bright #1B6600
-            worktree_color='\033[38;2;0;92;67m'      # console cyan, bright #005C43
-            style_color='\033[38;2;107;47;186m'      # function purple
-            rate_icon_color='\033[38;2;0;92;67m'   # console cyan, bright
-            subtext_color='\033[38;2;96;96;96m'     # gray #606060
-            separator_color='\033[38;2;173;173;173m' # gray #ADADAD
-            alert_color='\033[38;2;173;15;0m'      # console red, bright
+            # Herdr's soft-paper theme (~/.config/herdr-app/themes/soft-paper.json),
+            # the light Herdr window around the terminal, in the same roles as
+            # the Mocha block below. Usage steps green, working amber and blocked
+            # orange as Herdr's own usage bar does. Every color but the separator
+            # clears 4.5:1 on both the terminal background #F4F3EF and the
+            # sidebar chrome #EBE9E3.
+            project_color='\033[38;2;122;79;184m'    # ansi5 purple #7A4FB8
+            model_color='\033[38;2;47;100;194m'      # accent blue #2F64C2
+            ctx_bar_color='\033[38;2;183;62;55m'     # ansi1 red #B73E37
+            branch_color='\033[38;2;44;119;55m'      # ansi2 green #2C7737
+            worktree_color='\033[38;2;31;115;120m'   # ansi6 teal #1F7378
+            style_color='\033[38;2;122;79;184m'      # ansi5 purple
+            rate_icon_color='\033[38;2;31;115;120m'  # ansi6 teal
+            subtext_color='\033[38;2;92;94;100m'     # muted #5C5E64
+            separator_color='\033[38;2;132;133;137m' # dim #848589
+            alert_color='\033[38;2;173;74;19m'       # blocked #AD4A13
 
-            rate_low='\033[38;2;0;92;67m'    # console cyan, bright
-            rate_mid='\033[38;2;130;106;0m'    # console yellow, bright #826A00
-            rate_high='\033[38;2;161;73;22m'   # orange #A14916
-            rate_crit='\033[38;2;173;15;0m'    # console red, bright
+            rate_low='\033[38;2;44;119;55m'   # ansi2 green
+            rate_mid='\033[38;2;136;99;13m'   # working amber #88630D
+            rate_high='\033[38;2;173;74;19m'  # blocked #AD4A13
+            rate_crit='\033[38;2;183;62;55m'  # ansi1 red
             ;;
         *)
             # Colorful palette: Catppuccin Mocha vivid

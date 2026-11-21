@@ -138,17 +138,28 @@ export function wrapText(text: string, size: number, room: number, maxLines: num
   return lines
 }
 
+function fills(mode: 0 | 1): string {
+  return (Object.keys(PALETTE) as (keyof typeof PALETTE)[]).map(name => `.${name}{fill:${PALETTE[name][mode]}}`).join('')
+}
+
 function styles(mode: 0 | 1): string {
-  const fills = (Object.keys(PALETTE) as (keyof typeof PALETTE)[]).map(name => `.${name}{fill:${PALETTE[name][mode]}}`).join('')
   const cards = TONES.map(tone => `.card-${tone}{fill:${PALETTE[tone][mode]};fill-opacity:${mode ? 0.07 : 0.05};stroke:${PALETTE[tone][mode]};stroke-opacity:${mode ? 0.2 : 0.18}}`).join('')
   const neutral = `.card-none{fill:${PALETTE.fg[mode]};fill-opacity:${mode ? 0.04 : 0.03};stroke:${PALETTE.fg[mode]};stroke-opacity:${mode ? 0.12 : 0.1}}`
 
-  return fills + cards + neutral
+  return fills(mode) + cards + neutral
 }
 
-function document(width: number, height: number, body: string): string {
+// A pill is tinted more strongly than a card: it stands alone on the band.
+function pillStyles(mode: 0 | 1): string {
+  const pills = TONES.map(tone => `.pill-${tone}{fill:${PALETTE[tone][mode]};fill-opacity:${mode ? 0.17 : 0.12};stroke:${PALETTE[tone][mode]};stroke-opacity:${mode ? 0.42 : 0.35}}`).join('')
+  const neutral = `.pill-none{fill:${PALETTE.fg[mode]};fill-opacity:${mode ? 0.06 : 0.045};stroke:${PALETTE.fg[mode]};stroke-opacity:${mode ? 0.14 : 0.12}}`
+
+  return fills(mode) + pills + neutral
+}
+
+function document(width: number, height: number, body: string, css: (mode: 0 | 1) => string = styles): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" font-family="${FONT}">` +
-    `<style>${styles(0)}@media (prefers-color-scheme:dark){${styles(1)}}</style>${body}</svg>`
+    `<style>${css(0)}@media (prefers-color-scheme:dark){${css(1)}}</style>${body}</svg>`
 }
 
 function text(x: number, baseline: number, content: string, options: { size: number; weight?: number; cls?: Cls; anchor?: 'end'; tracking?: number }): string {
@@ -273,6 +284,70 @@ export function drawCard(options: {
   const frame = `<rect class="card-${options.tone ?? 'none'}" x=".5" y=".5" width="${width - 1}" height="${height - 1}" rx="${CARD_RADIUS}"/>`
 
   return { source: document(width, height, frame + body), width, height }
+}
+
+export type Pill = {
+  tone: Tone | null
+  label: string
+  value: string
+  bars?: readonly number[]
+  aside: string | null
+}
+
+const PILL_HEIGHT = 30
+const PILL_PAD_X = 10
+const PILL_GAP = 6
+const PILL_ASIDE_SIZE = 11
+const PILL_BAR_WIDTH = 3
+const PILL_BAR_STEP = 4.5
+const PILL_BAR_MIN_HEIGHT = 2
+const PILL_BAR_MAX_HEIGHT = 12
+
+function pillBars(values: readonly number[], x: number, cls: Cls): { source: string; width: number } {
+  const top = Math.max(...values, 0)
+  const bottom = PILL_HEIGHT / 2 + 6
+  const source = values
+    .map((value, index) => {
+      const height = top <= 0 ? PILL_BAR_MIN_HEIGHT : PILL_BAR_MIN_HEIGHT + (Math.max(0, value) / top) * (PILL_BAR_MAX_HEIGHT - PILL_BAR_MIN_HEIGHT)
+      const opacity = index === values.length - 1 ? '' : ' opacity="0.45"'
+
+      return `<rect class="${cls}" x="${(x + index * PILL_BAR_STEP).toFixed(1)}" y="${(bottom - height).toFixed(1)}" width="${PILL_BAR_WIDTH}" height="${height.toFixed(1)}" rx="1"${opacity}/>`
+    })
+    .join('')
+
+  return { source, width: (values.length - 1) * PILL_BAR_STEP + PILL_BAR_WIDTH }
+}
+
+// The usage-bar mod's band shape: one figure on a tint of its tone with a
+// hairline edge, each pill its own drawing so the band wraps them as units.
+export function drawPill(pill: Pill, maxWidth: number): Drawing {
+  const baseline = (size: number) => PILL_HEIGHT / 2 + size * 0.36
+  let x = PILL_PAD_X
+  let body = text(x, baseline(SIZE.label), pill.label, { size: SIZE.label, weight: 700, cls: pill.tone ?? 'lb', tracking: LABEL_TRACKING })
+
+  x += textWidth(pill.label, SIZE.label, LABEL_TRACKING) + PILL_GAP
+
+  const value = fitText(pill.value, SIZE.body, maxWidth - PILL_PAD_X - x)
+  body += text(x, baseline(SIZE.body), value, { size: SIZE.body, weight: 650 })
+  x += textWidth(value, SIZE.body)
+
+  if (pill.bars !== undefined && pill.bars.length > 0) {
+    const bars = pillBars(pill.bars, x + PILL_GAP, pill.tone ?? 'mu')
+    body += bars.source
+    x += PILL_GAP + bars.width
+  }
+
+  const aside = pill.aside === null ? '' : fitText(pill.aside, PILL_ASIDE_SIZE, maxWidth - PILL_PAD_X - x - PILL_GAP)
+  if (aside !== '') {
+    x += PILL_GAP
+    body += text(x, baseline(PILL_ASIDE_SIZE), aside, { size: PILL_ASIDE_SIZE, cls: 'mu' })
+    x += textWidth(aside, PILL_ASIDE_SIZE)
+  }
+
+  const width = Math.ceil(x + PILL_PAD_X)
+  const frame = `<rect class="pill-${pill.tone ?? 'none'}" x=".5" y="3.5" width="${width - 1}" height="${PILL_HEIGHT - 7}" rx="${(PILL_HEIGHT - 7) / 2}"/>`
+
+  return { source: document(width, PILL_HEIGHT, frame + body, pillStyles), width, height: PILL_HEIGHT }
 }
 
 export function contextTone(percent: number): Tone {

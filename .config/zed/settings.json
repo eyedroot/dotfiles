@@ -79,7 +79,7 @@
   "vim_mode": false,
   "theme": {
     "mode": "light",
-    "light": "Sharp Solarized+",
+    "light": "JetBrains Light",
     "dark": "BlackFox",
   },
   "minimap": {
@@ -100,6 +100,9 @@
     "show_type_hints": false,
   },
   "agent": {
+    "threads_sidebar": {
+      "position": "right"
+    },
     "flexible": true,
     "default_model": {
       "provider": "zed.dev",
@@ -114,7 +117,6 @@
         },
       },
     },
-    "sidebar_side": "right",
     "dock": "right",
     "commit_message_model": {
       "provider": "copilot_chat",
@@ -122,6 +124,7 @@
     },
   },
   "git": {
+    "date_format": "locale",
     "inline_blame": {
       "enabled": true,
     },

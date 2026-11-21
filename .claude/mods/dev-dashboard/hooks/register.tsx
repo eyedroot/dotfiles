@@ -2,19 +2,29 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register, RenderChildren } from 'claude-code'
 
 import type { GitSnapshot, RateLimit, SessionFacts, TurnCosts, TurnRecap, UpstreamStatus } from '../types'
+import { NO_EXTERNAL_WRITES, NO_VERIFICATION, describeToolCall, withCheck, withEdits, withExternalWrite } from './activity'
+import type { ToolCallFacts, ToolOutcome } from './activity'
 import { bandGroups, barRuns } from './band'
+import { NOT_LOADED, findMentions, formatCard, formatTip, listLines, loadRepoMap, lookup, matchKey, repoAt } from './catenoid'
+import type { Loaded, Match } from './catenoid'
+import { catenoidCards as drawnCatenoidCards } from './catenoidCard'
+import { drawCatenoidSection } from './catenoidSection'
 import type { BandGroup } from './band'
 import { bannerWidth, renderBanner } from './banner'
 import { UPSTREAM_NOTE, changedText, chips, commitsCard, contextCard, fit, isInSync, placeCard, recapCard, recapSummary, shortAge, shortenHome, syncText, worktreesCard } from './cards'
 import type { Card, ChipPart, PaneFacts } from './cards'
+import { costPill, desktopPills } from './desktopBand'
 import { FLOWER } from './flower'
 import { readGitSnapshot } from './git'
 import { BAND_PALETTES, PALETTES, customThemeSlug, resolveTheme } from './palette'
 import type { ChipTone, Palette, ThemeName } from './palette'
 import { makeHalfBlockCells } from './raster'
 import { RECAP_ROOTS_KEY, makeRecap, recapKey, rememberRoot } from './recap'
+import { drawPill } from './svg'
 
 const PANE_ID = 'dev-dashboard'
+const CATENOID_DATA_PATH = '~/Github/Catenoid/.claude/catenoid-repos.json'
+const CATENOID_COMMAND = 'catenoid'
 const PANE_TITLE = 'Dashboard'
 const PANE_COLUMNS = 46
 const GIT_TIMEOUT_MS = 10000
@@ -34,6 +44,7 @@ const BAND_BAR_WIDTH = 10
 const BAND_WIDE_COLUMNS = 100
 const TURN_COSTS_KEPT = 48
 const SESSION_POLL_MS = 60_000
+const PILL_MAX_WIDTH = 300
 
 const NO_COSTS: TurnCosts = { turns: [], startUsd: null }
 
@@ -45,6 +56,8 @@ const previous = atom({ plugin: 'dev-dashboard', key: 'previous' } as const, nul
 const session = atom({ plugin: 'dev-dashboard', key: 'session' } as const, null, { shape: 'session-band-1' })
 const isDismissed = atom({ plugin: 'dev-dashboard', key: 'isDismissed' } as const, false)
 const costs = atom({ plugin: 'dev-dashboard', key: 'costs' } as const, NO_COSTS)
+const verification = atom({ plugin: 'dev-dashboard', key: 'verification' } as const, NO_VERIFICATION, { shape: 'verification-1' })
+const externalWrites = atom({ plugin: 'dev-dashboard', key: 'externalWrites' } as const, NO_EXTERNAL_WRITES, { shape: 'external-writes-1' })
 
 const gitRefresh: { pending: Promise<GitSnapshot> | null; isQueued: boolean } = { pending: null, isQueued: false }
 
@@ -90,6 +103,15 @@ function refreshGit($: EngineInterface, commitCount: number): Promise<GitSnapsho
   })
 
   return gitRefresh.pending
+}
+
+async function recordToolActivity($: EngineInterface, call: ToolCallFacts, outcome: ToolOutcome): Promise<void> {
+  const { editedPaths, check, externalWrite } = describeToolCall(call, outcome)
+  const now = await $.clock.now()
+
+  if (editedPaths.length > 0) await update($, verification, verified => withEdits(verified, editedPaths))
+  if (check !== null) await update($, verification, () => withCheck({ ...check, endedAt: now }))
+  if (externalWrite !== null) await update($, externalWrites, writes => withExternalWrite(writes, externalWrite, now))
 }
 
 function toRateLimit(limit: { kind: string; percentUsed: number; resetsAt?: string }): RateLimit {
@@ -158,11 +180,27 @@ async function customThemeBase($: EngineInterface, slug: string): Promise<unknow
   }
 }
 
+// A session started outside the shell setup in ~/.zshrc.shared has no
+// TERMINAL_APPEARANCE; the macOS appearance stands in, as it does in
+// ~/.claude/statusline.sh.
+async function terminalAppearance($: EngineInterface): Promise<string> {
+  const exported = await $.env.get('TERMINAL_APPEARANCE')
+  if (exported !== undefined) return exported
+
+  const asked = await $.process.run(['defaults', 'read', '-g', 'AppleInterfaceStyle'], { timeoutMs: 2000 }).catch(() => null)
+
+  return asked?.stdout.trim() === 'Dark' ? 'dark' : 'light'
+}
+
 async function readTheme($: EngineInterface, option: unknown): Promise<ThemeName> {
   const settings = await $.settings.read()
   const slug = customThemeSlug(settings.theme)
 
-  return resolveTheme(option, slug === null ? settings.theme : await customThemeBase($, slug))
+  return resolveTheme(
+    option,
+    slug === null ? settings.theme : await customThemeBase($, slug),
+    settings.theme === 'auto' ? await terminalAppearance($) : undefined,
+  )
 }
 
 function openPane($: EngineInterface) {
@@ -175,6 +213,7 @@ export const register: Register = (on, options) => {
   const pollSeconds = Math.max(0, toNumber(options.pollSeconds, 30))
   const autoOpen = options.autoOpen !== false
   const isBandEnabled = options.band !== false
+  const isDesktopBandEnabled = options.desktopBand !== false
   const bannerText = typeof options.banner === 'string' ? options.banner : ''
   const wideBanner = renderBanner(bannerText, 2)
   const narrowBanner = renderBanner(bannerText, 1)
@@ -186,12 +225,30 @@ export const register: Register = (on, options) => {
   let turnStartedAt = 0
   let toolCalls = 0
   let hasAutoOpened = false
+  // Catenoid section: the repositories a prompt or answer named, shown in the pane.
+  const catenoidPath = typeof options.catenoidData === 'string' ? options.catenoidData : CATENOID_DATA_PATH
+  const catenoidOnce = options.catenoidOnce !== false
+  let catenoid: Loaded = NOT_LOADED
+  let catenoidHere: Match | null = null
+  let catenoidCards: Match[] = []
+  let catenoidPending: Match[] = []
+  const catenoidTipped = new Set<string>()
 
   on('session.start', async ($, e, next) => {
-    await $.command.register({ name: 'dashboard', description: 'Toggle the dev dashboard pane' })
+    // `claude plugin validate` reports /dashboard as a name Claude Code ships,
+    // which the engine would refuse; a refusal must not stop the reads and
+    // polls below.
+    await $.command.register({ name: 'dashboard', description: 'Toggle the dev dashboard pane' }).catch(() => undefined)
 
     theme = await readTheme($, options.theme)
     home = (await $.env.get('HOME')) ?? null
+    if (catenoidPath !== '') {
+      catenoid = await loadRepoMap($, catenoidPath)
+      if (catenoid.map !== null) {
+        await $.command.register({ name: CATENOID_COMMAND, description: 'Catenoid 저장소의 배포 별칭, 이미지, 환경별 도메인을 보여 준다', argumentHint: '[저장소 폴더나 별칭]' })
+        catenoidHere = repoAt(e.cwd, catenoid.rootAbs, catenoid.map)
+      }
+    }
     const snapshot = await refreshGit($, commitCount)
     await Promise.all([loadPrevious($, snapshot.mainRoot), refreshSession($)])
 
@@ -219,6 +276,16 @@ export const register: Register = (on, options) => {
     return { text: opened.isPlaced ? 'Dashboard opened.' : `Dashboard waits: ${opened.reason}` }
   })
 
+  on('command.run', { command: CATENOID_COMMAND }, async ($, e) => {
+    if (catenoid.map === null) catenoid = await loadRepoMap($, catenoidPath)
+    if (catenoid.map === null) return { text: `Catenoid 대응표를 읽지 못했다 (${catenoid.dataPath}): ${catenoid.error}` }
+    const query = e.args.trim()
+    if (query === '') return { text: ['상세는 /catenoid <폴더나 별칭> (예: /catenoid api-v2)', ...listLines(catenoid.map)].join('\n') }
+    const hits = lookup(query, catenoid.map)
+
+    return { text: hits.length > 0 ? hits.map(formatCard).join('\n\n') : `'${query}'에 맞는 저장소나 별칭이 없다` }
+  })
+
   on('ui.close', async ($, e, next) => {
     if (e.id === PANE_ID && e.origin.kind === 'person') {
       await update($, isDismissed, () => true)
@@ -227,15 +294,38 @@ export const register: Register = (on, options) => {
     return next(e)
   })
 
-  // Drawn without next(e) on the terminal, so a band of another plugin
-  // beneath (usage-bar) is left out there; `band: false` gives it back.
+  // Drawn without next(e), so a band of another plugin beneath (usage-bar) is
+  // left out; `band: false` gives it back on the terminal, `desktopBand: false`
+  // on the desktop app.
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     if (autoOpen && !hasAutoOpened && e.viewport?.isFullscreen === true && !(await read($, isDismissed))) {
       hasAutoOpened = true
       void openPane($)
     }
 
-    if (!isBandEnabled || e.surface !== 'terminal' || e.props.hasSurvey) return next(e)
+    if (e.props.hasSurvey) return next(e)
+
+    if (e.surface === 'desktop') {
+      if (!isDesktopBandEnabled) return next(e)
+
+      const [facts, ledger, checks, writes] = await Promise.all([read($, session), read($, costs), read($, verification), read($, externalWrites)])
+      const pills = desktopPills(costPill(facts, ledger.turns, await $.clock.now()), checks, writes)
+      if (pills.length === 0) return next(e)
+
+      const { Box, Svg } = $.ui.resolve(e)
+
+      return (
+        <Box flexDirection="row" flexWrap="wrap" alignItems="center" columnGap={1} paddingX={1}>
+          {pills.map(pill => {
+            const drawing = drawPill(pill, PILL_MAX_WIDTH)
+
+            return <Svg key={pill.key} source={drawing.source} alt={pill.alt} width={drawing.width} height={drawing.height} />
+          })}
+        </Box>
+      )
+    }
+
+    if (!isBandEnabled || e.surface !== 'terminal') return next(e)
 
     const [facts, ledger] = await Promise.all([read($, session), read($, costs)])
     const groups = facts === null ? [] : bandGroups(facts, await $.clock.now(), e.props.bodyColumns >= BAND_WIDE_COLUMNS, ledger.turns)
@@ -296,6 +386,14 @@ export const register: Register = (on, options) => {
   on('prompt.submit', async ($, e, next) => {
     turnStartedAt = await $.clock.now()
     toolCalls = 0
+    if (catenoidPath !== '' && catenoid.map === null) catenoid = await loadRepoMap($, catenoidPath)
+    if (catenoid.map !== null && e.command === undefined) {
+      catenoidPending = findMentions(e.text, catenoid.map).filter(m => !catenoidOnce || !catenoidTipped.has(matchKey(m)))
+      if (catenoidPending.length > 0) {
+        catenoidCards = catenoidPending
+        $.ui.invalidate('ui.render')
+      }
+    }
 
     return next(e)
   })
@@ -319,11 +417,30 @@ export const register: Register = (on, options) => {
       void refreshGit($, commitCount)
     }
 
+    // Subagents count too: their edits, checks and writes are the session's.
+    if (ran.deny === undefined) await recordToolActivity($, e, ran)
+
     return ran
   })
 
   on('turn.complete', async ($, e, next) => {
     if (e.agentId !== undefined) return next(e)
+
+    if (catenoid.map !== null) {
+      const named: Match[] = []
+      for (const m of [...catenoidPending, ...findMentions(e.answer, catenoid.map)]) {
+        const key = matchKey(m)
+        if (named.some(n => matchKey(n) === key) || (catenoidOnce && catenoidTipped.has(key))) continue
+        catenoidTipped.add(key)
+        named.push(m)
+        $.ui.log(`Tip · ${formatTip(m)}`)
+      }
+      catenoidPending = []
+      if (named.length > 0) {
+        catenoidCards = named
+        $.ui.invalidate('ui.render')
+      }
+    }
 
     const endedAt = await $.clock.now()
     const snapshot = await read($, git)
@@ -376,6 +493,7 @@ export const register: Register = (on, options) => {
         <Box flexDirection="column" width="100%" paddingX={1} rowGap={1}>
           {draw('card:place', placeCard(view, wideWidth))}
           <Box flexDirection="row" flexWrap="wrap" alignItems="flex-start" columnGap={1} rowGap={1}>
+            {drawnCatenoidCards(catenoidCards.length > 0 ? catenoidCards : catenoidHere === null ? [] : [catenoidHere], wideWidth).map(card => draw(`card:catenoid:${card.alt}`, card))}
             {worktrees !== null && draw('card:worktrees', worktrees)}
             {snapshot.isRepo && draw('card:commits', commitsCard(view, wideWidth))}
             {context !== null && draw('card:context', context)}
@@ -517,6 +635,7 @@ export const register: Register = (on, options) => {
         <Box flexDirection="row" flexWrap="wrap" columnGap={1} marginTop={1}>
           {chips(view).map(part => chip(part.key, part.tone, part.parts))}
         </Box>
+        {drawCatenoidSection($, e, palette, catenoidCards.length > 0 ? catenoidCards : catenoidHere === null ? [] : [catenoidHere], width)}
         {!snapshot.isRepo && (
           <Box marginTop={1}>
             <Text color={palette.muted}>not a git repository</Text>

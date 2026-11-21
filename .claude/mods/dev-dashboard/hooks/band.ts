@@ -26,7 +26,7 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const DAY_MS = 24 * 3_600_000
 // Two bars compare nothing worth a glance and read as a broken glyph.
 export const SPARK_MIN_TURNS = 3
-const SPARK_TURNS = 12
+export const SPARK_TURNS = 12
 const BAR_GLYPH: Record<BarCell, string> = { on: '■', off: '□', mark: '▣' }
 
 export function clampPercent(percent: number): number {

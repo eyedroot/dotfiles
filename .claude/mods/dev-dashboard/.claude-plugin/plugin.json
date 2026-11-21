@@ -42,6 +42,12 @@
       "description": "Rate limits with their reset and pace, context fill and what it grew by, and the session's cost with a sparkline of its turns, in one row in the status line's look on the terminal. It takes the place of another plugin's band there (usage-bar); off, that band shows again.",
       "default": true
     },
+    "desktopBand": {
+      "type": "boolean",
+      "title": "데스크톱 입력창 위에 세션 점검 칩 그리기",
+      "description": "이 세션의 비용과 턴별 비용 그래프, 수정 뒤 테스트·검사를 돌렸는지, 이 세션의 외부 쓰기 횟수를 데스크톱 앱 입력창 위에 칩으로 보여 준다. 끄면 아래 플러그인의 띠(usage-bar)가 다시 보인다.",
+      "default": true
+    },
     "pollSeconds": {
       "type": "number",
       "title": "Git poll interval (seconds)",
@@ -64,6 +70,18 @@
         "light",
         "dark"
       ]
+    },
+    "catenoidData": {
+      "type": "string",
+      "title": "Catenoid 대응표 JSON 경로",
+      "description": "저장소 폴더, 배포 별칭, 이미지, 환경별 도메인을 담은 JSON. 저장소 이름이 프롬프트나 답변에 나오면 pane에 카드로 보여 주고 /catenoid 명령을 켠다. 비우거나 파일이 없으면 이 기능은 꺼진다.",
+      "default": "~/Github/Catenoid/.claude/catenoid-repos.json"
+    },
+    "catenoidOnce": {
+      "type": "boolean",
+      "title": "저장소마다 세션에 한 번만 전사에 쓰기",
+      "description": "켜면 같은 저장소의 `Tip ·` 전사 줄은 세션에서 처음 나올 때만 쓴다. pane 카드는 매번 바뀐다.",
+      "default": true
     }
   }
 }

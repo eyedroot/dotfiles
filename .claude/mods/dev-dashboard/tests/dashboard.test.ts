@@ -157,6 +157,10 @@ test('the palette follows the theme setting unless the option forces one', () =>
   expect(resolveTheme('auto', undefined)).toBe('dark')
   expect(resolveTheme('dark', 'light')).toBe('dark')
   expect(resolveTheme('light', 'dark')).toBe('light')
+  expect(resolveTheme('auto', 'auto', 'light')).toBe('light')
+  expect(resolveTheme('auto', 'auto', 'dark')).toBe('dark')
+  expect(resolveTheme('auto', 'auto', undefined)).toBe('dark')
+  expect(resolveTheme('dark', 'auto', 'light')).toBe('dark')
   expect(customThemeSlug('custom:gruvbox-light')).toBe('gruvbox-light')
   expect(customThemeSlug('custom:../escape')).toBeNull()
   expect(customThemeSlug('light')).toBeNull()
@@ -196,7 +200,7 @@ test('a custom theme is read as the preset it is based on', async ($, on) => {
   await $.session.start({ cwd: WORKTREE, surface: 'terminal', isInteractive: true })
 
   const ui = await $.ui.mount({ plugin: 'dev-dashboard', surface: 'terminal', component: 'Pane', requestId: 'dev-dashboard', props: PANE_PROPS })
-  expect((await ui.find({ type: 'Box' }))?.props, 'light base of the custom theme').toMatchObject({ backgroundColor: '#f7f7f7' })
+  expect((await ui.find({ type: 'Box' }))?.props, 'light base of the custom theme').toMatchObject({ backgroundColor: '#ebe9e3' })
   await ui.unmount()
 })
 
@@ -235,7 +239,7 @@ test('the terminal pane leads with the worktree, then chips, the mismatched upst
   expect(await headings(ui), 'terminal: section order').toEqual(['GIT', 'WORKTREES (2)', 'COMMITS'])
   expect(await ui.find({ type: 'Text', text: /^── / }), 'terminal: no rule headings').toBeUndefined()
   expect(await ui.find({ type: 'Text', text: /LAST TURN/ }), 'terminal: no recap yet').toBeUndefined()
-  expect((await ui.find({ type: 'Box' }))?.props, 'terminal: light background').toMatchObject({ backgroundColor: '#f7f7f7' })
+  expect((await ui.find({ type: 'Box' }))?.props, 'terminal: light background').toMatchObject({ backgroundColor: '#ebe9e3' })
   expect((await ui.find({ type: 'Raster' }))?.props, 'terminal: flower raster').toEqual(expect.objectContaining({ columns: 14, rows: 7 }))
   await ui.unmount()
 

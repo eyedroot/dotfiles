@@ -66,16 +66,55 @@ if command -v mise &> /dev/null; then
   eval "$(mise activate zsh)"
 fi
 
+# Background lightness for the prompt, ~/.claude/statusline.sh and the
+# dev-dashboard mod. They draw fixed hex colors that a terminal theme cannot
+# remap, and terminals with different backgrounds (Ghostty, Herdr) share these
+# files, so each shell asks its own terminal for the background color (OSC 11), as
+# Claude Code's "auto" theme does. Unpeel keeps its pane appearance in
+# app-appearance instead. Read once per shell: an appearance change reaches the
+# next shell. Without an answer an inherited value stays.
+# Sets REPLY to light or dark. Runs in the current shell, not in $(...), so
+# print -z reaches this shell's first prompt.
+terminal_background_appearance() {
+  local reply char saved_stty
+  REPLY=
+  saved_stty=$(stty -g 2>/dev/null) || return 1
+  # Echo off before asking, or the answer can land on screen before read runs.
+  stty -echo -icanon 2>/dev/null
+  printf '\e]11;?\e\\' > /dev/tty
+  while read -r -s -k 1 -t 0.2 char; do
+    reply+=$char
+    [[ $reply == *$'\a' || $reply == *$'\e\\' ]] && break
+  done
+  stty "$saved_stty" 2>/dev/null
+  # Keys typed while the shell was starting arrive before the answer; hand them
+  # back to the first prompt.
+  local typed=${reply%%$'\e]11;'*}
+  [[ -n $typed ]] && print -z -- "$typed"
+  [[ $reply =~ 'rgb:([0-9a-fA-F]+)/([0-9a-fA-F]+)/([0-9a-fA-F]+)' ]] || return 1
+  local -F red=$(( 0x$match[1] / (16.0 ** ${#match[1]} - 1) ))
+  local -F green=$(( 0x$match[2] / (16.0 ** ${#match[2]} - 1) ))
+  local -F blue=$(( 0x$match[3] / (16.0 ** ${#match[3]} - 1) ))
+  (( 0.2126 * red + 0.7152 * green + 0.0722 * blue > 0.5 )) && REPLY=light || REPLY=dark
+}
+
+if [[ -o interactive && -t 0 && -t 1 ]]; then
+  if [ "$TERM_PROGRAM" = "Unpeel" ]; then
+    REPLY=$(cat "$HOME/.unpeel/app-appearance" 2>/dev/null)
+  else
+    terminal_background_appearance
+  fi
+  [[ $REPLY == (light|dark) ]] && export TERMINAL_APPEARANCE=$REPLY
+fi
+
 # Starship prompt
 if command -v starship &> /dev/null; then
-  # Starship's palette key is static, so an Unpeel session on Unpeel's light
-  # appearance (kept in app-appearance) gets a generated copy of the shared
-  # config with only the palette line swapped. The file is read once here, so
-  # an appearance change reaches Starship in the next shell.
+  # Starship's palette key is static, so a light terminal gets a generated copy
+  # of the shared config with only the palette line swapped.
   starship_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/starship"
-  if [ "$TERM_PROGRAM" = "Unpeel" ] && [ "$(cat "$HOME/.unpeel/app-appearance" 2>/dev/null)" = "light" ]; then
+  if [ "$TERMINAL_APPEARANCE" = "light" ]; then
     mkdir -p "$starship_cache_dir"
-    sed "s/^palette = 'phpstorm_dark'$/palette = 'phpstorm_light'/" \
+    sed "s/^palette = 'phpstorm_dark'$/palette = 'herdr_soft_paper'/" \
       "$HOME/.config/starship.toml" > "$starship_cache_dir/starship.light.toml"
     export STARSHIP_CONFIG="$starship_cache_dir/starship.light.toml"
   elif [[ "$STARSHIP_CONFIG" == "$starship_cache_dir/"* ]]; then
