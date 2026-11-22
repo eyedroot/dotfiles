@@ -135,6 +135,12 @@ Shared global instructions for coding agents. Claude Code imports this file via 
 - `code_explorer` must not delegate exploration to another subagent.
 - If the custom agent is unavailable or delegation fails, report the limitation and continue with available tools without claiming that delegation succeeded.
 
+## Code Implementation
+
+- The primary agent sets the implementation scope, expected behavior, constraints, and acceptance criteria. In Codex and Claude Code, explicitly delegate code and test changes to the custom `code_writer` when available. The primary agent may handle a small, well-understood edit directly when delegation would add more work than the edit itself.
+- Give the writer the relevant repository paths, ownership of the affected files or behavior, and the checks needed to verify the result. If the code contradicts the plan or the change needs a wider scope, the writer reports the evidence and the primary agent decides how to proceed.
+- The primary agent reviews the diff and verifies the affected behavior before reporting completion. If delegation is unavailable or fails, report the limitation and continue with the available tools.
+
 ## Git Commits
 
 - Never append `Co-Authored-By:` trailers to commit messages. This applies to every repository and every commit, including amends, squashes, and rebases.
