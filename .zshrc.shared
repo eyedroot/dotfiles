@@ -9,9 +9,6 @@ if [ -f "$HOME/.agents/humanize-shell.sh" ]; then
   . "$HOME/.agents/humanize-shell.sh"
 fi
 
-# Claude Code mods (function-hook plugins). Desktop app sessions get no shell env, so settings.json env repeats this key
-export CLAUDE_CODE_PLUGIN_DIRS="$HOME/.claude/mods/dev-dashboard"
-
 # PostgreSQL client tools (libpq)
 export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
 
@@ -66,9 +63,8 @@ if command -v mise &> /dev/null; then
   eval "$(mise activate zsh)"
 fi
 
-# Background lightness for the prompt, ~/.claude/statusline.sh and the
-# dev-dashboard mod. They draw fixed hex colors that a terminal theme cannot
-# remap, and terminals with different backgrounds (Ghostty, Herdr) share these
+# Background lightness for the prompt and ~/.claude/statusline.sh. They draw
+# fixed hex colors that a terminal theme cannot remap, and terminals with different backgrounds (Ghostty, Herdr) share these
 # files, so each shell asks its own terminal for the background color (OSC 11), as
 # Claude Code's "auto" theme does. Unpeel keeps its pane appearance in
 # app-appearance instead. Read once per shell: an appearance change reaches the
