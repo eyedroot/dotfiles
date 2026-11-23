@@ -3,6 +3,7 @@ import type { EngineInterface, Register, RenderChildren } from 'claude-code'
 
 import type { GitSnapshot, RateLimit, SessionFacts, TurnCosts, TurnRecap, UpstreamStatus } from '../types'
 import { NO_EXTERNAL_WRITES, NO_VERIFICATION, describeToolCall, withCheck, withEdits, withExternalWrite } from './activity'
+import { NO_AGENTS, hasRunning, mergeListed, withReport } from './agents'
 import type { ToolCallFacts, ToolOutcome } from './activity'
 import { bandGroups, barRuns } from './band'
 import { NOT_LOADED, findMentions, formatCard, formatTip, listLines, loadRepoMap, lookup, matchKey, repoAt } from './catenoid'
@@ -13,7 +14,7 @@ import type { BandGroup } from './band'
 import { bannerWidth, renderBanner } from './banner'
 import { UPSTREAM_NOTE, changedText, chips, commitsCard, contextCard, fit, isInSync, placeCard, recapCard, recapSummary, shortAge, shortenHome, syncText, worktreesCard } from './cards'
 import type { Card, ChipPart, PaneFacts } from './cards'
-import { costPill, desktopPills } from './desktopBand'
+import { desktopPills } from './desktopBand'
 import { FLOWER } from './flower'
 import { readGitSnapshot } from './git'
 import { BAND_PALETTES, PALETTES, customThemeSlug, resolveTheme } from './palette'
@@ -45,6 +46,9 @@ const BAND_WIDE_COLUMNS = 100
 const TURN_COSTS_KEPT = 48
 const SESSION_POLL_MS = 60_000
 const PILL_MAX_WIDTH = 300
+const AGENTS_PILL_MAX_WIDTH = 640
+const AGENT_POLL_MS = 2000
+const SPAWN_POLLS = 5
 
 const NO_COSTS: TurnCosts = { turns: [], startUsd: null }
 
@@ -58,6 +62,7 @@ const isDismissed = atom({ plugin: 'dev-dashboard', key: 'isDismissed' } as cons
 const costs = atom({ plugin: 'dev-dashboard', key: 'costs' } as const, NO_COSTS)
 const verification = atom({ plugin: 'dev-dashboard', key: 'verification' } as const, NO_VERIFICATION, { shape: 'verification-1' })
 const externalWrites = atom({ plugin: 'dev-dashboard', key: 'externalWrites' } as const, NO_EXTERNAL_WRITES, { shape: 'external-writes-1' })
+const agents = atom({ plugin: 'dev-dashboard', key: 'agents' } as const, NO_AGENTS, { shape: 'agents-1' })
 
 const gitRefresh: { pending: Promise<GitSnapshot> | null; isQueued: boolean } = { pending: null, isQueued: false }
 
@@ -112,6 +117,14 @@ async function recordToolActivity($: EngineInterface, call: ToolCallFacts, outco
   if (editedPaths.length > 0) await update($, verification, verified => withEdits(verified, editedPaths))
   if (check !== null) await update($, verification, () => withCheck({ ...check, endedAt: now }))
   if (externalWrite !== null) await update($, externalWrites, writes => withExternalWrite(writes, externalWrite, now))
+}
+
+// Writes only when something moved, since every write redraws the band.
+async function refreshAgents($: EngineInterface): Promise<void> {
+  const [listed, now, history] = await Promise.all([$.agent.list(), $.clock.now(), read($, agents)])
+  const merged = mergeListed(history, listed, now)
+
+  if (JSON.stringify(merged) !== JSON.stringify(history)) await update($, agents, () => merged)
 }
 
 function toRateLimit(limit: { kind: string; percentUsed: number; resetsAt?: string }): RateLimit {
@@ -225,6 +238,8 @@ export const register: Register = (on, options) => {
   let turnStartedAt = 0
   let toolCalls = 0
   let hasAutoOpened = false
+  // Polls still owed to a spawn that may not be listed yet.
+  let spawnPollsLeft = 0
   // Catenoid section: the repositories a prompt or answer named, shown in the pane.
   const catenoidPath = typeof options.catenoidData === 'string' ? options.catenoidData : CATENOID_DATA_PATH
   const catenoidOnce = options.catenoidOnce !== false
@@ -239,6 +254,17 @@ export const register: Register = (on, options) => {
     // which the engine would refuse; a refusal must not stop the reads and
     // polls below.
     await $.command.register({ name: 'dashboard', description: 'Toggle the dev dashboard pane' }).catch(() => undefined)
+
+    // $.agent.list() has no change event, so it is polled, but only while an
+    // agent runs or a spawn has not yet shown up in the list. Set up before the
+    // git and session reads so a failure there leaves the agent pill working.
+    $.clock.every(AGENT_POLL_MS, () => {
+      void (async () => {
+        if (spawnPollsLeft === 0 && !hasRunning(await read($, agents))) return
+        spawnPollsLeft = Math.max(0, spawnPollsLeft - 1)
+        await refreshAgents($)
+      })()
+    })
 
     theme = await readTheme($, options.theme)
     home = (await $.env.get('HOME')) ?? null
@@ -308,8 +334,8 @@ export const register: Register = (on, options) => {
     if (e.surface === 'desktop') {
       if (!isDesktopBandEnabled) return next(e)
 
-      const [facts, ledger, checks, writes] = await Promise.all([read($, session), read($, costs), read($, verification), read($, externalWrites)])
-      const pills = desktopPills(costPill(facts, ledger.turns, await $.clock.now()), checks, writes)
+      const [history, facts, checks, writes] = await Promise.all([read($, agents), read($, session), read($, verification), read($, externalWrites)])
+      const pills = desktopPills(history, facts, checks, writes)
       if (pills.length === 0) return next(e)
 
       const { Box, Svg } = $.ui.resolve(e)
@@ -317,7 +343,7 @@ export const register: Register = (on, options) => {
       return (
         <Box flexDirection="row" flexWrap="wrap" alignItems="center" columnGap={1} paddingX={1}>
           {pills.map(pill => {
-            const drawing = drawPill(pill, PILL_MAX_WIDTH)
+            const drawing = drawPill(pill, pill.key === 'agents' ? AGENTS_PILL_MAX_WIDTH : PILL_MAX_WIDTH)
 
             return <Svg key={pill.key} source={drawing.source} alt={pill.alt} width={drawing.width} height={drawing.height} />
           })}
@@ -360,6 +386,23 @@ export const register: Register = (on, options) => {
         ))}
       </Box>
     )
+  })
+
+  // A foreground spawn's next() may resolve only when the agent ends, so the
+  // polls cover the time before it does.
+  on('agent.spawn', async ($, e, next) => {
+    spawnPollsLeft = SPAWN_POLLS
+    const spawned = await next(e)
+    await refreshAgents($)
+
+    return spawned
+  })
+
+  on('agent.report', async ($, e, next) => {
+    const now = await $.clock.now()
+    await update($, agents, history => withReport(history, e, now))
+
+    return next(e)
   })
 
   on('session.measure', async ($, e, next) => {

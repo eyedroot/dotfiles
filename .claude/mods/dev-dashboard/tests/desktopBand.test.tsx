@@ -3,13 +3,19 @@ import type { Engine } from 'claude-code/testing'
 import type { On } from 'claude-code'
 
 import { bashWriteLabel, checkLabel, describeToolCall, mcpWriteLabel } from '../hooks/activity'
+import { NO_AGENTS, mergeListed } from '../hooks/agents'
+import { agentsPill, contextPill } from '../hooks/desktopBand'
 
 const WORKTREE = '/home/dev/repo'
 const START = new Date(2026, 10, 11, 14, 5).getTime()
 const BAND_PROPS = { hasSurvey: false, isCollapsed: false, isWorking: false, maxRows: 4, bodyColumns: 120, scroll: { offset: 0, bodyRows: 4 }, view: {} } as const
 
+type ListedAgent = { id: string; type: string; description: string; startTime: number; taskStatus: 'running' | 'completed' | 'failed' | 'killed' }
+
 type World = {
   sessionUsd: () => number | null
+  hasContext?: boolean
+  agents?: () => ListedAgent[]
   failingCommand?: RegExp
   refusedCommand?: string
 }
@@ -36,13 +42,15 @@ function mockWorld(on: On, world: World) {
   on('session.usage', () => {
     const usd = world.sessionUsd()
 
-    return { value: { startedAt: START, context: { window: 200_000, percent: 10, tokens: 20_000 }, rateLimits: [], ...(usd === null ? {} : { cost: { usd } }) } as never }
+    return { value: { startedAt: START, context: world.hasContext === false ? { window: 200_000 } : { window: 200_000, percent: 10, tokens: 20_000 }, rateLimits: [], ...(usd === null ? {} : { cost: { usd } }) } as never }
   })
   on('command.register', (_, e) => {
     if (e.name === world.refusedCommand) throw new Error('a name Claude Code ships')
 
     return { value: { command: e.name } }
   })
+  on('agent.list', () => ({ value: (world.agents?.() ?? []).map(agent => ({ ...agent, status: agent.taskStatus === 'killed' ? 'killed' : agent.taskStatus, kind: 'local_agent', label: agent.description, cwd: WORKTREE, tokenCount: 0, tokenSamples: [], hasRow: true })) as never }))
+  on('agent.spawn', () => ({ model: 'claude-opus-5-5', agentId: 'spawned' }))
   on('turn.start', (_, e) => ({ turnId: e.turnId }))
   on('turn.complete', (_, e) => ({ text: e.answer }))
   on('ui.open', () => ({ value: { isPlaced: true } }))
@@ -74,17 +82,15 @@ async function drawnPills($: Engine): Promise<DrawnPill[] | 'engine'> {
   const engine = await band.find({ type: 'Text', text: /^engine$/ })
   await band.unmount()
 
-  return engine === undefined ? pills.map(pill => ({ alt: String(pill.props.alt), source: String(pill.props.source) })) : 'engine'
+  // The kit's mount keeps the engine's node beside a drawn band, so the band
+  // counts as handed back only when it drew no pill.
+  return pills.length === 0 && engine !== undefined ? 'engine' : pills.map(pill => ({ alt: String(pill.props.alt), source: String(pill.props.source) }))
 }
 
 async function pillAlts($: Engine): Promise<string[] | 'engine'> {
   const pills = await drawnPills($)
 
   return pills === 'engine' ? pills : pills.map(pill => pill.alt)
-}
-
-function barHeights(source: string): number[] {
-  return [...source.matchAll(/<rect class="blue" x="[^"]+" y="[^"]+" width="3" height="([^"]+)"/g)].map(match => Number(match[1]))
 }
 
 test('a check is found where a segment runs it, not where its name is only mentioned', () => {
@@ -136,53 +142,78 @@ test('only edits to project files wait for a check', () => {
   expect(describeToolCall({ tool: 'Bash', command: 'vendor/bin/pest' }, { result: { backgroundTaskId: 'b1' } }).check, 'a background run has no result yet').toBeNull()
 })
 
-test('the cost pill shows the session cost, then the last hour and a bar for each turn from three turns on', async ($, on) => {
-  let usd = 1
-  const clock = mockWorld(on, { sessionUsd: () => usd })
-  await $.session.start({ cwd: WORKTREE, surface: 'desktop', isInteractive: true })
+const run = (id: string, type: string, startTime: number, taskStatus: ListedAgent['taskStatus'] = 'running'): ListedAgent => ({ id, type, description: `${type} task ${id}`, startTime, taskStatus })
 
-  const before = await drawnPills($)
-  expect(before === 'engine' ? before : before.map(pill => pill.alt)).toEqual(['이 세션 비용 $1.00'])
-  expect(before === 'engine' ? [] : barHeights(before[0]?.source ?? ''), 'no turn yet, no bars').toEqual([])
-  expect(before === 'engine' ? '' : (before[0]?.source ?? ''), 'the label says the amount runs from the session start').toContain('>세션 비용</text>')
+test('running agent types lead with a dot and their time, earlier ones follow dimmed, a failure in red', () => {
+  const history = mergeListed(
+    NO_AGENTS,
+    [run('a1', 'Explore', START - 600_000, 'completed'), run('a2', 'code_explorer', START - 180_000), run('a3', 'code_explorer', START - 30_000), run('a4', 'test_runner', START - 20_000, 'failed'), run('a5', 'Plan', START)],
+    START,
+  )
+  const pill = agentsPill(history)
 
-  for (const [index, after] of [1.5, 3.3, 3.5].entries()) {
-    await $.turn.start({ text: 'go', turnId: `turn-${index}` })
-    await clock.advance(10_000)
-    usd = after
-    await $.turn.complete({ answer: 'ok', durationMs: 10_000, isAborted: false, turnId: `turn-${index}`, reason: 'answer' })
-  }
-
-  const after = await drawnPills($)
-  expect(after === 'engine' ? after : after.map(pill => pill.alt)).toEqual(['이 세션 비용 $3.50, 최근 1시간 $2.50, 최근 3턴의 턴별 비용 막대'])
-
-  const heights = barHeights(after === 'engine' ? '' : (after[0]?.source ?? ''))
-  expect(heights, 'turns cost $0.50, $1.80 and $0.20').toHaveLength(3)
-  expect(Math.max(...heights), 'the dearest turn has the tallest bar').toBe(heights[1])
-  expect(heights[0]).toBeGreaterThan(heights[2] ?? Infinity)
+  expect(pill?.value).toBe('실행 3')
+  expect(pill?.items?.map(item => item.text)).toEqual(['code_explorer ×2 3분', 'Plan <1분', 'Explore', 'test_runner'])
+  expect(pill?.items?.map(item => item.isDim === true)).toEqual([false, false, true, true])
+  expect(pill?.items?.[3]?.tone, 'a failed run shows in red').toBe('red')
+  expect(pill?.aside).toBe('완료 1 · 실패 1')
+  expect(pill?.alt).toContain('code_explorer 2개 (code_explorer task a2, code_explorer task a3)')
 })
 
-test('the desktop band leads with the cost, then unverified edits, the check that follows and outside writes', async ($, on) => {
-  mockWorld(on, { sessionUsd: () => 1, failingCommand: /pest/ })
+test('an agent that leaves the list while running counts as finished, and an idle session shows the history alone', () => {
+  const running = mergeListed(NO_AGENTS, [run('a1', 'Explore', START)], START)
+  const gone = mergeListed(running, [], START + 90_000)
+
+  expect(gone.runs[0]?.outcome).toBe('completed')
+  expect(agentsPill(gone)?.value).toBe('대기')
+  expect(agentsPill(gone)?.items?.map(item => item.text)).toEqual(['Explore'])
+  expect(agentsPill(NO_AGENTS), 'no agent yet, no pill').toBeNull()
+})
+
+test('the context pill shows the fill and the tokens, its tone stepping up with the fill', () => {
+  const facts = { model: 'Opus 5.5', turns: 3, contextPercent: 62.4, contextTokens: 124_800, contextWindow: 200_000, contextDelta: null, rateLimits: [], costUsd: 4.2, startedAt: START }
+
+  expect(contextPill(facts)).toMatchObject({ key: 'context', tone: 'yellow', value: '62%', aside: '125k/200k' })
+  expect(contextPill({ ...facts, contextPercent: 12 })?.tone).toBe('blue')
+  expect(contextPill({ ...facts, contextPercent: null }), 'no reading yet').toBeNull()
+  expect(JSON.stringify(contextPill(facts)), 'the cost stays out').not.toContain('4.2')
+})
+
+test('the desktop band leads with the agents, then the context, the checks and the outside writes; no cost is shown', async ($, on) => {
+  let listed: ListedAgent[] = []
+  const clock = mockWorld(on, { sessionUsd: () => 1, failingCommand: /pest/, agents: () => listed })
   await $.session.start({ cwd: WORKTREE, surface: 'desktop', isInteractive: true })
 
+  listed = [run('spawned', 'code_explorer', START)]
+  await $.agent.spawn({ tool_use_id: 'toolu_1', prompt: 'find it', description: 'code_explorer task spawned', subagentType: 'code_explorer', provider: { plugin: 'engine', tier: 'core' }, parentModel: 'claude-opus-5-5', background: false, fork: false })
+  await clock.advance(2_000)
+  expect(await pillAlts($)).toEqual(['실행 중 1개: code_explorer 1개 (code_explorer task spawned)', '컨텍스트 10% 사용 (20k/200k 토큰)'])
+  const drawn = await drawnPills($)
+  expect(drawn === 'engine' ? '' : (drawn[0]?.source ?? '')).toContain('>code_explorer &lt;1분</text>')
+  expect(drawn === 'engine' ? '' : drawn.map(pill => pill.source).join(''), 'the cost is gone from the band').not.toContain('$1.00')
+
+  await clock.advance(120_000)
+  const later = await drawnPills($)
+  expect(later === 'engine' ? '' : (later[0]?.source ?? ''), 'the elapsed time moves by the minute while it runs').toContain('>code_explorer 2분</text>')
+
+  listed = [run('spawned', 'code_explorer', START, 'completed')]
+  await clock.advance(2_000)
   await callTool($, { tool: 'Edit', file_path: `${WORKTREE}/app/Foo.php`, old_string: 'a', new_string: 'b' })
-  await callTool($, { tool: 'Write', file_path: `${WORKTREE}/app/Bar.php`, content: '<?php' })
-  expect(await pillAlts($)).toEqual(['이 세션 비용 $1.00', '검증: 2개 파일을 고친 뒤 테스트나 검사를 돌리지 않음'])
-
   await callTool($, { tool: 'Bash', command: 'vendor/bin/pest' })
-  expect((await pillAlts($))[1]).toBe('검증: pest 실패 (14:05)')
-
   await callTool($, { tool: 'Bash', command: 'git push origin feature/NX-1' })
-  await callTool($, { tool: 'mcp__a69ecaad-cd7a__slack_send_message', channel_id: 'C1', message: 'done' })
-  expect(await pillAlts($)).toEqual(['이 세션 비용 $1.00', '검증: pest 실패 (14:05)', '이 세션의 외부 쓰기 2회, 마지막은 slack_send_message 14:05'])
+  expect(await pillAlts($)).toEqual([
+    '실행 중인 서브에이전트 없음. 이전에 쓴 서브에이전트: code_explorer 1개 (code_explorer task spawned)',
+    '컨텍스트 10% 사용 (20k/200k 토큰)',
+    '검증: pest 실패 (14:07)',
+    '이 세션의 외부 쓰기 1회, 마지막은 git push 14:07',
+  ])
 })
 
 test('with nothing to show, a survey up or the desktop band turned off, the band beneath is drawn', async ($, on) => {
-  mockWorld(on, { sessionUsd: () => null })
+  mockWorld(on, { sessionUsd: () => null, hasContext: false })
   await $.session.start({ cwd: WORKTREE, surface: 'desktop', isInteractive: true })
 
-  expect(await pillAlts($), 'no cost reported and no activity').toEqual('engine')
+  expect(await pillAlts($), 'no context reading, no agent and no activity').toEqual('engine')
 
   await callTool($, { tool: 'Edit', file_path: `${WORKTREE}/app/Foo.php`, old_string: 'a', new_string: 'b' })
   const survey = await $.ui.mount({ plugin: 'dev-dashboard', surface: 'desktop', component: 'AbovePrompt', props: { ...BAND_PROPS, hasSurvey: true } })
@@ -201,5 +232,5 @@ test('a refused /dashboard registration does not stop the session facts read at 
   mockWorld(on, { sessionUsd: () => 1, refusedCommand: 'dashboard' })
   await $.session.start({ cwd: WORKTREE, surface: 'desktop', isInteractive: true })
 
-  expect(await pillAlts($)).toEqual(['이 세션 비용 $1.00'])
+  expect(await pillAlts($)).toEqual(['컨텍스트 10% 사용 (20k/200k 토큰)'])
 })

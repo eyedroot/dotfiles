@@ -291,8 +291,19 @@ export type Pill = {
   label: string
   value: string
   bars?: readonly number[]
+  items?: readonly PillItem[]
   aside: string | null
 }
+
+export type PillItem = {
+  text: string
+  tone?: Tone
+  hasDot?: boolean
+  isDim?: boolean
+}
+
+const PILL_DOT_RADIUS = 3
+const PILL_DIM_OPACITY = 0.42
 
 const PILL_HEIGHT = 30
 const PILL_PAD_X = 10
@@ -318,6 +329,40 @@ function pillBars(values: readonly number[], x: number, cls: Cls): { source: str
   return { source, width: (values.length - 1) * PILL_BAR_STEP + PILL_BAR_WIDTH }
 }
 
+function itemWidth(item: PillItem): number {
+  return (item.hasDot === true ? PILL_DOT_RADIUS * 2 + 4 : 0) + textWidth(item.text, SIZE.body)
+}
+
+// Items that do not fit before `limit` fold into a dim `+N`, so the pill keeps
+// its height and the first items, the running ones, always show.
+function pillItems(items: readonly PillItem[], start: number, limit: number, baseline: number): { source: string; end: number } {
+  let x = start
+  let source = ''
+
+  for (const [index, item] of items.entries()) {
+    const rest = items.length - index - 1
+    const foldWidth = rest === 0 ? 0 : PILL_GAP + textWidth(`+${rest}`, SIZE.body)
+    if (x + PILL_GAP + itemWidth(item) + foldWidth > limit) {
+      const fold = `+${items.length - index}`
+      source += `<g opacity="${PILL_DIM_OPACITY}">${text(x + PILL_GAP, baseline, fold, { size: SIZE.body, cls: 'mu' })}</g>`
+
+      return { source, end: x + PILL_GAP + textWidth(fold, SIZE.body) }
+    }
+
+    x += PILL_GAP
+    let part = ''
+    if (item.hasDot === true) {
+      part += `<circle class="${item.tone ?? 'mu'}" cx="${(x + PILL_DOT_RADIUS).toFixed(1)}" cy="${PILL_HEIGHT / 2}" r="${PILL_DOT_RADIUS}"/>`
+      x += PILL_DOT_RADIUS * 2 + 4
+    }
+    part += text(x, baseline, item.text, { size: SIZE.body, weight: item.isDim === true ? 500 : 650, cls: item.isDim === true ? (item.tone ?? 'mu') : 'fg' })
+    x += textWidth(item.text, SIZE.body)
+    source += item.isDim === true ? `<g opacity="${PILL_DIM_OPACITY}">${part}</g>` : part
+  }
+
+  return { source, end: x }
+}
+
 // The usage-bar mod's band shape: one figure on a tint of its tone with a
 // hairline edge, each pill its own drawing so the band wraps them as units.
 export function drawPill(pill: Pill, maxWidth: number): Drawing {
@@ -335,6 +380,12 @@ export function drawPill(pill: Pill, maxWidth: number): Drawing {
     const bars = pillBars(pill.bars, x + PILL_GAP, pill.tone ?? 'mu')
     body += bars.source
     x += PILL_GAP + bars.width
+  }
+
+  if (pill.items !== undefined && pill.items.length > 0) {
+    const drawn = pillItems(pill.items, x, maxWidth - PILL_PAD_X - (pill.aside === null ? 0 : PILL_GAP + textWidth(pill.aside, PILL_ASIDE_SIZE)), baseline(SIZE.body))
+    body += drawn.source
+    x = drawn.end
   }
 
   const aside = pill.aside === null ? '' : fitText(pill.aside, PILL_ASIDE_SIZE, maxWidth - PILL_PAD_X - x - PILL_GAP)

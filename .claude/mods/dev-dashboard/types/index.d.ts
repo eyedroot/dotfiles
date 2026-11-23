@@ -90,6 +90,22 @@ export type ExternalWrites = {
   lastAt: number | null
 }
 
+export type AgentOutcome = 'running' | 'completed' | 'failed' | 'stopped'
+
+export type AgentRun = {
+  id: string
+  type: string
+  description: string
+  startedAt: number
+  endedAt: number | null
+  outcome: AgentOutcome
+}
+
+export type AgentHistory = {
+  runs: AgentRun[]
+  checkedAt: number
+}
+
 declare module 'claude-code' {
   interface PluginState {
     'dev-dashboard': {
@@ -101,6 +117,7 @@ declare module 'claude-code' {
       costs: TurnCosts
       verification: Shaped<Verification>
       externalWrites: Shaped<ExternalWrites>
+      agents: Shaped<AgentHistory>
     }
   }
 }
