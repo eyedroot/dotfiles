@@ -63,6 +63,7 @@ Shared working principles for coding agents.
 - Omit docblocks by default on new classes, enums, interfaces, and traits. Put type-wide constraints on types and caller context at call sites. Let test and fixture names explain their purpose. Comment on setup tricks a reader might otherwise mistake for errors.
 - Use plain, familiar language. Say which values or structures must match. Anchor time-sensitive descriptions to events such as workspace creation.
 - Record each fact once. Put cross-cutting decisions in project docs or architecture decision records and verifiable behavior in tests. Avoid repeating config comments on accessors or adding file and section banners. Omit prompt, chat, and editing history, and how the author learned a fact (the tool viewed, who said it, the steps taken). Instead, give the value with its verification status (verified or unverified) and as-of date. Keep dates and tickets in commits or design records and state the resulting rule in code.
+- In comments, docs, and skills, cite code by file path and symbol (class, method, config key, test name), not line numbers, which drift with every edit. Line references belong only in conversation reports.
 - Before finishing, enumerate every added or modified comment in scope from staged and unstaged diffs and direct inspection of new files. Search for the language's comment syntax and read whole docblocks. Remove comments that serve none of these purposes and preserve existing comments outside scope.
 
 ## Technical Findings and Reviews
