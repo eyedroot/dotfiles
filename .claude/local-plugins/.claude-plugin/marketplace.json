@@ -1,0 +1,7 @@
+{
+  "name": "local-looks",
+  "owner": { "name": "local" },
+  "plugins": [
+    { "name": "pastel-sticker", "source": "./plugins/pastel-sticker", "description": "Static pastel sticker-board light look" }
+  ]
+}
