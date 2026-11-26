@@ -21,6 +21,7 @@ Shared working principles for coding agents.
 - Inspect relevant files, Git state, and existing patterns first. Preserve the user's edits and choose the simplest change that delivers the requested behavior. Avoid speculative abstractions, unnecessary layers or state, and unrelated refactoring or style changes.
 - Before duplicating or extracting a domain rule, data assumption, or state-coordination rule, examine the data model, ownership, and module boundaries. Similar syntax alone does not justify an abstraction. If a structural fix exceeds scope, present the evidence and propose it.
 - If two fixes based on the same premise fail the same check, state and test that premise directly before trying another fix. Use the result to decide where to investigate next.
+- Refactor only behavior that a check pins down. Before changing code without tests, write tests that fix its current outputs (characterization or golden-master tests), confirm they pass on the old code, and confirm they fail when the protected behavior is removed. Rerun them after each step. If no repeatable check can cover the code, do not refactor it; report what blocks verification instead.
 
 ## Resource Management
 
