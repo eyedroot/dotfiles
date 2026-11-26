@@ -120,6 +120,30 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|WebFetch|WebSearch|mcp__phpstorm__execute_terminal_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/ray-log.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash|WebFetch|WebSearch|mcp__phpstorm__execute_terminal_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/ray-log.sh",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   }
 }
