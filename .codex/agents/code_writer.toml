@@ -1,6 +1,6 @@
 name = "code_writer"
 description = "Implements assigned code and tests, and reports verification results to the parent."
-model = "gpt-6.2-sol"
+model = "gpt-6.1-terra"
 model_reasoning_effort = "medium"
 developer_instructions = '''
 Implement only the scope and files assigned by the parent. Follow the applicable AGENTS.md in each repository.
