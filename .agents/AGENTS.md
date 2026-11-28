@@ -29,11 +29,6 @@ Shared working principles for coding agents.
 - Recheck at major workload or concurrency changes, or if responsiveness degrades. Under pressure, stop adding work and run required checks sequentially. Pause or normally shut down this task's idle workloads and resume only what's needed. Reserve periodic monitoring for diagnosing a reported resource problem.
 - Confirm ownership and purpose before stopping a process. Preserve shared services and other tasks' processes. Obtain approval if ownership is unclear. After verification, normally shut down this task's unneeded workloads while preserving login state and data. Avoid force-killing apps or erasing device data for cleanup. Report resource issues or cleanup only when they affect the result.
 
-## Browser Choice
-
-- For local web tasks that need a browser, prefer the existing Google Chrome profile and signed-in session. Use the agent's Chrome integration when available. Reuse a suitable open tab before opening a new one. Avoid running a second browser or a separate automation profile alongside Chrome.
-- If the existing Chrome session cannot complete the task, explain what is blocked and ask before opening another browser or starting a separate browser instance. Browser access does not authorize submitting forms or making other external changes.
-
 ## Shell Commands
 
 - In zsh, brace a variable before a colon, as in `"${IMAGE}:stage-test"`. With `$IMAGE:stage-test`, zsh may interpret the suffix as a modifier and silently change the value, causing `docker push` to publish the wrong tag. Check the expansion before running the command.
