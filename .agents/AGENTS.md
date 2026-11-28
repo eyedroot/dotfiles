@@ -31,8 +31,8 @@ Shared working principles for coding agents.
 
 ## Browser Choice
 
-- Prefer Safari for local web tasks. Use the Safari MCP server for development and testing in a separate automation window. For sites that need an existing sign-in, use the regular Safari session if the available tools can operate it.
-- If Safari cannot complete the task, explain the limitation and ask before opening Chrome or another browser. Do not silently fall back. Browser access does not authorize submitting forms or making other external changes.
+- For local web tasks that need a browser, prefer the existing Google Chrome profile and signed-in session. Use the agent's Chrome integration when available. Reuse a suitable open tab before opening a new one. Avoid running a second browser or a separate automation profile alongside Chrome.
+- If the existing Chrome session cannot complete the task, explain what is blocked and ask before opening another browser or starting a separate browser instance. Browser access does not authorize submitting forms or making other external changes.
 
 ## Shell Commands
 

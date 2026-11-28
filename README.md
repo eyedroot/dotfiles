@@ -152,17 +152,6 @@ echo '[ -f "$HOME/.zshrc.secrets" ] && source "$HOME/.zshrc.secrets"' >> ~/.zshr
      `~/.local/bin/start-remote-sim-view.sh "iPhone 17 Pro (26.5)"`.
    - `serve-sim` is used if installed globally; otherwise the script falls back to `npx --yes serve-sim@latest`.
 
-### Safari MCP on macOS
-
-On Safari 27 or later, turn on web developer features under **Safari → Settings → Advanced**, then enable **Allow remote automation and external agents** under **Developer**. Register the server on each Mac:
-
-```sh
-codex mcp add safari-mcp -- /usr/bin/safaridriver --mcp
-claude mcp add --scope user --transport stdio safari-mcp -- /usr/bin/safaridriver --mcp
-```
-
-The server opens a separate Safari automation window for development and testing; it does not reuse signed-in tabs. The commands update local client configuration, which is not tracked here. See [Apple's setup guide](https://developer.apple.com/documentation/safari-developer-tools/connecting-an-ai-agent-to-safari).
-
 ## Usage
 
 ```bash
